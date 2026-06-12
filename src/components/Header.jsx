@@ -6,17 +6,12 @@ import { RiForward30Line } from "react-icons/ri";
 import { Link } from "react-router-dom";
 
 export default function Header() {
-  // State to manage the open/closed status of the mobile menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <header className="bg-primary text-primary-text shadow-lg sticky top-0 z-50 w-full">
-      {/* MOBILE FIRST CONTAINER: 
-        Default is px-4 and h-16 for mobile. 
-        Scales to px-6 and h-20 on md (tablet) and larger. 
-      */}
+     
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
-        {/* 1. Logo */}
         <div className="flex-shrink-0">
           <Link
             to="/"
@@ -26,14 +21,12 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* 2. Desktop Navigation (Hidden on Mobile, block on md+) */}
         <nav className="hidden md:block">
           <ul className="flex items-center gap-8 lg:gap-10 font-semibold text-lg">
             <li className="relative group">
               <Link to="/products" className="hover:text-red-200 transition">
                 Products
               </Link>
-              {/* Desktop Dropdown Menu */}
               <div className="absolute top-full left-0 mt-2 w-56 bg-offwhite text-base-text rounded-md shadow-xl p-4 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-2 transition-all duration-300 z-10 pointer-events-none group-hover:pointer-events-auto border border-gray-200">
                 <Link
                   to="/products/control"
@@ -62,7 +55,6 @@ export default function Header() {
           </ul>
         </nav>
 
-        {/* 3. Desktop Secondary Elements (Hidden on Mobile, flex on md+) */}
         <div className="hidden md:flex items-center gap-5">
           <button
             className="p-2 rounded-full hover:bg-red-700 transition"
@@ -75,7 +67,6 @@ export default function Header() {
           </button>
         </div>
 
-        {/* 4. Mobile Hamburger Button (Visible ONLY on Mobile) */}
         <div className="md:hidden flex items-center">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -100,7 +91,6 @@ export default function Header() {
               : "max-h-0 opacity-0 border-none"
           }`}
         >
-          {/* I moved the border-t down to the nav so it hides cleanly when closed */}
           <nav className="px-4 pt-2 pb-4 space-y-2 border-t border-red-800">
             <Link
               to="/products"
