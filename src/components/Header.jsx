@@ -1,17 +1,26 @@
 import { useState } from "react";
 import { BiMenu, BiSearch } from "react-icons/bi";
-import { FaLine, FaX, FaXmark } from "react-icons/fa6";
-import { MdMenuBook } from "react-icons/md";
-import { RiForward30Line } from "react-icons/ri";
+import { FaXmark } from "react-icons/fa6";
 import { Link } from "react-router-dom";
+import { MdKeyboardArrowRight, MdKeyboardArrowDown } from "react-icons/md";
 
-export default function Header() {
+const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const [expandedMenus, setExpandedMenus] = useState({
+    products: true,
+    controlTech: true,
+    pacIpc: true,
+  });
+
+  const toggleSubMenu = (menuKey) => {
+    setExpandedMenus((prev) => ({ ...prev, [menuKey]: !prev[menuKey] }));
+  };
 
   return (
-    <header className="bg-white text-primary-text shadow-lg sticky top-0 z-999 w-full">
+    <header className="bg-white text-primary-text shadow-lg sticky top-0 z-[999] w-full">
       <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
-        {/* 1. Logo (Left Section) */}
         <div className="flex-shrink-0">
           <Link
             to="/"
@@ -32,7 +41,6 @@ export default function Header() {
               </Link>
             </li>
 
-            {/* PRODUCTS MEGA-MENU ITEM */}
             <li className="group h-full flex items-center">
               <Link
                 to="/products"
@@ -122,7 +130,6 @@ export default function Header() {
                     </div>
                   </div>
 
-                  {/* Column 2: HMI */}
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-3 mb-4">
                       HMI
@@ -152,7 +159,6 @@ export default function Header() {
                     </div>
                   </div>
 
-                  {/* Column 3: Servo Drive */}
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-3 mb-4">
                       Servo Drive
@@ -207,7 +213,6 @@ export default function Header() {
                     </div>
                   </div>
 
-                  {/* Column 4: Servo Motor */}
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-3 mb-4">
                       Servo Motor
@@ -245,7 +250,6 @@ export default function Header() {
                     </div>
                   </div>
 
-                  {/* Column 5: VFDs */}
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-3 mb-4">
                       VFDs
@@ -286,17 +290,16 @@ export default function Header() {
               </div>
             </li>
 
-            {/* Standard Nav Items */}
             <li className="group h-full flex items-center">
               <Link
                 to="/solutions"
-                className=" group-[]:  hover:text-primary transition-colors h-full flex items-center"
+                className="hover:text-primary transition-colors h-full flex items-center"
               >
                 Solutions
               </Link>
               <div className="absolute top-full left-0 w-full bg-white shadow-2xl border-t border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 py-3 flex justify-center gap-8 items-center">
-                  <div className=" flex gap-10 text-lg font-bold text-gray-900 p-3">
+                  <div className="flex gap-10 text-lg font-bold text-gray-900 p-3">
                     <Link to="/solutions/pv">
                       <h3>PV</h3>
                     </Link>
@@ -318,13 +321,14 @@ export default function Header() {
                     <Link to="/solutions/robot">
                       <h3>Robot</h3>
                     </Link>
-                    <Link to="/fluid">
+                    <Link to="/solutions/fluid">
                       <h3>Fluid</h3>
                     </Link>
                   </div>
                 </div>
               </div>
             </li>
+
             <li className="group h-full flex items-center">
               <Link
                 to="/about"
@@ -334,7 +338,7 @@ export default function Header() {
               </Link>
               <div className="absolute top-full left-0 w-full bg-white shadow-2xl border-t border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 py-3 flex justify-center gap-8 items-center">
-                  <div className=" flex gap-10 text-lg font-bold text-gray-900 p-3">
+                  <div className="flex gap-10 text-lg font-bold text-gray-900 p-3">
                     <Link to="/about/index">
                       <h3>Enter HCFA</h3>
                     </Link>
@@ -348,6 +352,7 @@ export default function Header() {
                 </div>
               </div>
             </li>
+
             <li className="group h-full flex items-center">
               <Link
                 to="/news"
@@ -357,7 +362,7 @@ export default function Header() {
               </Link>
               <div className="absolute top-full left-0 w-full bg-white shadow-2xl border-t border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 py-3 flex justify-center gap-8 items-center">
-                  <div className=" flex gap-10 text-lg font-bold text-gray-900 p-3">
+                  <div className="flex gap-10 text-lg font-bold text-gray-900 p-3">
                     <Link to="/news/index">
                       <h3>News</h3>
                     </Link>
@@ -371,6 +376,7 @@ export default function Header() {
                 </div>
               </div>
             </li>
+
             <li className="h-full flex items-center">
               <Link
                 to="/download"
@@ -382,58 +388,194 @@ export default function Header() {
           </ul>
         </nav>
 
-        {/* 3. Right Section (Language & Mobile Toggle) */}
-        <div className="flex items-center gap-6 bg-">
-          <div className="hidden sm:flex items-center gap-2 text-gray-600 hover:text-primary cursor-pointer transition-colors border-l border-gray-200 pl-6">
-            <span>
-              <BiSearch size={24} />
-            </span>
+        <div className="flex items-center gap-2 sm:gap-6">
+          <div className="flex items-center text-gray-600 hover:text-primary transition-colors sm:border-l sm:border-gray-200 sm:pl-6 h-full py-4">
+            <button
+              onClick={() => {
+                setIsSearchOpen(!isSearchOpen);
+                if (isMenuOpen) setIsMenuOpen(false);
+              }}
+              className="p-2 rounded focus:outline-none hover:bg-gray-100 transition-colors cursor-pointer"
+              aria-label="Toggle search"
+            >
+              {isSearchOpen ? <FaXmark size={22} /> : <BiSearch size={24} />}
+            </button>
           </div>
 
           <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={() => {
+              setIsMenuOpen(!isMenuOpen);
+              if (isSearchOpen) setIsSearchOpen(false);
+            }}
             className="lg:hidden p-2 rounded focus:outline-none hover:bg-gray-100 transition-colors"
             aria-label="Toggle menu"
           >
             <span
-              className={`inline-block text-2xl transition-transform duration-500 ease-in-out ${isMenuOpen ? "rotate-[360deg]" : "rotate-0"}`}
+              className={`inline-block text-2xl transition-transform duration-[800ms] ease-in-out ${
+                isMenuOpen ? "rotate-[180deg]" : "rotate-0"
+              }`}
             >
               {isMenuOpen ? <FaXmark /> : <BiMenu />}
             </span>
           </button>
+
+          <div
+            className={`absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 transition-all duration-300 z-50 ${
+              isSearchOpen
+                ? "opacity-100 visible translate-y-0"
+                : "opacity-0 invisible -translate-y-2"
+            }`}
+          >
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4 flex justify-center items-center">
+              <div className="flex text-lg text-gray-900 py-2 px-4 border border-slate-300 rounded-md items-center w-full max-w-2xl focus-within:border-primary transition-colors">
+                <input
+                  className="outline-none font-light w-full pr-4 bg-transparent"
+                  type="text"
+                  placeholder="Search Keyword..."
+                  autoFocus={isSearchOpen}
+                />
+                <button className="text-gray-400 hover:text-primary transition-colors flex-shrink-0 cursor-pointer">
+                  <BiSearch size={24} />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
       <div
-        className={`md:hidden absolute w-full left-0 shadow-xl bg-white overflow-hidden transition-all duration-500 ease-in-out ${
-          isMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0"
+        className={`lg:hidden absolute w-full left-0 bg-white shadow-xl overflow-y-auto transition-all duration-[800ms] ease-in-out border-t border-gray-100 ${
+          isMenuOpen ? "max-h-screen opacity-100 pb-10" : "max-h-0 opacity-0"
         }`}
       >
-        <nav className="px-4 pt-2 pb-4 space-y-2 border-t border-slate-500">
-          <Link
-            to="/products"
-            className="block px-3 py-2 font-semibold hover:bg-red-700 rounded transition"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Products
-          </Link>
+        <div className="flex flex-col w-full px-6">
+          <div className="w-full">
+            <div
+              className="flex justify-between items-center py-4 border-b border-gray-200 cursor-pointer"
+              onClick={() => toggleSubMenu("products")}
+            >
+              <span className="font-bold text-gray-900 text-[17px]">
+                Products
+              </span>
+              {expandedMenus.products ? (
+                <MdKeyboardArrowDown className="text-gray-400 text-xl" />
+              ) : (
+                <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+              )}
+            </div>
 
-          <Link
-            to="/solutions"
-            className="block px-3 py-2 font-semibold hover:bg-red-700 rounded transition"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Solutions
-          </Link>
+            {expandedMenus.products && (
+              <div className="w-full">
+                <div className="w-full">
+                  <div
+                    className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer transition-colors"
+                    onClick={() => toggleSubMenu("controlTech")}
+                  >
+                    <span
+                      className={`text-[15px] ${
+                        expandedMenus.controlTech
+                          ? "text-[#009a44]"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      Control Technology
+                    </span>
+                    {expandedMenus.controlTech ? (
+                      <MdKeyboardArrowDown className="text-gray-400 text-xl" />
+                    ) : (
+                      <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+                    )}
+                  </div>
 
-          <Link
-            to="/about"
-            className="block px-3 py-2 font-semibold hover:bg-red-700 rounded transition"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            About Us
-          </Link>
-        </nav>
+                  {expandedMenus.controlTech && (
+                    <div className="w-full">
+                      <div className="w-full">
+                        <div
+                          className="flex justify-between items-center py-4 pl-8 border-b border-gray-100 cursor-pointer"
+                          onClick={() => toggleSubMenu("pacIpc")}
+                        >
+                          <span
+                            className={`text-[14px] ${
+                              expandedMenus.pacIpc
+                                ? "text-[#009a44]"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            PAC/IPC
+                          </span>
+                          {expandedMenus.pacIpc ? (
+                            <MdKeyboardArrowDown className="text-gray-400 text-xl" />
+                          ) : (
+                            <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+                          )}
+                        </div>
+
+                        {expandedMenus.pacIpc && (
+                          <div className="w-full">
+                            <Link
+                              to="/products/q-series"
+                              className="block py-4 pl-12 border-b border-gray-100 text-[14px] text-gray-500 hover:bg-gray-50"
+                              onClick={() => setIsMenuOpen(false)}
+                            >
+                              Q series
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex justify-between items-center py-4 pl-8 border-b border-gray-100 cursor-pointer">
+                        <span className="text-[14px] text-gray-600">PLC</span>
+                        <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+                      </div>
+
+                      <div className="flex justify-between items-center py-4 pl-8 border-b border-gray-100 cursor-pointer">
+                        <span className="text-[14px] text-gray-600">IO</span>
+                        <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer">
+                  <span className="text-[15px] text-gray-600">HMI</span>
+                  <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+                </div>
+
+                <div className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer">
+                  <span className="text-[15px] text-gray-600">Servo Drive</span>
+                  <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+                </div>
+
+                <div className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer">
+                  <span className="text-[15px] text-gray-600">Servo Motor</span>
+                  <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+                </div>
+
+                <div className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer">
+                  <span className="text-[15px] text-gray-600">VFDs</span>
+                  <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-between items-center py-4 border-b border-gray-200 cursor-pointer">
+            <span className="font-bold text-gray-900 text-[17px]">
+              Solutions
+            </span>
+            <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+          </div>
+
+          <div className="flex justify-between items-center py-4 border-b border-gray-200 cursor-pointer">
+            <span className="font-bold text-gray-900 text-[17px]">
+              About Us
+            </span>
+            <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+          </div>
+        </div>
       </div>
     </header>
   );
-}
+};
+
+export default Header;
