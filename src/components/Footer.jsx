@@ -8,7 +8,6 @@ const Footer = () => {
   return (
     <footer className="w-full bg-[#111c2a] text-gray-300 border-t-2 border-primary  rounded-md">
       <div className="w-full max-w-md mx-auto px-6 py-6">
-        {/* 1. Logo Area */}
         <div>
           <Link
             to="/"
@@ -19,7 +18,6 @@ const Footer = () => {
         </div>
         <hr className="border-t border-primary w-full my-4 opacity-80" />
         <div className="flex gap-4 mb-6 ">
-          {/* Using generic placeholders for icons. You can replace text with SVG icons later */}
           <a
             href="#"
             className="w-11 h-11 rounded-full bg-slate-700 text-primary flex items-center justify-center text-xl font-bold hover:bg-slate-600 transition-colors"
