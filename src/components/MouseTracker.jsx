@@ -24,7 +24,7 @@ export default function MouseTracker() {
   return (
     <div
       ref={cursorRef}
-      className="fixed top-0 left-0 w-8 h-8 rounded-full border-2 border-primary bg-primary/10 pointer-events-none z-[10000] transition-transform duration-100 ease-out hidden md:block"
+      className="fixed top-0 left-0 w-8 h-8 rounded-full border-2 border-primary bg-primary/10 pointer-events-none z-[10000] transition-transform duration-100 ease-out hidden md:block "
     />
   );
 }

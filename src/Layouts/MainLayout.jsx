@@ -6,7 +6,7 @@ import MouseTracker from "../components/MouseTracker";
 
 const MainLayout = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-offwhite text-base-text font-sans antialiased">
+    <div className="flex flex-col min-h-screen bg-[#f5f3f4] text-base-text font-sans antialiased">
       <MouseTracker/>
       <Header />
       <main className="flex-grow w-full flex flex-col">

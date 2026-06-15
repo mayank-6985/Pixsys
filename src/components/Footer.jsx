@@ -50,6 +50,8 @@ const Footer = () => {
           <p>COPYRIGHT &copy; Shivvilon-Solutions Rights Reserved</p>
         </div>
       </div>
+
+      
     </footer>
   );
 };
