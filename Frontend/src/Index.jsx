@@ -11,6 +11,8 @@ import PageNotFound from "./components/PageNotFound";
 import Products from "./pages/Products";
 import Solutions from "./pages/Solutions";
 import About from "./pages/About";
+import News from "./pages/News";
+import Download from "./pages/Download";
 
 const router = createBrowserRouter([
   {
@@ -22,6 +24,9 @@ const router = createBrowserRouter([
       { path: "/products", element: <Products /> },
       { path: "/solutions", element: <Solutions /> },
       { path: "/about", element: <About /> },
+      { path: "/news", element: <News /> },
+      {path:"/download", element:<Download/>
+      }
     ],
   },
 ]);
