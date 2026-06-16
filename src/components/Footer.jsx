@@ -14,12 +14,8 @@ const Footer = () => {
         <div className="mb-6">
           <Link
             to="/"
-            className="text-4xl font-extrabold italic tracking-tighter text-primary focus:outline-none"
           >
-            SHIVVILON{" "}
-            <span className="text-xl text-slate-300 tracking-normal">
-              Solutions
-            </span>
+        <img className="h-5 md:h-10 focus:outline-none" src="Pixsys2.png" alt="" />
           </Link>
         </div>
 
