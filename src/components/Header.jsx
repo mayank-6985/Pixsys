@@ -26,7 +26,7 @@ const Header = () => {
             to="/"
             className="text-3xl font-extrabold tracking-tight text-primary italic focus:outline-none"
           >
-            SS
+            <img className="h-10  " src="/Pixsys.png" />
           </Link>
         </div>
 
