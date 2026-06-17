@@ -8,10 +8,13 @@ class CounterRepository:
             counter , created = Counter.objects.get_or_create(name=name)
             return counter , created
     
+    @staticmethod
     def get(name:str)->Counter:
         with transaction.atomic():
             counter = Counter.objects.get(name=counter_name)
             return counter
+    
+    @staticmethod
     def save(self , counter:Counter):
         with transaction.atomic():
             counter.save()
