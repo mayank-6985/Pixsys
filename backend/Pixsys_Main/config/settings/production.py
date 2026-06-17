@@ -9,7 +9,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_backend',
         'HOST': 'mongodb://localhost:27017/',
-        'NAME': 'config',
+        'NAME': 'PIXSYS',
     },
 }
 
