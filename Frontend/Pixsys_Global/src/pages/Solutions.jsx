@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { FaHome, FaPlay } from "react-icons/fa";
 import { HiOutlineArrowRight } from "react-icons/hi";
+import { FiX } from "react-icons/fi"; // ADDED: Close Icon for the modal
 import { categories, solutionsData } from "../data/SolutionsPageData";
 
 const Solutions = () => {
   const [activeTab, setActiveTab] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [selectedVideo, setSelectedVideo] = useState(null);
+
   const itemsPerPage = 6;
 
   const filteredSolutions =
@@ -26,6 +30,8 @@ const Solutions = () => {
     setActiveTab(category);
     setCurrentPage(1);
   };
+
+  const closeModal = () => setSelectedVideo(null);
 
   return (
     <div className="min-h-screen bg-white relative">
@@ -71,6 +77,7 @@ const Solutions = () => {
           ))}
         </div>
       </div>
+
       <div className="max-w-7xl mx-auto px-6 mb-16 relative z-10">
         {currentSolutions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
@@ -78,6 +85,7 @@ const Solutions = () => {
               <div
                 key={solution.id}
                 className="group cursor-pointer flex flex-col"
+                onClick={() => setSelectedVideo(solution)}
               >
                 <div className="relative h-[220px] rounded-xl overflow-hidden shadow-lg mb-4">
                   <img
@@ -103,22 +111,9 @@ const Solutions = () => {
                       {solution.imageTitle}
                     </p>
                   </div>
-                  <div className="absolute bottom-0 left-0 w-full h-8 z-20">
-                    <svg
-                      viewBox="0 0 1440 320"
-                      preserveAspectRatio="none"
-                      className="w-full h-full"
-                    >
-                      <path
-                        fill="#22c1c3"
-                        fillOpacity="1"
-                        d="M0,128L80,149.3C160,171,320,213,480,208C640,203,800,149,960,138.7C1120,128,1280,160,1360,176L1440,192L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z"
-                      ></path>
-                    </svg>
-                  </div>
                 </div>
                 <h3
-                  className={`text-[1.05rem] font-bold leading-snug px-1 ${solution.isActive ? "text-[#da0e19]" : "text-gray-800 group-hover:text-[#] transition-colors"}`}
+                  className={`text-[1.05rem] font-bold leading-snug px-1 text-gray-800 group-hover:text-[#da0e19] transition-colors"}`}
                 >
                   {solution.title}
                 </h3>
@@ -162,6 +157,36 @@ const Solutions = () => {
           >
             <HiOutlineArrowRight className="text-xl" />
           </button>
+        </div>
+      )}
+
+      {selectedVideo && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-10">
+          <div
+            className="absolute inset-0 cursor-pointer"
+            onClick={closeModal}
+          ></div>
+
+          <div className="relative w-full max-w-5xl bg-black rounded-lg shadow-2xl overflow-hidden z-10">
+            <button
+              onClick={closeModal}
+              className="absolute top-4 right-4 z-20 text-white hover:text-[#da0e19] bg-black/50 hover:bg-black/80 rounded-full p-2 transition-all"
+            >
+              <FiX className="text-2xl" />
+            </button>
+
+            <video
+              src={
+                selectedVideo.videoUrl ||
+                "https://www.w3schools.com/html/mov_bbb.mp4"
+              }
+              controls
+              autoPlay
+              className="w-full h-auto aspect-video outline-none"
+            >
+              Your browser does not support the video tag.
+            </video>
+          </div>
         </div>
       )}
     </div>

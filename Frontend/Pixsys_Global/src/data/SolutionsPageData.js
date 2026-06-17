@@ -9,7 +9,6 @@ export const categories = [
   "Robot",
   "Fluid",
 ];
-
 export const solutionsData = [
   {
     id: 1,
@@ -19,6 +18,7 @@ export const solutionsData = [
     img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80",
     isActive: true,
     category: "Wire Harness",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
   },
   {
     id: 2,
@@ -27,6 +27,7 @@ export const solutionsData = [
     title: "Woodworking Industry Edge Bander Solution",
     img: "https://images.unsplash.com/photo-1622322304918-05240bc1d3a6?auto=format&fit=crop&q=80",
     category: "Woodworking",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
   {
     id: 3,
@@ -35,6 +36,7 @@ export const solutionsData = [
     title: "Woodworking Cutting Machine Solution",
     img: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80",
     category: "Woodworking",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
   {
     id: 4,
@@ -43,6 +45,7 @@ export const solutionsData = [
     title: "High-Speed Mounting Machine Industry Solution",
     img: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80",
     category: "Packaging",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
   {
     id: 5,
@@ -51,6 +54,7 @@ export const solutionsData = [
     title: "Laser Industry Cutting Machine Solution",
     img: "https://images.unsplash.com/photo-1563770660-394463dfb12d?auto=format&fit=crop&q=80",
     category: "Laser",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
   {
     id: 6,
@@ -59,6 +63,7 @@ export const solutionsData = [
     title: "Packaging Industry Carton Unpacker Industry Soluction",
     img: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80",
     category: "Packaging",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
   {
     id: 7,
@@ -67,6 +72,7 @@ export const solutionsData = [
     title: "Packaging Industry Carton Unpacker Industry Soluction",
     img: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80",
     category: "Packaging",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
   {
     id: 8,
@@ -75,6 +81,7 @@ export const solutionsData = [
     title: "Packaging Industry Carton Unpacker Industry Soluction",
     img: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80",
     category: "Packaging",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
   {
     id: 9,
@@ -83,6 +90,7 @@ export const solutionsData = [
     title: "Packaging Industry Carton Unpacker Industry Soluction",
     img: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80",
     category: "Packaging",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
   {
     id: 10,
@@ -91,6 +99,7 @@ export const solutionsData = [
     title: "Packaging Industry Carton Unpacker Industry Soluction",
     img: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80",
     category: "Packaging",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
   {
     id: 11,
@@ -99,6 +108,7 @@ export const solutionsData = [
     title: "Packaging Industry Carton Unpacker Industry Soluction",
     img: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80",
     category: "Packaging",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
   {
     id: 12,
@@ -107,6 +117,7 @@ export const solutionsData = [
     title: "Packaging Industry Carton Unpacker Industry Soluction",
     img: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80",
     category: "Packaging",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
   {
     id: 13,
@@ -115,6 +126,7 @@ export const solutionsData = [
     title: "Packaging Industry Carton Unpacker Industry Soluction",
     img: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80",
     category: "Packaging",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
   {
     id: 14,
@@ -123,5 +135,6 @@ export const solutionsData = [
     title: "Packaging Industry Carton Unpacker Industry Soluction",
     img: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80",
     category: "Packaging",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", 
   },
 ];
