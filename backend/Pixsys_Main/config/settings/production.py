@@ -12,3 +12,15 @@ DATABASES = {
         'NAME': 'config',
     },
 }
+
+# cors configuration
+CORS_ALLOW_CREDENTIALS=True
+
+CORS_ALLOWED_ORIGINS = [
+    'pixsysglobal.com',    
+]
+
+CSRF_ALLOWED_ORIGINS = [
+    'pixsysglobal.com',
+]
+0

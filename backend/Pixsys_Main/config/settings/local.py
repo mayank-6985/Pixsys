@@ -4,6 +4,8 @@ from decouple import config , Csv
 DEBUG = True
 
 ALLOWED_HOSTS = config('LOCAL_ALLOWED_HOSTS' , cast=Csv())
+
+# database
 DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_backend',
@@ -11,3 +13,23 @@ DATABASES = {
         'NAME': 'config',
     },
 }
+
+# cors configuration
+CORS_ALLOW_CREDENTIALS=True
+
+CORS_ALLOWED_ORIGINS = [
+    "https://unsettled-manual-dynasty.ngrok-free.dev",
+    "https://tragicomical-epileptically-davin.ngrok-free.dev",
+]
+
+# csrf setup
+CSRF_ALLOWED_ORIGINS = [
+    "https://unsettled-manual-dynasty.ngrok-free.dev",
+    "https://tragicomical-epileptically-davin.ngrok-free.dev"
+]
+
+
+
+
+
+
