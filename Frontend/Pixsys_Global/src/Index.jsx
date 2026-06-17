@@ -13,6 +13,7 @@ import Solutions from "./pages/Solutions";
 import About from "./pages/About";
 import News from "./pages/News";
 import Download from "./pages/Download";
+import NewsDetail from "./pages/NewsDetail";
 
 const router = createBrowserRouter([
   {
@@ -25,8 +26,8 @@ const router = createBrowserRouter([
       { path: "/solutions", element: <Solutions /> },
       { path: "/about", element: <About /> },
       { path: "/news", element: <News /> },
-      {path:"/download", element:<Download/>
-      }
+      { path: "/news/:id", element: <NewsDetail /> },
+      { path: "/download", element: <Download /> },
     ],
   },
 ]);

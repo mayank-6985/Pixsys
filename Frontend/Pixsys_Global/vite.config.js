@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
 
   server: {
-    allowedHosts: ["unsettled-manual-dynasty.ngrok-free.dev"],
+    allowedHosts: [
+      "unsettled-manual-dynasty.ngrok-free.dev",
+      "pixsysglobal.com/",
+    ],
   },
 });
