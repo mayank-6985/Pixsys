@@ -6,10 +6,11 @@ DEBUG = True
 ALLOWED_HOSTS = config('LOCAL_ALLOWED_HOSTS' , cast=Csv())
 
 # database
+LOCAL_MONGODB_URI=config('TEST_MONGODB_URI')
 DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_backend',
-        'HOST': 'mongodb://localhost:27017/',
+        'HOST': LOCAL_MONGODB_URI,
         'NAME': 'config',
     },
 }
