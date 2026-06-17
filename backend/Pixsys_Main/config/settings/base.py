@@ -23,7 +23,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_mongodb_backend',
     'corsheaders',
-    'apps.News'
+    'apps.News',
+    'apps.Utils',
 ]
 
 MIDDLEWARE = [
