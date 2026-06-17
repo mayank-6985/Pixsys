@@ -1,6 +1,6 @@
 from .repository import CounterRepository as CountereRepo
 
-class DatabaseServices:
+class CounterServices:
     @staticmethod
     def get_next_sequence(counter_name: str) -> int:
         counter, created = CountereRepo.get_or_create(name=counter_name)
