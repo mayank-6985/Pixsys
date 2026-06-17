@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { BiMenu, BiSearch } from "react-icons/bi";
 import { FaXmark } from "react-icons/fa6";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { MdKeyboardArrowRight, MdKeyboardArrowDown } from "react-icons/md";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const location = useLocation();
 
   const [expandedMenus, setExpandedMenus] = useState({
     products: true,
@@ -16,6 +17,13 @@ const Header = () => {
 
   const toggleSubMenu = (menuKey) => {
     setExpandedMenus((prev) => ({ ...prev, [menuKey]: !prev[menuKey] }));
+  };
+
+  const isActive = (path) => {
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+    return location.pathname.startsWith(path);
   };
 
   return (
@@ -32,21 +40,43 @@ const Header = () => {
 
         <nav className="hidden lg:flex h-full">
           <ul className="flex items-center gap-10 font-medium text-[15px] h-full">
-            <li className="h-full flex items-center border-b-2 border-primary">
+            <li className="h-full flex items-center">
               <Link
                 to="/"
-                className="hover:text-primary transition-colors h-full flex items-center"
+                className={`relative h-full flex items-center transition-colors ${
+                  isActive("/")
+                    ? "text-[#da0e19]"
+                    : "hover:text-[#da0e19] text-gray-700"
+                }`}
               >
                 Home
+                <div
+                  className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-center ${
+                    isActive("/")
+                      ? "text-[#da0e19] border-b-2 border-[#da0e19]"
+                      : "scale-x-0"
+                  }`}
+                />
               </Link>
             </li>
 
             <li className="group h-full flex items-center">
               <Link
                 to="/products"
-                className="hover:text-primary transition-colors h-full flex items-center"
+                className={`relative h-full flex items-center transition-colors ${
+                  isActive("/products")
+                    ? "text-[#da0e19] border-b-2 border-[#da0e19]"
+                    : "hover:text-[#da0e19] text-gray-700"
+                }`}
               >
                 Products
+                <div
+                  className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-center ${
+                    isActive("/products")
+                      ? "text-[#da0e19] border-b-2 border-[#da0e19]"
+                      : "scale-x-0"
+                  }`}
+                />
               </Link>
               <div className="absolute top-full left-0 w-full bg-white shadow-2xl border-t border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 py-10 grid grid-cols-5 gap-8">
@@ -293,9 +323,20 @@ const Header = () => {
             <li className="group h-full flex items-center">
               <Link
                 to="/solutions"
-                className="hover:text-primary transition-colors h-full flex items-center"
+                className={`relative h-full flex items-center transition-colors ${
+                  isActive("/solutions")
+                    ? "text-[#da0e19] border-b-2 border-[#da0e19]"
+                    : "hover:text-[#da0e19] text-gray-700"
+                }`}
               >
                 Solutions
+                <div
+                  className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-center ${
+                    isActive("/solutions")
+                      ? "text-[#da0e19] border-b-2 border-[#da0e19]"
+                      : "scale-x-0"
+                  }`}
+                />
               </Link>
               <div className="absolute top-full left-0 w-full bg-white shadow-2xl border-t border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 py-3 flex justify-center gap-8 items-center">
@@ -332,9 +373,18 @@ const Header = () => {
             <li className="group h-full flex items-center">
               <Link
                 to="/about"
-                className="hover:text-primary transition-colors h-full flex items-center"
+                className={`relative h-full flex items-center transition-colors ${
+                  isActive("/about")
+                    ? "text-[#da0e19] border-b-2 border-[#da0e19]"
+                    : "hover:text-[#da0e19] text-gray-700"
+                }`}
               >
                 About Us
+                <div
+                  className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-center ${
+                    isActive("/about") ? "text-[#da0e19] border-b-2 border-[#da0e19]" : "scale-x-0"
+                  }`}
+                />
               </Link>
               <div className="absolute top-full left-0 w-full bg-white shadow-2xl border-t border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 py-3 flex justify-center gap-8 items-center">
@@ -356,11 +406,20 @@ const Header = () => {
             <li className="group h-full flex items-center">
               <Link
                 to="/news"
-                className="hover:text-primary transition-colors h-full flex items-center"
+                className={`relative h-full flex items-center transition-colors ${
+                  isActive("/news")
+                    ? "text-[#da0e19] border-b-2 border-[#da0e19]"
+                    : "hover:text-[#da0e19] text-gray-700"
+                }`}
               >
                 News
+                <div
+                  className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-center ${
+                    isActive("/news") ? "text-[#da0e19] border-b-2 border-[#da0e19]" : "scale-x-0"
+                  }`}
+                />
               </Link>
-              <div className="absolute top-full left-0 w-full bg-white shadow-2xl border-t border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+              {/* <div className="absolute top-full left-0 w-full bg-white shadow-2xl border-t border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 py-3 flex justify-center gap-8 items-center">
                   <div className="flex gap-10 text-lg font-bold text-gray-900 p-3">
                     <Link to="/news/index">
@@ -374,15 +433,24 @@ const Header = () => {
                     </Link>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </li>
 
             <li className="h-full flex items-center">
               <Link
                 to="/download"
-                className="hover:text-primary transition-colors h-full flex items-center"
+                className={`relative h-full flex items-center transition-colors ${
+                  isActive("/download")
+                    ? "text-[#da0e19] border-b-2 border-[#da0e19]"
+                    : "hover:text-[#da0e19] text-gray-700"
+                }`}
               >
                 Download
+                <div
+                  className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-center ${
+                    isActive("/download") ? "text-[#da0e19] border-b-2 border-[#da0e19]" : "scale-x-0"
+                  }`}
+                />
               </Link>
             </li>
           </ul>
@@ -454,7 +522,9 @@ const Header = () => {
               className="flex justify-between items-center py-4 border-b border-gray-200 cursor-pointer"
               onClick={() => toggleSubMenu("products")}
             >
-              <span className="font-bold text-gray-900 text-[17px]">
+              <span
+                className={`font-bold text-[17px] ${isActive("/products") ? "text-primary" : "text-gray-900"}`}
+              >
                 Products
               </span>
               {expandedMenus.products ? (
@@ -474,7 +544,7 @@ const Header = () => {
                     <span
                       className={`text-[15px] ${
                         expandedMenus.controlTech
-                          ? "text-[#009a44]"
+                          ? "text-primary"
                           : "text-gray-600"
                       }`}
                     >
@@ -497,7 +567,7 @@ const Header = () => {
                           <span
                             className={`text-[14px] ${
                               expandedMenus.pacIpc
-                                ? "text-[#009a44]"
+                                ? "text-primary"
                                 : "text-gray-600"
                             }`}
                           >
@@ -514,7 +584,7 @@ const Header = () => {
                           <div className="w-full">
                             <Link
                               to="/products/q-series"
-                              className="block py-4 pl-12 border-b border-gray-100 text-[14px] text-gray-500 hover:bg-gray-50"
+                              className="block py-4 pl-12 border-b border-gray-100 text-[14px] text-gray-500 hover:bg-gray-50 hover:text-primary"
                               onClick={() => setIsMenuOpen(false)}
                             >
                               Q series
@@ -523,55 +593,105 @@ const Header = () => {
                         )}
                       </div>
 
-                      <div className="flex justify-between items-center py-4 pl-8 border-b border-gray-100 cursor-pointer">
-                        <span className="text-[14px] text-gray-600">PLC</span>
+                      <div className="flex justify-between items-center py-4 pl-8 border-b border-gray-100 cursor-pointer hover:text-primary">
+                        <span className="text-[14px] text-gray-600 hover:text-primary">
+                          PLC
+                        </span>
                         <MdKeyboardArrowRight className="text-gray-400 text-xl" />
                       </div>
 
-                      <div className="flex justify-between items-center py-4 pl-8 border-b border-gray-100 cursor-pointer">
-                        <span className="text-[14px] text-gray-600">IO</span>
+                      <div className="flex justify-between items-center py-4 pl-8 border-b border-gray-100 cursor-pointer hover:text-primary">
+                        <span className="text-[14px] text-gray-600 hover:text-primary">
+                          IO
+                        </span>
                         <MdKeyboardArrowRight className="text-gray-400 text-xl" />
                       </div>
                     </div>
                   )}
                 </div>
 
-                <div className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer">
-                  <span className="text-[15px] text-gray-600">HMI</span>
+                <div className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer hover:text-primary">
+                  <span className="text-[15px] text-gray-600 hover:text-primary">
+                    HMI
+                  </span>
                   <MdKeyboardArrowRight className="text-gray-400 text-xl" />
                 </div>
 
-                <div className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer">
-                  <span className="text-[15px] text-gray-600">Servo Drive</span>
+                <div className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer hover:text-primary">
+                  <span className="text-[15px] text-gray-600 hover:text-primary">
+                    Servo Drive
+                  </span>
                   <MdKeyboardArrowRight className="text-gray-400 text-xl" />
                 </div>
 
-                <div className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer">
-                  <span className="text-[15px] text-gray-600">Servo Motor</span>
+                <div className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer hover:text-primary">
+                  <span className="text-[15px] text-gray-600 hover:text-primary">
+                    Servo Motor
+                  </span>
                   <MdKeyboardArrowRight className="text-gray-400 text-xl" />
                 </div>
 
-                <div className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer">
-                  <span className="text-[15px] text-gray-600">VFDs</span>
+                <div className="flex justify-between items-center py-4 pl-4 border-b border-gray-100 cursor-pointer hover:text-primary">
+                  <span className="text-[15px] text-gray-600 hover:text-primary">
+                    VFDs
+                  </span>
                   <MdKeyboardArrowRight className="text-gray-400 text-xl" />
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex justify-between items-center py-4 border-b border-gray-200 cursor-pointer">
-            <span className="font-bold text-gray-900 text-[17px]">
+          <Link
+            to="/solutions"
+            className="flex justify-between items-center py-4 border-b border-gray-200 cursor-pointer hover:text-primary"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <span
+              className={`font-bold text-[17px] ${isActive("/solutions") ? "text-primary" : "text-gray-900"}`}
+            >
               Solutions
             </span>
             <MdKeyboardArrowRight className="text-gray-400 text-xl" />
-          </div>
+          </Link>
 
-          <div className="flex justify-between items-center py-4 border-b border-gray-200 cursor-pointer">
-            <span className="font-bold text-gray-900 text-[17px]">
+          <Link
+            to="/about"
+            className="flex justify-between items-center py-4 border-b border-gray-200 cursor-pointer hover:text-primary"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <span
+              className={`font-bold text-[17px] ${isActive("/about") ? "text-primary" : "text-gray-900"}`}
+            >
               About Us
             </span>
             <MdKeyboardArrowRight className="text-gray-400 text-xl" />
-          </div>
+          </Link>
+
+          <Link
+            to="/news"
+            className="flex justify-between items-center py-4 border-b border-gray-200 cursor-pointer hover:text-primary"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <span
+              className={`font-bold text-[17px] ${isActive("/news") ? "text-primary" : "text-gray-900"}`}
+            >
+              News
+            </span>
+            <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+          </Link>
+
+          <Link
+            to="/download"
+            className="flex justify-between items-center py-4 border-b border-gray-200 cursor-pointer hover:text-primary"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <span
+              className={`font-bold text-[17px] ${isActive("/download") ? "text-primary" : "text-gray-900"}`}
+            >
+              Download
+            </span>
+            <MdKeyboardArrowRight className="text-gray-400 text-xl" />
+          </Link>
         </div>
       </div>
     </header>
