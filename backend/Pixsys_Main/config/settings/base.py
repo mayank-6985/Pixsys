@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_mongodb_backend',
     'corsheaders',
+    'rest_framework',
     'apps.News',
     'apps.Utils',
 ]
