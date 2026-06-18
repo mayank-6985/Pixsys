@@ -21,12 +21,16 @@ CORS_ALLOW_CREDENTIALS=True
 CORS_ALLOWED_ORIGINS = [
     "https://unsettled-manual-dynasty.ngrok-free.dev",
     "https://tragicomical-epileptically-davin.ngrok-free.dev",
+    "http://localhost",
+    "http://127.0.0.1"
 ]
 
 # csrf setup
 CSRF_ALLOWED_ORIGINS = [
     "https://unsettled-manual-dynasty.ngrok-free.dev",
-    "https://tragicomical-epileptically-davin.ngrok-free.dev"
+    "https://tragicomical-epileptically-davin.ngrok-free.dev",
+    "http://localhost",
+    "http://127.0.0.1"
 ]
 
 
