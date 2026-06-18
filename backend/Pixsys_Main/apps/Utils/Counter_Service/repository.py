@@ -15,6 +15,6 @@ class CounterRepository:
             return counter
     
     @staticmethod
-    def save(self , counter:Counter):
+    def save(counter:Counter):
         with transaction.atomic():
             counter.save()
