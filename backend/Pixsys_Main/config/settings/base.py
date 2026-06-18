@@ -157,3 +157,14 @@ LOGGING = {
         },
     },
 }
+
+# REST Framework settings
+REST_FRAMEWORK = {
+    # This completely removes Session and Basic authentication defaults
+    'DEFAULT_AUTHENTICATION_CLASSES': [], 
+    
+    # This ensures no permissions are required globally
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+}
