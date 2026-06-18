@@ -21,7 +21,8 @@ class NewsModel(models.Model):
 
 
 class NewsContent(models.Model):
-
+    DESCRIPTION = 'description'
+    IMAGE = 'image'
     news = models.OneToOneField(NewsModel  ,  on_delete=models.CASCADE , related_name='content')
     
     # this field holds the news content order
