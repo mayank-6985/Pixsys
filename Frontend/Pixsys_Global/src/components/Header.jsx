@@ -3,6 +3,7 @@ import { BiMenu, BiSearch } from "react-icons/bi";
 import { FaXmark } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
 import { MdKeyboardArrowRight, MdKeyboardArrowDown } from "react-icons/md";
+import { categories } from "../data/SolutionsPageData";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -340,31 +341,20 @@ const Header = () => {
               </Link>
               <div className="absolute top-full left-0 w-full bg-white shadow-2xl border-t border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 py-3 flex justify-center gap-8 items-center">
-                  <div className="flex gap-10 text-lg font-bold text-gray-900 p-3">
-                    <Link to="/solutions/pv">
-                      <h3>PV</h3>
-                    </Link>
-                    <Link to="/solutions/leser">
-                      <h3>Laser</h3>
-                    </Link>
-                    <Link to="/solutions/texttile">
-                      <h3>Textile</h3>
-                    </Link>
-                    <Link to="/solutions/packaging">
-                      <h3>Packaging</h3>
-                    </Link>
-                    <Link to="/solutions/woodworking">
-                      <h3>Woodworking</h3>
-                    </Link>
-                    <Link to="/solutions/ee">
-                      <h3>EE</h3>
-                    </Link>
-                    <Link to="/solutions/robot">
-                      <h3>Robot</h3>
-                    </Link>
-                    <Link to="/solutions/fluid">
-                      <h3>Fluid</h3>
-                    </Link>
+                  <div className="flex flex-wrap justify-center gap-10 text-lg font-bold text-gray-900 p-3">
+                    {categories
+                      .filter((category) => category !== "All") // We hide 'All' from the dropdown
+                      .map((category) => (
+                        <Link
+                          key={category}
+                          to={`/solutions?category=${category}`}
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <h3 className="hover:text-[#da0e19] transition-colors">
+                            {category}
+                          </h3>
+                        </Link>
+                      ))}
                   </div>
                 </div>
               </div>
@@ -382,25 +372,12 @@ const Header = () => {
                 About Us
                 <div
                   className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-center ${
-                    isActive("/about") ? "text-[#da0e19] border-b-2 border-[#da0e19]" : "scale-x-0"
+                    isActive("/about")
+                      ? "text-[#da0e19] border-b-2 border-[#da0e19]"
+                      : "scale-x-0"
                   }`}
                 />
               </Link>
-              <div className="absolute top-full left-0 w-full bg-white shadow-2xl border-t border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                <div className="max-w-[1400px] mx-auto px-6 py-3 flex justify-center gap-8 items-center">
-                  <div className="flex gap-10 text-lg font-bold text-gray-900 p-3">
-                    <Link to="/about/index">
-                      <h3>Enter HCFA</h3>
-                    </Link>
-                    <Link to="/about/talent">
-                      <h3>Talent Development</h3>
-                    </Link>
-                    <Link to="/about/contact">
-                      <h3>Contact Us</h3>
-                    </Link>
-                  </div>
-                </div>
-              </div>
             </li>
 
             <li className="group h-full flex items-center">
@@ -415,7 +392,9 @@ const Header = () => {
                 News
                 <div
                   className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-center ${
-                    isActive("/news") ? "text-[#da0e19] border-b-2 border-[#da0e19]" : "scale-x-0"
+                    isActive("/news")
+                      ? "text-[#da0e19] border-b-2 border-[#da0e19]"
+                      : "scale-x-0"
                   }`}
                 />
               </Link>
@@ -448,7 +427,9 @@ const Header = () => {
                 Download
                 <div
                   className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-center ${
-                    isActive("/download") ? "text-[#da0e19] border-b-2 border-[#da0e19]" : "scale-x-0"
+                    isActive("/download")
+                      ? "text-[#da0e19] border-b-2 border-[#da0e19]"
+                      : "scale-x-0"
                   }`}
                 />
               </Link>
