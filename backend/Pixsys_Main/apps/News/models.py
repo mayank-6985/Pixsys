@@ -1,29 +1,34 @@
 from django.db import models
-
+from ..Utils.Counter_Service.services import CounterServices
 
 class NewsModel(models.Model):
+    news_id = models.BigIntegerField()
     date = models.DateField()
-    heading = models.CharField(max_length=255)
-    thumbnail = models.ImageField(upload_to="news/thumbnails/", null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.date} - {self.heading}"
-
-
-class ContentItemModel(models.Model):
-    DESCRIPTION = "description"
-    IMAGE = "image"
-    NEWS_CONTENT_TYPES = ((DESCRIPTION, "description"), (IMAGE, "image"))
-
-    news = models.ForeignKey(NewsModel, related_name="content_items", on_delete=models.CASCADE)
-    order = models.PositiveIntegerField()
-    type = models.CharField(max_length=32, choices=NEWS_CONTENT_TYPES)
-    payload = models.JSONField()
+    heading = models.CharField(max_length=500)
+    thumbnail = models.URLField()
 
     class Meta:
-        ordering = ["order"]
-        unique_together = (("news", "order"),)
+        db_table='News_Table'
+    
+    def __str__(self):
+        return f"{self.date} - {self.heading}"
+    
+    def save(self ,*args, **kwargs):
+        if not self.news_id:
+            news_id = CounterServices.get_next_sequence('news')
+            self.news_id = news_id
+        return super().save(*args, **kwargs)
+
+
+class NewsContent(models.Model):
+
+    news = models.OneToOneField(NewsModel  ,  on_delete=models.CASCADE , related_name='content')
+    
+    # this field holds the news content order
+    news_content = models.JSONField(default=list)
+    class Meta:
+        db_table="News_Content_Table"
 
     def __str__(self):
-        return f"{self.news_id} - {self.type} ({self.order})"
+        return f"for the news {self.news.news_id}"
 
