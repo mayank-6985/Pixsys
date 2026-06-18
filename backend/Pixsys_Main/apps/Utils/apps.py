@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class NewsConfig(AppConfig):
-    name = 'apps.News'
+    name = 'apps.Utils'
