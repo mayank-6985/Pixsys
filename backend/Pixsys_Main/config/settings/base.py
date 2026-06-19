@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar',
     'apps.News',
     'apps.Utils',
+    'apps.Solutions',
 ]
 
 MIDDLEWARE = [
