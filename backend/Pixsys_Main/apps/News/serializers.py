@@ -40,7 +40,7 @@ class NewsSerializer(serializers.Serializer):
     news_id = serializers.IntegerField(required=False)
     date = serializers.DateField(input_formats=['%d-%m-%Y' , '%Y-%m-%d'])
     heading = serializers.CharField(max_length=255)
-    thumbnail = serializers.URLField(required=False, allow_null=True)
+    thumbnail = serializers.URLField(required=True, allow_null=True)
     content = NewsContentSerializer(many=True)
 
     def validate_content(self, value):
