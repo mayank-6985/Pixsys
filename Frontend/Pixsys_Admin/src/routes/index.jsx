@@ -8,11 +8,13 @@ import News from "../Pages/News";
 import Products from "../Pages/Products";
 import Solutions from "../Pages/Solutions";
 import Download from "../Pages/Download"
+import SomethingWentWrong from "../Components/SomethingWentWrong";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <AdminLayout />,
+    errorElement:<SomethingWentWrong/>,
     children: [
       {
         index: true,
