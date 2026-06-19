@@ -24,6 +24,8 @@ INSTALLED_APPS = [
     'django_mongodb_backend',
     'corsheaders',
     'rest_framework',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
     'apps.News',
     'apps.Utils',
 ]
@@ -163,9 +165,29 @@ LOGGING = {
 REST_FRAMEWORK = {
     # This completely removes Session and Basic authentication defaults
     'DEFAULT_AUTHENTICATION_CLASSES': [], 
-    
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     # This ensures no permissions are required globally
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
 }
+
+
+# API DOCUMENTATION SETTINGS
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Your API Project Title',
+    'DESCRIPTION': 'Detailed description of what your API does.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    
+    # Use the sidecar for Swagger and ReDoc static assets
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+    
+    # Swagger always accessible
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
+}
+
+
+
