@@ -1,21 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaHome, FaPlay } from "react-icons/fa";
 import { HiOutlineArrowRight } from "react-icons/hi";
-import { FiX } from "react-icons/fi"; // ADDED: Close Icon for the modal
+import { FiX } from "react-icons/fi";
+import { useSearchParams } from "react-router-dom"; 
 import { categories, solutionsData } from "../data/SolutionsPageData";
+import { Link } from "react-router-dom";
 
 const Solutions = () => {
-  const [activeTab, setActiveTab] = useState("All");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
 
+  const urlCategory = searchParams.get("category") || "All";
+  const [activeTab, setActiveTab] = useState(urlCategory);
+
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedVideo, setSelectedVideo] = useState(null);
+
+  const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const itemsPerPage = 6;
 
+  useEffect(() => {
+    setActiveTab(urlCategory);
+    setCurrentPage(1);
+  }, [urlCategory]);
+
+  useEffect(() => {
+    const fetchSolutions = async () => {
+      setIsLoading(true);
+      try {
+        
+
+        const result = await new Promise((resolve) =>
+          setTimeout(() => resolve(solutionsData), 500),
+        );
+
+        setData(result);
+      } catch (error) {
+        console.error("Failed to fetch solutions:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSolutions();
+  }, []);
+
   const filteredSolutions =
     activeTab === "All"
-      ? solutionsData
-      : solutionsData.filter((solution) => solution.category === activeTab);
+      ? data
+      : data.filter((solution) => solution.category === activeTab);
 
   const totalPages = Math.ceil(filteredSolutions.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -29,6 +63,7 @@ const Solutions = () => {
   const handleTabChange = (category) => {
     setActiveTab(category);
     setCurrentPage(1);
+    setSearchParams({ category: category });
   };
 
   const closeModal = () => setSelectedVideo(null);
@@ -50,7 +85,9 @@ const Solutions = () => {
 
       <div className="max-w-7xl mx-auto px-6 mt-6 mb-8">
         <div className="flex items-center gap-2 text-sm text-gray-500">
+          <Link to={"/"} >
           <FaHome className="text-[#da0e19] text-lg cursor-pointer" />
+          </Link>
           <span className="cursor-pointer hover:text-[#da0e19]">Solutions</span>
         </div>
       </div>
@@ -78,8 +115,12 @@ const Solutions = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 mb-16 relative z-10">
-        {currentSolutions.length > 0 ? (
+      <div className="max-w-7xl mx-auto px-6 mb-16 relative z-10 min-h-[300px]">
+        {isLoading ? (
+          <div className="flex justify-center items-center h-40">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#da0e19]"></div>
+          </div>
+        ) : currentSolutions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
             {currentSolutions.map((solution) => (
               <div
@@ -113,7 +154,7 @@ const Solutions = () => {
                   </div>
                 </div>
                 <h3
-                  className={`text-[1.05rem] font-bold leading-snug px-1 text-gray-800 group-hover:text-[#da0e19] transition-colors"}`}
+                  className={`text-[1.05rem] font-bold leading-snug px-1 text-gray-800 group-hover:text-[#da0e19] transition-colors`}
                 >
                   {solution.title}
                 </h3>
@@ -128,7 +169,7 @@ const Solutions = () => {
       </div>
 
       {/* PAGINATION */}
-      {totalPages > 1 && (
+      {!isLoading && totalPages > 1 && (
         <div className="flex justify-center items-center gap-6 pb-20">
           {Array.from({ length: totalPages }, (_, index) => (
             <button
@@ -160,6 +201,7 @@ const Solutions = () => {
         </div>
       )}
 
+      {/* VIDEO MODAL */}
       {selectedVideo && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-10">
           <div
