@@ -29,7 +29,6 @@ export const mainCategories = [
   },
 ];
 
-// 2. MENU STRUCTURE & TABS (Used by Header and Product Detail Tabs)
 export const productMenu = [
   {
     title: "Control Technology",
@@ -82,14 +81,10 @@ export const productMenu = [
       },
     ],
   },
-  // Add other categories (Servo Drive, Motor, VFDs) following this exact same pattern...
 ];
 
-// 3. BULK PRODUCTS DATA (The actual cards shown at the bottom)
 export const productsBulkData = [
-  // ==========================================
-  // CONTROL TECHNOLOGY
-  // ==========================================
+
 
   // Q-Series (PAC/IPC)
   {
@@ -125,7 +120,6 @@ export const productsBulkData = [
     isNew: true,
   },
 
-  // M-Series (PLC)
   {
     id: 110,
     series: "m-series",
@@ -159,7 +153,6 @@ export const productsBulkData = [
     isNew: true,
   },
 
-  // IO Modules
   {
     id: 120,
     series: "q-module",
@@ -225,11 +218,6 @@ export const productsBulkData = [
     isNew: true,
   },
 
-  // ==========================================
-  // HMI (Human Machine Interface)
-  // ==========================================
-
-  // V100 Series
   {
     id: 201,
     series: "v100",
@@ -255,7 +243,6 @@ export const productsBulkData = [
     isNew: false,
   },
 
-  // V300 Series
   {
     id: 210,
     series: "v300",
@@ -289,11 +276,7 @@ export const productsBulkData = [
     isNew: true,
   },
 
-  // ==========================================
-  // SERVO DRIVES
-  // ==========================================
 
-  // Single Axis
   {
     id: 301,
     series: "730",
@@ -361,7 +344,6 @@ export const productsBulkData = [
     isNew: false,
   },
 
-  // Multi-Axis
   {
     id: 330,
     series: "730w",
@@ -387,11 +369,7 @@ export const productsBulkData = [
     isNew: true,
   },
 
-  // ==========================================
-  // SERVO MOTORS
-  // ==========================================
 
-  // X0 Motor (Micro)
   {
     id: 401,
     series: "x0-motor",
@@ -425,7 +403,6 @@ export const productsBulkData = [
     isNew: false,
   },
 
-  // X2 Motor (Medium)
   {
     id: 410,
     series: "x2-motor",
@@ -459,7 +436,6 @@ export const productsBulkData = [
     isNew: false,
   },
 
-  // X6 Motor (High Torque)
   {
     id: 420,
     series: "x6-motor",
@@ -484,10 +460,6 @@ export const productsBulkData = [
     img: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80",
     isNew: false,
   },
-
-  // ==========================================
-  // VFDs (Variable Frequency Drives)
-  // ==========================================
 
   // E600 Series
   {
