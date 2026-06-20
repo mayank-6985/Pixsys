@@ -25,6 +25,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1",
     "http://localhost:5173",
     "https://pixsysglobal.com",
+    "https://pixsys.onrender.com"
 ]
 
 # csrf setup
@@ -33,7 +34,8 @@ CSRF_ALLOWED_ORIGINS = [
     "https://tragicomical-epileptically-davin.ngrok-free.dev",
     "http://localhost",
     "http://127.0.0.1",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "https://pixsys.onrender.com"
 ]
 
 
