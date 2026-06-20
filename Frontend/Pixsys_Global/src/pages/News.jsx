@@ -22,16 +22,23 @@ const News = () => {
     const years = newsData
       .map((item) => item.date?.split("-")[0])
       .filter(Boolean);
-    return ["All", ...new Set(years)];
+    const uniqueSortedYears = [...new Set(years)].sort((a, b) => b - a);
+    return ["All", ...uniqueSortedYears];
   }, [newsData]);
 
   const filteredNews = useMemo(() => {
+    if (!Array.isArray(newsData)) return [];
+
     return newsData.filter((article) => {
       const matchYear =
-        selectedYear === "All" || article.date.startsWith(selectedYear);
-      const matchSearch = article.heading
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+        selectedYear === "All" ||
+        (article.date && article.date.startsWith(selectedYear));
+
+      const matchSearch =
+        !searchQuery ||
+        (article.heading &&
+          article.heading.toLowerCase().includes(searchQuery.toLowerCase()));
+
       return matchYear && matchSearch;
     });
   }, [newsData, selectedYear, searchQuery]);
@@ -41,12 +48,12 @@ const News = () => {
     searchQuery === "" &&
     currentPage === 1 &&
     activeTab === "News";
-  const featuredArticles = isDefaultView
-    ? filteredNews.filter((item) => item.isFeatured)
-    : [];
+  const sortedNews = [...filteredNews].sort(
+    (a, b) => new Date(b.date || 0) - new Date(a.date || 0),
+  );
 
-  const gridArticles = filteredNews.filter((item) => !item.isFeatured);
-
+  const featuredArticles = sortedNews.slice(0, 5);
+  const gridArticles = sortedNews;
   const totalPages = Math.ceil(gridArticles.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -179,14 +186,11 @@ const News = () => {
               }}
               className="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 px-4 pr-8 rounded focus:outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] cursor-pointer text-sm"
             >
-              <option value="All">Select Year</option>
-              {availableYears
-                .filter((y) => y !== "All")
-                .map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
+              {availableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year === "All" ? "All Years" : year}
+                </option>
+              ))}
             </select>
             <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
