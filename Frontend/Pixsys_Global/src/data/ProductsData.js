@@ -75,7 +75,6 @@ export const productMenu = [
         bannerImg:
           "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80",
         links: [
-          { name: "V100 series", path: "v100" },
           { name: "V300 series", path: "v300" },
         ],
       },

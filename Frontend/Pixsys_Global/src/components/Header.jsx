@@ -1,4 +1,4 @@
-import { useState, useEffect ,useRef} from "react";
+import { useState, useEffect, useRef } from "react";
 import { BiMenu, BiSearch } from "react-icons/bi";
 import { FaXmark } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
@@ -303,21 +303,21 @@ const Header = () => {
           </button>
 
           <div
-            className={`absolute top-full left-0 w-full bg-zinc-900 border-b-4 border-[#da0e19] transition-all duration-300 z-50 ${
+            className={`absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 transition-all duration-300 z-50 ${
               isSearchOpen
                 ? "opacity-100 visible translate-y-0"
                 : "opacity-0 invisible -translate-y-2"
             }`}
           >
-            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 flex justify-center items-center">
-              <div className="flex text-lg text-white py-3 px-4 border-2 border-zinc-700 bg-zinc-800 items-center w-full max-w-2xl focus-within:border-[#da0e19] transition-colors rounded-none">
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4 flex justify-center items-center">
+              <div className="flex text-lg text-gray-900 py-2 px-4 border border-slate-300 rounded-md items-center w-full max-w-2xl focus-within:border-[#da0e19] transition-colors">
                 <input
-                  className="outline-none font-mono text-sm w-full pr-4 bg-transparent placeholder-zinc-500"
+                  className="outline-none font-light w-full pr-4 bg-transparent"
                   type="text"
-                  placeholder="  ENTER SEARCH QUERY..."
+                  placeholder="Search Keyword..."
                   autoFocus={isSearchOpen}
                 />
-                <button className="text-[#da0e19] hover:text-white transition-colors flex-shrink-0 cursor-pointer">
+                <button className="text-gray-400 hover:text-[#da0e19] transition-colors flex-shrink-0 cursor-pointer">
                   <BiSearch size={24} />
                 </button>
               </div>

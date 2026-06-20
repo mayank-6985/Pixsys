@@ -4,6 +4,7 @@ import { FiSearch, FiChevronDown } from "react-icons/fi";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { newsData } from "../data/newsPageData";
 import { Link } from "react-router-dom";
+import { useNews } from "../hooks/useNews";
 
 const tabs = ["News", "Events", "Newsletter"];
 
@@ -15,22 +16,25 @@ const News = () => {
   const itemsPerPage = 6;
 
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { data: newsData = [], isLoading, isError, error, refetch } = useNews();
 
-  const availableYears = [
-    "All",
-    ...new Set(newsData.map((item) => item.date.split("-")[0])),
-  ];
+  const availableYears = useMemo(() => {
+    const years = newsData
+      .map((item) => item.date?.split("-")[0])
+      .filter(Boolean);
+    return ["All", ...new Set(years)];
+  }, [newsData]);
 
   const filteredNews = useMemo(() => {
     return newsData.filter((article) => {
       const matchYear =
         selectedYear === "All" || article.date.startsWith(selectedYear);
-      const matchSearch = article.title
+      const matchSearch = article.heading
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
       return matchYear && matchSearch;
     });
-  }, [selectedYear, searchQuery]);
+  }, [newsData, selectedYear, searchQuery]);
 
   const isDefaultView =
     selectedYear === "All" &&
@@ -63,6 +67,27 @@ const News = () => {
     return () => clearInterval(interval);
   }, [featuredArticles.length]);
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading latest news...
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="text-red-500">Failed to load news: {error?.message}</p>
+        <button
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-[#da0e19] text-white rounded"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
       <section className="relative w-full h-[400px] bg-gray-900 flex flex-col justify-between pt-24">
@@ -93,14 +118,14 @@ const News = () => {
               >
                 {featuredArticles.map((article) => (
                   <Link
-                    to={`/news/${article.id}`}
-                    key={article.id}
+                    to={`/news/${article.news_id}`}
+                    key={article.news_id}
                     className="w-full flex-shrink-0 grid grid-cols-1 lg:grid-cols-2 min-h-[350px]"
                   >
                     <div className="w-full h-[250px] lg:h-full">
                       <img
                         src={article.image}
-                        alt={article.title}
+                        alt={article.heading}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -110,7 +135,7 @@ const News = () => {
                         {article.date.replace(/-/g, ".")}
                       </div>
                       <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
-                        {article.title}
+                        {article.heading}
                       </h2>
                       <p className="text-gray-500 leading-relaxed mb-8">
                         {article.excerpt}
@@ -185,14 +210,14 @@ const News = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 mb-16">
             {currentGridItems.map((article) => (
               <Link
-                to={`/news/${article.id}`}
-                key={article.id}
+                to={`/news/${article.news_id}`}
+                key={article.news_id}
                 className="group cursor-pointer flex flex-col"
               >
                 <div className="w-full h-[220px] rounded overflow-hidden bg-gray-200 mb-4 shadow-sm group-hover:shadow-md transition-shadow">
                   <img
                     src={article.image}
-                    alt={article.title}
+                    alt={article.heading}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 </div>
@@ -201,7 +226,7 @@ const News = () => {
                   {article.date.replace(/-/g, ".")}
                 </div>
                 <h3 className="text-[1.05rem] font-bold leading-snug text-gray-800 group-hover:text-[#da0e19] transition-colors">
-                  {article.title}
+                  {article.heading}
                 </h3>
               </Link>
             ))}

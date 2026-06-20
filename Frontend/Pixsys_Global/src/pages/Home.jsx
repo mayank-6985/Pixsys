@@ -24,7 +24,8 @@ const Home = () => {
     <div>
       <section className="relative w-full bg-offwhite flex flex-col justify-center items-center overflow-hidden">
         <div className="relative w-full h-[60vh] lg:h-[80vh]">
-          <ImageSlider slides={sliderData} />
+          {/* <ImageSlider slides={sliderData} /> */}
+          <ImageSlider />
         </div>
       </section>
       <ProductsSection />
