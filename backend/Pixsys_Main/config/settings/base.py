@@ -15,7 +15,7 @@ SECRET_KEY = config('SECRET_KEY')
 # Application definition
 
 INSTALLED_APPS = [
-    'django.middleware.gzip.GZipMiddleware',
+  
     'config.apps.MongoAdminConfig',
     'config.apps.MongoAuthConfig',
     'config.apps.MongoContentTypesConfig',
@@ -33,6 +33,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django.middleware.gzip.GZipMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
