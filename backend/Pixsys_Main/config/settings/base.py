@@ -15,6 +15,7 @@ SECRET_KEY = config('SECRET_KEY')
 # Application definition
 
 INSTALLED_APPS = [
+    'django.middleware.gzip.GZipMiddleware',
     'config.apps.MongoAdminConfig',
     'config.apps.MongoAuthConfig',
     'config.apps.MongoContentTypesConfig',
