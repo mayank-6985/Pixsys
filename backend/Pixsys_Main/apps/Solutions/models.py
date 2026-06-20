@@ -2,6 +2,7 @@ from django.db import models
 from ..Utils.Counter_Service.services import CounterServices
 
 
+
 class SolutionsCategoryModel(models.Model):
     category_id = models.BigIntegerField()
     category_name = models.CharField(max_length=50)
@@ -9,7 +10,11 @@ class SolutionsCategoryModel(models.Model):
     
     class Meta:
         db_table = "Solutions_Category_Table"
-    
+        # Explicit indexes (Optional here since primary_key handles it)
+        indexes = [
+            models.Index(fields=['category_name'], name='category_name_idx'),
+            models.Index(fields=['category_id'], name='category_id_idx'),
+        ]
     def __str__(self):
         return f"{self.category_id}"
     
@@ -20,7 +25,8 @@ class SolutionsCategoryModel(models.Model):
         return super().save(*args, **kwargs)
     
 class SolutionsModel(models.Model):
-    category = models.OneToOneField(SolutionsCategoryModel , on_delete=models.CASCADE , related_name="solutions")
+    # Use ForeignKey to allow one category to have many solutions (1:N)
+    category = models.ForeignKey(SolutionsCategoryModel , on_delete=models.CASCADE , related_name="solutions")
     solutions_id = models.BigIntegerField()
     title = models.CharField(max_length=100)
     thumbnail = models.URLField()
@@ -28,7 +34,10 @@ class SolutionsModel(models.Model):
     
     class Meta:
         db_table = "Solutions_Table"
-    
+        indexes = [
+            models.Index(fields=['solutions_id'], name='solutions_id_idx'),
+        ]
+        
     def __str__(self):
         return f"{self.solutions_id}"
     

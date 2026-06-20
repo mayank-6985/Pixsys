@@ -22,7 +22,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://unsettled-manual-dynasty.ngrok-free.dev",
     "https://tragicomical-epileptically-davin.ngrok-free.dev",
     "http://localhost",
-    "http://127.0.0.1"
+    "http://127.0.0.1",
+    "http://localhost:5173",
+    "https://pixsysglobal.com",
 ]
 
 # csrf setup
@@ -30,10 +32,16 @@ CSRF_ALLOWED_ORIGINS = [
     "https://unsettled-manual-dynasty.ngrok-free.dev",
     "https://tragicomical-epileptically-davin.ngrok-free.dev",
     "http://localhost",
-    "http://127.0.0.1"
+    "http://127.0.0.1",
+    "http://localhost:5173"
 ]
 
 
+from corsheaders.defaults import default_headers
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    'ngrok-skip-browser-warning',
+) 
 
 
 
