@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'apps.News',
     'apps.Utils',
     'apps.Solutions',
+    'apps.Products',
 ]
 
 MIDDLEWARE = [
