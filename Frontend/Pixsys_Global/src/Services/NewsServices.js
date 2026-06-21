@@ -10,3 +10,14 @@ export const fetchNews = async () => {
     );
   }
 };
+
+export const fetchNewsById = async (id) => {
+  try {
+    const response = await api.get(`news/${id}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to fetch article details.",
+    );
+  }
+};
