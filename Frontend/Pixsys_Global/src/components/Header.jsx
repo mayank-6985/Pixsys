@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { BiMenu, BiSearch } from "react-icons/bi";
 import { FaXmark } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
 import { MdKeyboardArrowRight, MdKeyboardArrowDown } from "react-icons/md";
-import { categories } from "../data/SolutionsPageData";
+import { useSolutions } from "../hooks/useSolutions";
 import { productMenu } from "../data/ProductsData";
 
 const Header = () => {
@@ -13,6 +13,12 @@ const Header = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [expandedMenus, setExpandedMenus] = useState({});
   const circleRef = useRef(null);
+  const { data: solutionsData = [] } = useSolutions();
+
+  const derivedCategories = useMemo(() => {
+    if (!Array.isArray(solutionsData)) return [];
+    return solutionsData.map((cat) => cat.category_name).filter(Boolean);
+  }, [solutionsData]);
 
   useEffect(() => {
     let ticking = false;
@@ -168,10 +174,10 @@ const Header = () => {
                   }`}
                 />
               </Link>
-              <div className="absolute top-full left-0 w-full bg-[#f8f9fa] border-b-4 border-zinc-900 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="absolute top-full left-0 w-full bg-[#f8f9fa]  shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 py-8 flex justify-center gap-8 items-center">
                   <div className="flex flex-wrap justify-center gap-12 text-sm font-bold text-zinc-900 p-3">
-                    {categories
+                    {derivedCategories
                       .filter((category) => category !== "All")
                       .map((category) => (
                         <Link
@@ -327,7 +333,7 @@ const Header = () => {
       </div>
 
       <div
-        className={`lg:hidden absolute w-full left-0 bg-white shadow-2xl overflow-y-auto transition-all duration-[500ms] ease-in-out border-b-4 border-zinc-900 ${
+        className={`lg:hidden absolute w-full left-0 bg-white shadow-2xl overflow-y-auto transition-all duration-[500ms] ease-in-out  ${
           isMenuOpen ? "max-h-[85vh] opacity-100 pb-10" : "max-h-0 opacity-0"
         }`}
       >
@@ -416,18 +422,45 @@ const Header = () => {
             )}
           </div>
 
-          <Link
-            to="/solutions"
-            className="flex justify-between items-center py-5 px-6 border-b border-zinc-200 hover:bg-zinc-50 transition-colors"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            <span
-              className={`font-bold text-sm uppercase tracking-wider ${isActive("/solutions") ? "text-[#da0e19]" : "text-zinc-900"}`}
+          <div className="w-full border-b border-zinc-200">
+            <div
+              className="flex justify-between items-center py-5 px-6 cursor-pointer hover:bg-zinc-50"
+              onClick={() => toggleSubMenu("solutions")}
             >
-              Solutions
-            </span>
-            <MdKeyboardArrowRight className="text-zinc-400 text-xl" />
-          </Link>
+              <span
+                className={`font-bold text-sm uppercase tracking-wider ${isActive("/solutions") ? "text-[#da0e19]" : "text-zinc-900"}`}
+              >
+                Solutions
+              </span>
+              <span className="text-zinc-400">
+                {expandedMenus["solutions"] ? (
+                  <FaXmark />
+                ) : (
+                  <MdKeyboardArrowDown className="text-xl" />
+                )}
+              </span>
+            </div>
+
+            {expandedMenus["solutions"] && (
+              <div className="w-full bg-[#f8f9fa] border-t border-zinc-200">
+                {derivedCategories
+                  .filter((category) => category !== "All")
+                  .map((category) => (
+                    <Link
+                      key={category}
+                      to={`/solutions?category=${category}`}
+                      className="flex justify-between items-center py-4 pl-10 pr-6 border-b border-zinc-200 cursor-pointer transition-colors hover:bg-white"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <span className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500 hover:text-[#da0e19] transition-colors">
+                        {category}
+                      </span>
+                      <MdKeyboardArrowRight className="text-zinc-300" />
+                    </Link>
+                  ))}
+              </div>
+            )}
+          </div>
 
           <Link
             to="/about"
