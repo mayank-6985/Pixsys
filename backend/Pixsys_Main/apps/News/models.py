@@ -9,6 +9,10 @@ class NewsModel(models.Model):
 
     class Meta:
         db_table='News_Table'
+        # Explicit indexes (Optional here since primary_key handles it)
+        indexes = [
+            models.Index(fields=['news_id'], name='news_id_idx'),
+        ]
     
     def __str__(self):
         return f"{self.date} - {self.heading}"
