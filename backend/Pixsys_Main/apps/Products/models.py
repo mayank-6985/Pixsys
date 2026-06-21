@@ -38,8 +38,7 @@ class ProductSubCategoryModel(models.Model):
     
     class Meta:
         db_table = "Product_SubCategory_Table"        
-        indexes = [
-            models.Index(fields=["category"]),
+        indexes = [    
             models.Index(fields=["subcategory_id"])
         ]
 
@@ -83,8 +82,7 @@ class TagModel(models.Model):
         ordering = ["name"]
         indexes = [
             # Speeds up "list all tags under SubCategory X" - the core
-            # query for the SubCategory listing page.
-            models.Index(fields=["subcategory"]),
+            # query for the SubCategory listing page.            
             models.Index(fields=["tag_id"]),
         ]
  
@@ -138,10 +136,16 @@ class ProductModel(models.Model):
         indexes = [
             # Speeds up "list all products under Tag X" - the core
             # query for the Tag listing page (the final step before
-            # the product detail page).
-            models.Index(fields=["tag"]),
+            # the product detail page).            
             models.Index(fields=["product_id"]),
         ]
+        db_table = "Product_Table"
  
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.product_id:
+            product_id = CounterServices.get_next_sequence("product")
+            self.product_id = product_id
+        return super().save(*args, **kwargs)
