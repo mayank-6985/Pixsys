@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { FaHome, FaPlay } from "react-icons/fa";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { FiX } from "react-icons/fi";
-import { useSearchParams } from "react-router-dom"; 
-import { categories, solutionsData } from "../data/SolutionsPageData";
+import { useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { useSolutions } from "../hooks/useSolutions";
 
 const Solutions = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,7 +16,14 @@ const Solutions = () => {
   const [selectedVideo, setSelectedVideo] = useState(null);
 
   const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const {
+    data: solutionsData = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useSolutions();
 
   const itemsPerPage = 6;
 
@@ -25,48 +32,63 @@ const Solutions = () => {
     setCurrentPage(1);
   }, [urlCategory]);
 
-  useEffect(() => {
-    const fetchSolutions = async () => {
-      setIsLoading(true);
-      try {
-        
+  const filteredSolutions = useMemo(() => {
+    if (!Array.isArray(solutionsData)) return [];
+    if (activeTab === "All") {
+      return solutionsData.flatMap((category) => category.solutions || []);
+    }
+    const selectedCategory = solutionsData.find(
+      (cat) => cat.category_name === activeTab,
+    );
+    return selectedCategory?.solutions || [];
+  }, [solutionsData, activeTab]);
 
-        const result = await new Promise((resolve) =>
-          setTimeout(() => resolve(solutionsData), 500),
-        );
+  const derivedCategories = useMemo(() => {
+    if (!Array.isArray(solutionsData)) return ["All"];
+    const cats = solutionsData.map((cat) => cat.category_name).filter(Boolean);
+    return ["All", ...cats];
+  }, [solutionsData]);
 
-        setData(result);
-      } catch (error) {
-        console.error("Failed to fetch solutions:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSolutions();
-  }, []);
-
-  const filteredSolutions =
-    activeTab === "All"
-      ? data
-      : data.filter((solution) => solution.category === activeTab);
-
-  const totalPages = Math.ceil(filteredSolutions.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 
-  const currentSolutions = filteredSolutions.slice(
-    indexOfFirstItem,
-    indexOfLastItem,
-  );
+  const currentSolutions = useMemo(() => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    return filteredSolutions.slice(indexOfFirstItem, indexOfLastItem);
+  }, [filteredSolutions, currentPage]);
 
   const handleTabChange = (category) => {
     setActiveTab(category);
     setCurrentPage(1);
     setSearchParams({ category: category });
   };
+  const totalPages = Math.ceil(filteredSolutions.length / itemsPerPage);
 
   const closeModal = () => setSelectedVideo(null);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading solutions...
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="text-red-500">
+          Failed to load solutions: {error?.message}
+        </p>
+        <button
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-[#da0e19] text-white rounded"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white relative">
@@ -85,8 +107,8 @@ const Solutions = () => {
 
       <div className="max-w-7xl mx-auto px-6 mt-6 mb-8">
         <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Link to={"/"} >
-          <FaHome className="text-[#da0e19] text-lg cursor-pointer" />
+          <Link to={"/u"}>
+            <FaHome className="text-[#da0e19] text-lg cursor-pointer" />
           </Link>
           <span className="cursor-pointer hover:text-[#da0e19]">Solutions</span>
         </div>
@@ -94,7 +116,7 @@ const Solutions = () => {
 
       <div className="max-w-7xl mx-auto px-6 mb-12">
         <div className="flex items-center gap-8 border-b border-gray-200 overflow-x-auto whitespace-nowrap pb-0">
-          {categories.map((category) => (
+          {derivedCategories.map((category) => (
             <button
               key={category}
               onClick={() => handleTabChange(category)}
@@ -124,33 +146,24 @@ const Solutions = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
             {currentSolutions.map((solution) => (
               <div
-                key={solution.id}
+                key={solution.solutions_id}
                 className="group cursor-pointer flex flex-col"
                 onClick={() => setSelectedVideo(solution)}
               >
                 <div className="relative h-[220px] rounded-xl overflow-hidden shadow-lg mb-4">
                   <img
-                    src={solution.img}
-                    alt={solution.imageTitle}
+                    src={solution.thumbnail}
+                    alt={solution.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-black/30"></div>
                   <div className="absolute top-4 left-4 text-white text-xs font-bold tracking-wider z-10">
-                    <span className="italic font-extrabold mr-1">HCFA</span> |
-                    Industrial Insights
+                    {solution.title}
                   </div>
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                     <div className="w-14 h-14 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:bg-white/40 transition-colors">
                       <FaPlay className="text-white text-lg ml-1" />
                     </div>
-                  </div>
-                  <div className="absolute bottom-10 left-4 right-4 z-10">
-                    <p className="text-gray-200 text-[10px] mb-1">
-                      {solution.imageText}
-                    </p>
-                    <p className="text-white font-bold text-sm leading-tight">
-                      {solution.imageTitle}
-                    </p>
                   </div>
                 </div>
                 <h3
@@ -218,10 +231,7 @@ const Solutions = () => {
             </button>
 
             <video
-              src={
-                selectedVideo.videoUrl ||
-                "https://www.w3schools.com/html/mov_bbb.mp4"
-              }
+              src={selectedVideo.videoUrl}
               controls
               autoPlay
               className="w-full h-auto aspect-video outline-none"

@@ -3,7 +3,6 @@ import { FiAlertCircle } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 const SomethingWentWrong = ({ error, resetErrorBoundary }) => {
-  // If no specific reset function is passed, default to refreshing the page
   const handleReload = () => {
     if (resetErrorBoundary) {
       resetErrorBoundary();
@@ -16,12 +15,10 @@ const SomethingWentWrong = ({ error, resetErrorBoundary }) => {
     <div className="min-h-[60vh] w-full flex flex-col items-center justify-center p-6 bg-[#fafafa]">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center md:p-10">
         
-        {/* Error Icon */}
         <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
           <FiAlertCircle className="text-4xl text-[#da0e19]" />
         </div>
         
-        {/* Text Content */}
         <h2 className="text-2xl font-bold text-gray-900 mb-3">
           Oops! Something went wrong.
         </h2>
@@ -30,7 +27,6 @@ const SomethingWentWrong = ({ error, resetErrorBoundary }) => {
             "We encountered an unexpected error while trying to load this page. Please try again or return to the homepage."}
         </p>
         
-        {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             onClick={handleReload}
