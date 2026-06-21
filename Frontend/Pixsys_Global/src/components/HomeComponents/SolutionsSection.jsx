@@ -3,8 +3,11 @@ import { Link } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
 import { solutionsData } from "../../data/homeData";
 import ScrollReveal from "../ScrollReveal";
+import { useSolutions } from "../../hooks/useSolutions";
 
 const SolutionsSection = () => {
+  const { data: CategoriesData = [], isLoading, isError } = useSolutions();
+
   return (
     <section className="bg-[#f8f9fa] py-24 lg:py-32 w-full border-t border-zinc-200 ">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
@@ -32,15 +35,15 @@ const SolutionsSection = () => {
         </ScrollReveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {solutionsData.map((solution, index) => (
+          {CategoriesData.map((category, index) => (
             <ScrollReveal
-              key={solution.id}
+              key={category.category_id}
               delay={index * 100}
               direction="up"
               className="h-full"
             >
               <Link
-                to={solution.link}
+                to={`/solutions?category=${category.category_name}`}
                 className="group flex flex-col h-full bg-white border border-zinc-200 hover:border-transparent hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] transition-all duration-500 relative"
               >
                 <div className="absolute top-0 left-0 w-full h-1 bg-transparent group-hover:bg-[#da0e19] transition-colors duration-500 z-20"></div>
@@ -48,8 +51,8 @@ const SolutionsSection = () => {
                 <div className="w-full h-[300px] relative overflow-hidden bg-zinc-100">
                   <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
                   <img
-                    src={solution.image}
-                    alt={solution.title}
+                    src={category.thumbnail}
+                    alt={category.category_name}
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-[800ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
                   />
                 </div>
@@ -63,7 +66,7 @@ const SolutionsSection = () => {
                   </div>
 
                   <h4 className="text-2xl font-black text-zinc-900 uppercase tracking-tight mb-8 group-hover:text-[#da0e19] transition-colors duration-300">
-                    {solution.title}
+                    {category.category_name}
                   </h4>
 
                   <div className="mt-auto flex items-center justify-between">
