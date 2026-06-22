@@ -4,6 +4,8 @@ import {
   RouterProvider,
   Outlet,
   Links,
+  isRouteErrorResponse,
+  useRouteError,
 } from "react-router-dom";
 import MainLayout from "./Layouts/MainLayout";
 import Home from "./pages/Home";
@@ -15,11 +17,26 @@ import News from "./pages/News";
 import Download from "./pages/Download";
 import NewsDetail from "./pages/NewsDetail";
 
+const rootErrorBoundary = () => {
+  const error = useRouteError();
+  if (isRouteErrorResponse(error) && error.status === 404) {
+    return <PageNotFound />;
+  }
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-red-50 text-red-900 p-8">
+      <h1 className="text-2xl font-bold mb-4">Component Crash Detected!</h1>
+      <pre className="bg-white p-4 border border-red-200 rounded shadow-sm">
+        {error.message || JSON.stringify(error)}
+      </pre>
+    </div>
+  );
+};
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />,
-    errorElement: <PageNotFound />,
+    errorElement: <rootErrorBoundaryx />,
     children: [
       { index: true, element: <Home /> },
       { path: "/products", element: <Products /> },
@@ -28,6 +45,7 @@ const router = createBrowserRouter([
       { path: "/news", element: <News /> },
       { path: "/news/:id", element: <NewsDetail /> },
       { path: "/download", element: <Download /> },
+      { path: "*", element: <PageNotFound /> },
     ],
   },
 ]);

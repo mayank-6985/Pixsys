@@ -208,16 +208,16 @@ const Solutions = () => {
             <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
                 <tr className="bg-gray-50/80 border-b border-gray-200 text-gray-600 text-sm font-semibold tracking-wide">
-                  <th className="py-4 px-6 w-24">Cat ID</th>
+                  <th className="py-4 px-6 w-24">Sr.</th>
                   <th className="py-4 px-6">Category Name</th>
                   <th className="py-4 px-6 w-32 text-center">Solutions</th>
                   <th className="py-4 px-6 text-right w-32">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {categoriesList.map((item) => (
+                {categoriesList.map((item,index) => (
                   <tr key={item.category_id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors group">
-                    <td className="py-4 px-6 text-gray-500 font-mono text-sm">#{item.category_id}</td>
+                    <td className="py-4 px-6 text-gray-500 font-mono text-sm">{index+1}</td>
                     <td className="py-4 px-6 text-gray-900 font-medium">{item.category_name}</td>
                     <td className="py-4 px-6 text-gray-500 text-sm text-center">{item.solutionCount}</td>
                     <td className="py-4 px-6 flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
@@ -232,16 +232,16 @@ const Solutions = () => {
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
                 <tr className="bg-gray-50/80 border-b border-gray-200 text-gray-600 text-sm font-semibold tracking-wide">
-                  <th className="py-4 px-6 w-24">Sol ID</th>
+                  <th className="py-4 px-6 w-24">Sr.</th>
                   <th className="py-4 px-6">Category</th>
                   <th className="py-4 px-6">Title</th>
                   <th className="py-4 px-6 text-right w-32">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {solutionsList.map((item) => (
+                {solutionsList.map((item,index) => (
                   <tr key={item.solutions_id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors group">
-                    <td className="py-4 px-6 text-gray-500 font-mono text-sm">#{item.solutions_id}</td>
+                    <td className="py-4 px-6 text-gray-500 font-mono text-sm">{index+1}</td>
                     <td className="py-4 px-6 text-gray-500 text-sm"><span className="px-2 py-1 bg-gray-100 rounded-md">{item.category_name}</span></td>
                     <td className="py-4 px-6 text-gray-900 font-medium">{item.title}</td>
                     <td className="py-4 px-6 flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">

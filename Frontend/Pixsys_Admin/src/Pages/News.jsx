@@ -19,7 +19,6 @@ const initialFormState = {
 };
 
 const News = () => {
-  // --- STATE ---
   const [view, setView] = useState("list");
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState(initialFormState);
@@ -65,19 +64,25 @@ const News = () => {
   const handleBasicChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
-
   const handleContentChange = (index, field, value) => {
-    const newContent = [...formData.content];
-    newContent[index][field] = value;
-    if (field === "type") {
-      if (value === "text") {
-        newContent[index].url = "";
-        newContent[index].caption = "";
-      } else {
-        newContent[index].description = "";
-      }
-    }
-    setFormData((prev) => ({ ...prev, content: newContent }));
+    setFormData((prev) => {
+      const newContent = prev.content.map((block, i) => {
+        if (i !== index) return block;
+
+        const updatedBlock = { ...block, [field]: value };
+        if (field === "type") {
+          if (value === "text") {
+            updatedBlock.url = "";
+            updatedBlock.caption = "";
+          } else if (value === "image") {
+            updatedBlock.description = "";
+          }
+        }
+        return updatedBlock;
+      });
+
+      return { ...prev, content: newContent };
+    });
   };
 
   const addContentBlock = () => {
@@ -100,16 +105,19 @@ const News = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const cleanedContent = formData.content.map((block) => {
-      const clean = { type: block.type };
-      if (block.type === "text" && block.description)
-        clean.description = block.description;
-      if (block.type === "image") {
-        if (block.url) clean.url = block.url;
-        if (block.caption) clean.caption = block.caption;
+      if (block.type === "text") {
+        return {
+          type: "text",
+          description: block.description || "",
+        };
+      } else {
+        return {
+          type: "image",
+          url: block.url || "",
+          caption: block.caption || "",
+        };
       }
-      return clean;
     });
 
     const payload = { ...formData, content: cleanedContent };
@@ -120,7 +128,6 @@ const News = () => {
       createMutation.mutate(payload, { onSuccess: () => setView("list") });
     }
   };
-
   if (view === "list") {
     return (
       <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8 w-full">
@@ -144,20 +151,20 @@ const News = () => {
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
                   <tr className="bg-gray-50/80 border-b border-gray-200 text-gray-600 text-sm font-semibold tracking-wide">
-                    <th className="py-4 px-6 w-24">ID</th>
+                    <th className="py-4 px-6 w-24">Sr.</th>
                     <th className="py-4 px-6 w-32">Date</th>
                     <th className="py-4 px-6">Heading</th>
                     <th className="py-4 px-6 text-right w-32">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {newsList.map((item) => (
+                  {newsList.map((item,index) => (
                     <tr
                       key={item.news_id}
                       className="border-b border-gray-100 hover:bg-gray-50 transition-colors group"
                     >
                       <td className="py-4 px-6 text-gray-500 font-mono text-sm">
-                        #{item.news_id}
+                        {index+1}
                       </td>
                       <td className="py-4 px-6 text-gray-500 text-sm whitespace-nowrap">
                         {item.date}
