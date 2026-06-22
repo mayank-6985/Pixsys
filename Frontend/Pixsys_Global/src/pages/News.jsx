@@ -127,28 +127,26 @@ const News = () => {
                   <Link
                     to={`/news/${article.news_id}`}
                     key={article.news_id}
-                    className="w-full flex-shrink-0 grid grid-cols-1 lg:grid-cols-2 min-h-[350px]"
+                    className="w-full flex-shrink-0 grid grid-cols-1 lg:grid-cols-2 min-h-[350px] lg:h-[450px]"
                   >
-                    <div className="w-full h-[250px] lg:h-full">
+                    <div className="w-full h-[250px] lg:h-full overflow-hidden">
                       <img
                         src={article.thumbnail}
                         alt={article.heading}
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div className="p-8 md:p-12 flex flex-col justify-center">
-                      <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
+                    <div className="p-8 md:p-12 flex flex-col justify-center overflow-hidden ">
+                      <div className="flex items-center gap-2 text-gray-400 text-sm mb-4 shrink-0 ">
                         <span className="w-8 h-[1px] bg-gray-300"></span>
                         {article.date.replace(/-/g, ".")}
                       </div>
-                      <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
+                      <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 line-clamp-2 shrink-0 ">
                         {article.heading}
                       </h2>
-                      <p className="text-gray-500 leading-relaxed mb-8">
-                        {article.excerpt}
-                      </p>
-                      <div>
-                        <button className="inline-flex items-center gap-2 px-6 py-2.5 border border-[#da0e19] text-[#da0e19] rounded-full hover:bg-green-50 transition-colors font-medium text-sm group">
+
+                      <div className="shrink-0 mt-auto lg:mt-0">
+                        <button className="inline-flex items-center gap-2 px-6 py-2.5 border border-[#da0e19] text-[#da0e19] rounded-full hover:bg-red-50 transition-colors font-medium text-sm group">
                           Learn More
                           <HiOutlineArrowRight className="group-hover:translate-x-1 transition-transform" />
                         </button>
