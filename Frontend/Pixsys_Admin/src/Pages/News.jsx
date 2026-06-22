@@ -20,7 +20,7 @@ const initialFormState = {
 
 const News = () => {
   // --- STATE ---
-  const [view, setView] = useState("list"); 
+  const [view, setView] = useState("list");
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState(initialFormState);
   const [isFetchingDetail, setIsFetchingDetail] = useState(false);
@@ -203,7 +203,6 @@ const News = () => {
     );
   }
 
-
   return (
     <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8 w-full">
       <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -276,7 +275,7 @@ const News = () => {
                   Article Content
                 </h2>
               </div>
-              
+
               <div className="space-y-6">
                 {formData.content.map((block, index) => (
                   <div
@@ -353,10 +352,11 @@ const News = () => {
                             </div>
                             <div>
                               <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">
-                                Caption (Optional)
+                                Caption
                               </label>
                               <input
                                 type="text"
+                                required
                                 maxLength={100}
                                 value={block.caption}
                                 onChange={(e) =>
@@ -377,7 +377,7 @@ const News = () => {
                   </div>
                 ))}
               </div>
-              
+
               <button
                 type="button"
                 onClick={addContentBlock}
@@ -400,7 +400,8 @@ const News = () => {
                 disabled={createMutation.isPending || updateMutation.isPending}
                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-2.5 bg-[#da0e19] hover:bg-red-700 text-white font-bold rounded-md transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
               >
-                <FiSave size={18} /> {editingId ? "Save Changes" : "Publish News"}
+                <FiSave size={18} />{" "}
+                {editingId ? "Save Changes" : "Publish News"}
               </button>
             </div>
           </form>
@@ -409,5 +410,4 @@ const News = () => {
     </div>
   );
 };
-
 export default News;

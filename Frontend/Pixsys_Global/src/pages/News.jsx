@@ -131,7 +131,7 @@ const News = () => {
                   >
                     <div className="w-full h-[250px] lg:h-full">
                       <img
-                        src={article.image}
+                        src={article.thumbnail}
                         alt={article.heading}
                         className="w-full h-full object-cover"
                       />
@@ -220,7 +220,7 @@ const News = () => {
               >
                 <div className="w-full h-[220px] rounded overflow-hidden bg-gray-200 mb-4 shadow-sm group-hover:shadow-md transition-shadow">
                   <img
-                    src={article.image}
+                    src={article.thumbnail}
                     alt={article.heading}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
