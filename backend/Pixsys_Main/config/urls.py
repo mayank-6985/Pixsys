@@ -37,4 +37,6 @@ urlpatterns = [
     path('v1/api/solutions/' , include("apps.Solutions.urls")),
     path('v1/api/products/' , include("apps.Products.urls")),
     path('v1/api/home/' , include("apps.Home.urls")),
+    # Auth endpoints (token in cookies)
+    path('v1/api/auth/', include('apps.Auth.urls')),
 ]
