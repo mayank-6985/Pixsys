@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'apps.Utils',
     'apps.Solutions',
     'apps.Products',
+    'apps.Home',
 ]
 
 MIDDLEWARE = [
