@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { FaHome } from "react-icons/fa";
 import { useSearchParams } from "react-router-dom";
-import {
-  productMenu,
-  mainCategories,
-  productsBulkData,
-} from "../data/ProductsData";
+
+import { useProducts } from "../hooks/useProducts";
+import { productsBulkData } from "../data/ProductsData";
 
 import ProductHero from "../components/ProductsComponents/ProductHero";
 import MainCategoryGrid from "../components/ProductsComponents/MainCategoryGrid";
@@ -15,18 +13,23 @@ const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlSeries = searchParams.get("series");
   const urlCategory = searchParams.get("category");
+  const { data: productsData = [], isLoading } = useProducts();
 
   const [activeCategory, setActiveCategory] = useState(null);
   const [activeSection, setActiveSection] = useState(null);
   const [activeSeries, setActiveSeries] = useState(null);
 
   useEffect(() => {
+    if (!productsData || productsData.length === 0) return;
+
     if (urlSeries) {
-      for (const cat of productMenu) {
-        for (const sec of cat.sections) {
-          if (sec.links.some((link) => link.path === urlSeries)) {
+      for (const cat of productsData) {
+        if (!cat.subcategories) continue;
+        for (const sub of cat.subcategories) {
+          if (!sub.tags) continue;
+          if (sub.tags.some((tag) => tag.name === urlSeries)) {
             setActiveCategory(cat);
-            setActiveSection(sec);
+            setActiveSection(sub);
             setActiveSeries(urlSeries);
             return;
           }
@@ -34,21 +37,35 @@ const Products = () => {
       }
     } else if (urlCategory) {
       const cat =
-        productMenu.find((c) => c.title === urlCategory) || productMenu[0];
-      setActiveCategory(cat);
-      setActiveSection(cat.sections[0]);
-      setActiveSeries(cat.sections[0].links[0].path);
+        productsData.find((c) => c.category_name === urlCategory) ||
+        productsData[0];
+
+      if (cat) {
+        setActiveCategory(cat);
+        const firstSub = cat.subcategories?.[0];
+        setActiveSection(firstSub || null);
+        setActiveSeries(firstSub?.tags?.[0]?.name || null);
+      }
     } else {
       setActiveCategory(null);
       setActiveSection(null);
       setActiveSeries(null);
     }
-  }, [urlSeries, urlCategory]);
+  }, [urlSeries, urlCategory, productsData]);
 
   const handleBackToMain = () => setSearchParams({});
+
   const displayedProducts = productsBulkData.filter(
     (p) => p.series === activeSeries,
   );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading Products...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#fafafa] relative overflow-hidden pb-20">
@@ -69,7 +86,9 @@ const Products = () => {
           {activeCategory && (
             <>
               <span className="text-gray-400">&gt;</span>
-              <span className="text-gray-800">{activeCategory.title}</span>
+              <span className="text-gray-800">
+                {activeCategory.category_name}
+              </span>
             </>
           )}
         </div>
@@ -78,9 +97,9 @@ const Products = () => {
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         {!activeCategory ? (
           <MainCategoryGrid
-            categories={mainCategories}
-            onSelectCategory={(categoryTitle) =>
-              setSearchParams({ category: categoryTitle })
+            categories={productsData}
+            onSelectCategory={(categoryName) =>
+              setSearchParams({ category: categoryName })
             }
           />
         ) : (
@@ -89,8 +108,8 @@ const Products = () => {
             activeSection={activeSection}
             activeSeries={activeSeries}
             displayedProducts={displayedProducts}
-            onSelectSeries={(seriesPath) =>
-              setSearchParams({ series: seriesPath })
+            onSelectSeries={(seriesName) =>
+              setSearchParams({ series: seriesName })
             }
             onBack={handleBackToMain}
           />

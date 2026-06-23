@@ -3,23 +3,19 @@ import React, { useState, useEffect } from "react";
 const defaultSlides = [
   {
     id: 1,
-    image:
-      "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80",
+    image: "/PX.jpeg",
   },
   {
     id: 2,
-    image:
-      "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80",
+    image: "/VFD.jpeg",
   },
   {
     id: 3,
-    image:
-      "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80",
+    image: "/PXR7.jpeg",
   },
   {
     id: 4,
-    image:
-      "https://images.unsplash.com/photo-1588011930968-eadac80e6a5a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGluZHVzdHJpYWx8ZW58MHx8MHx8fDA%3D",
+    image: "VFD.jpeg",
   },
 ];
 
@@ -96,7 +92,7 @@ const ImageSlider = ({ slides = defaultSlides }) => {
             <img
               src={slide.image}
               alt={`Slide ${index + 1}`}
-              className="w-full h-full object-cover grayscale-[20%] pointer-events-none"
+              className="w-full h-full object-fit grayscale-[20%] pointer-events-none"
               draggable="false"
             />
           </div>

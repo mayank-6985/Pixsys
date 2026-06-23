@@ -4,7 +4,7 @@ import { FaXmark } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
 import { MdKeyboardArrowRight, MdKeyboardArrowDown } from "react-icons/md";
 import { useSolutions } from "../hooks/useSolutions";
-import { productMenu } from "../data/ProductsData";
+import { useProducts } from "../hooks/useProducts";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -13,7 +13,9 @@ const Header = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [expandedMenus, setExpandedMenus] = useState({});
   const circleRef = useRef(null);
+
   const { data: solutionsData = [] } = useSolutions();
+  const { data: productsData = [] } = useProducts();
 
   const derivedCategories = useMemo(() => {
     if (!Array.isArray(solutionsData)) return [];
@@ -30,16 +32,12 @@ const Header = () => {
           const windowHeight =
             document.documentElement.scrollHeight -
             document.documentElement.clientHeight;
-
           const scrollPercentage = totalScroll / windowHeight;
-
           setScrollProgress(scrollPercentage * 100);
-
           if (circleRef.current) {
             const offset = 88 - 88 * scrollPercentage;
             circleRef.current.style.strokeDashoffset = offset;
           }
-
           ticking = false;
         });
         ticking = true;
@@ -49,6 +47,7 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
   const toggleSubMenu = (menuKey) => {
     setExpandedMenus((prev) => ({ ...prev, [menuKey]: !prev[menuKey] }));
   };
@@ -61,28 +60,34 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white text-zinc-900 border-b border-zinc-200 sticky top-0 z-[999] w-full">
+    <header className="bg-[#e10000] text-zinc-900 border-b border-red-500 sticky top-0 z-[999] w-full">
       <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
-        <div className="flex-shrink-0">
-          <Link to="/" className="focus:outline-none block">
-            <img className="h-6 md:h-10" src="/Pixsys.png" alt="Pixsys Logo" />
+        <div className="flex-shrink-0 relative h-full flex items-center pr-6 md:pr-10">
+          <div
+            className="absolute top-0 bottom-0 left-[-100vw] right-0 bg-zinc-50 shadow-[4px_0_15px_rgba(0,0,0,0.15)] rounded-br-[40px] pointer-events-none border-b border-r border-zinc-200"
+            aria-hidden="true"
+          ></div>
+
+          <Link to="/" className="focus:outline-none block relative z-10">
+            <img
+              className="h-6 md:h-10 drop-shadow-sm"
+              src="/Pixsys.png"
+              alt="Pixsys Logo"
+            />
           </Link>
         </div>
-
         <nav className="hidden lg:flex h-full">
           <ul className="flex items-center gap-10 text-sm font-bold uppercase tracking-wider h-full">
             <li className="h-full flex items-center">
               <Link
                 to="/"
                 className={`relative h-full flex items-center transition-colors ${
-                  isActive("/")
-                    ? "text-[#da0e19]"
-                    : "text-zinc-600 hover:text-zinc-900"
+                  isActive("/") ? "text-white" : "text-white"
                 }`}
               >
                 Home
                 <div
-                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-[#da0e19] transition-transform duration-300 origin-left ${
+                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-white transition-transform duration-300 origin-left ${
                     isActive("/") ? "scale-x-100" : "scale-x-0"
                   }`}
                 />
@@ -93,14 +98,12 @@ const Header = () => {
               <Link
                 to="/products"
                 className={`relative h-full flex items-center transition-colors ${
-                  isActive("/products")
-                    ? "text-[#da0e19]"
-                    : "text-zinc-600 hover:text-zinc-900"
+                  isActive("/products") ? "text-white" : "text-white "
                 }`}
               >
                 Products
                 <div
-                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-[#da0e19] transition-transform duration-300 origin-left ${
+                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-white transition-transform duration-300 origin-left ${
                     isActive("/products") ? "scale-x-100" : "scale-x-0"
                   }`}
                 />
@@ -108,43 +111,47 @@ const Header = () => {
 
               <div className="absolute top-full left-0 w-full bg-[#f8f9fa] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 py-12 grid grid-cols-5 gap-8">
-                  {productMenu.map((column, idx) => (
+                  {productsData.map((category, idx) => (
                     <div
-                      key={idx}
+                      key={category.category_id || idx}
                       className="border-l border-zinc-200 pl-6 first:border-0 first:pl-0"
                     >
                       <Link
-                        to={`/products?category=${column.title}`}
+                        to={`/products?category=${category.category_name}`}
                         onClick={() => setIsMenuOpen(false)}
                         className="inline-block text-xl font-mono font-bold text-zinc-950 hover:text-[#da0e19] uppercase tracking-widest mb-6 transition-colors"
                       >
-                        {column.title}
+                        {category.category_name}
                       </Link>
-                      {column.sections.map((section, sIdx) => (
+
+                      {category.subcategories?.map((subcategory, sIdx) => (
                         <div
-                          key={sIdx}
+                          key={subcategory.subcategory_id || sIdx}
                           className={
-                            sIdx !== column.sections.length - 1 ? "mb-6" : ""
+                            sIdx !== category.subcategories.length - 1
+                              ? "mb-6"
+                              : ""
                           }
                         >
                           <Link
-                            to={`/products?series=${section.links[0]?.path}`}
+                            to={`/products?series=${subcategory.tags?.[0]?.name || ""}`}
                             onClick={() => setIsMenuOpen(false)}
                             className="inline-block text-zinc-900 hover:text-[#da0e19] font-bold uppercase text-sm mb-3 transition-colors"
                           >
-                            {section.subtitle}
+                            {subcategory.name}
                           </Link>
+
                           <ul className="space-y-2">
-                            {section.links.map((link, lIdx) => (
-                              <li key={lIdx}>
+                            {subcategory.tags?.map((tag, lIdx) => (
+                              <li key={tag.tag_id || lIdx}>
                                 <Link
-                                  to={`/products?series=${link.path}`}
+                                  to={`/products?series=${tag.name}`}
                                   className="group/link flex items-center gap-2 text-sm text-zinc-500 hover:text-[#da0e19] transition-colors font-medium capitalize w-fit"
                                   onClick={() => setIsMenuOpen(false)}
                                 >
                                   <div className="w-1.5 h-1.5 bg-[#da0e19] opacity-0 group-hover/link:opacity-100 transition-opacity"></div>
                                   <span className="-ml-3 group-hover/link:ml-0 transition-all duration-300">
-                                    {link.name}
+                                    {tag.name}
                                   </span>
                                 </Link>
                               </li>
@@ -162,18 +169,17 @@ const Header = () => {
               <Link
                 to="/solutions"
                 className={`relative h-full flex items-center transition-colors ${
-                  isActive("/solutions")
-                    ? "text-[#da0e19]"
-                    : "text-zinc-600 hover:text-zinc-900"
+                  isActive("/solutions") ? "text-white" : "text-white"
                 }`}
               >
                 Solutions
                 <div
-                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-[#da0e19] transition-transform duration-300 origin-left ${
+                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-white transition-transform duration-300 origin-left ${
                     isActive("/solutions") ? "scale-x-100" : "scale-x-0"
                   }`}
                 />
               </Link>
+
               <div className="absolute top-full left-0 w-full bg-[#f8f9fa]  shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 py-8 flex justify-center gap-8 items-center">
                   <div className="flex flex-wrap justify-center gap-12 text-sm font-bold text-zinc-900 p-3">
@@ -187,6 +193,7 @@ const Header = () => {
                           className="group/link flex items-center gap-2 hover:text-[#da0e19] transition-colors"
                         >
                           <div className="w-1.5 h-1.5 bg-[#da0e19] opacity-0 group-hover/link:opacity-100 transition-opacity"></div>
+
                           <span className="uppercase tracking-widest">
                             {category}
                           </span>
@@ -201,14 +208,12 @@ const Header = () => {
               <Link
                 to="/about"
                 className={`relative h-full flex items-center transition-colors ${
-                  isActive("/about")
-                    ? "text-[#da0e19]"
-                    : "text-zinc-600 hover:text-zinc-900"
+                  isActive("/about") ? "text-white" : "text-white"
                 }`}
               >
                 About Us
                 <div
-                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-[#da0e19] transition-transform duration-300 origin-left ${
+                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-white transition-transform duration-300 origin-left ${
                     isActive("/about") ? "scale-x-100" : "scale-x-0"
                   }`}
                 />
@@ -219,14 +224,12 @@ const Header = () => {
               <Link
                 to="/news"
                 className={`relative h-full flex items-center transition-colors ${
-                  isActive("/news")
-                    ? "text-[#da0e19]"
-                    : "text-zinc-600 hover:text-zinc-900"
+                  isActive("/news") ? "text-white" : "text-white"
                 }`}
               >
                 News
                 <div
-                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-[#da0e19] transition-transform duration-300 origin-left ${
+                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-white transition-transform duration-300 origin-left ${
                     isActive("/news") ? "scale-x-100" : "scale-x-0"
                   }`}
                 />
@@ -237,14 +240,12 @@ const Header = () => {
               <Link
                 to="/download"
                 className={`relative h-full flex items-center transition-colors ${
-                  isActive("/download")
-                    ? "text-[#da0e19]"
-                    : "text-zinc-600 hover:text-zinc-900"
+                  isActive("/download") ? "text-white" : "text-white"
                 }`}
               >
                 Download
                 <div
-                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-[#da0e19] transition-transform duration-300 origin-left ${
+                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-white transition-transform duration-300 origin-left ${
                     isActive("/download") ? "scale-x-100" : "scale-x-0"
                   }`}
                 />
@@ -259,13 +260,15 @@ const Header = () => {
           <button
             onClick={() => {
               setIsSearchOpen(!isSearchOpen);
+
               if (isMenuOpen) setIsMenuOpen(false);
             }}
-            className="p-2 text-zinc-900 hover:text-[#da0e19] transition-colors cursor-pointer"
+            className="p-2 text-white hover:text-white transition-colors cursor-pointer"
             aria-label="Toggle search"
           >
             {isSearchOpen ? <FaXmark size={24} /> : <BiSearch size={24} />}
           </button>
+
           <div className="hidden lg:flex items-center justify-center w-8 h-8 relative ml-2">
             <svg className="w-full h-full transform -rotate-90 overflow-visible">
               <circle
@@ -275,8 +278,9 @@ const Header = () => {
                 stroke="currentColor"
                 strokeWidth="2"
                 fill="transparent"
-                className="text-zinc-200"
+                className="text-red-300"
               />
+
               <circle
                 ref={circleRef}
                 cx="16"
@@ -288,7 +292,7 @@ const Header = () => {
                 strokeLinecap="round"
                 strokeDasharray="88"
                 strokeDashoffset="88"
-                className="text-[#da0e19]"
+                className="text-white"
               />
             </svg>
           </div>
@@ -296,9 +300,10 @@ const Header = () => {
           <button
             onClick={() => {
               setIsMenuOpen(!isMenuOpen);
+
               if (isSearchOpen) setIsSearchOpen(false);
             }}
-            className="lg:hidden p-2 text-zinc-900 transition-colors"
+            className="lg:hidden p-2 text-white transition-colors"
             aria-label="Toggle menu"
           >
             <span
@@ -323,6 +328,7 @@ const Header = () => {
                   placeholder="Search Keyword..."
                   autoFocus={isSearchOpen}
                 />
+
                 <button className="text-gray-400 hover:text-[#da0e19] transition-colors flex-shrink-0 cursor-pointer">
                   <BiSearch size={24} />
                 </button>
@@ -348,6 +354,7 @@ const Header = () => {
               >
                 Products
               </span>
+
               <span className="text-zinc-400">
                 {expandedMenus["products"] ? (
                   <FaXmark />
@@ -359,55 +366,60 @@ const Header = () => {
 
             {expandedMenus["products"] && (
               <div className="w-full bg-[#f8f9fa] border-t border-zinc-200">
-                {productMenu.map((column, cIdx) => (
-                  <div key={cIdx} className="w-full">
+                {productsData.map((category, cIdx) => (
+                  <div key={category.category_id || cIdx} className="w-full">
                     <div
                       className="flex justify-between items-center py-4 px-6 border-b border-zinc-200 cursor-pointer"
-                      onClick={() => toggleSubMenu(column.title)}
+                      onClick={() => toggleSubMenu(category.category_name)}
                     >
                       <span
-                        className={`text-xs font-mono font-bold uppercase tracking-widest ${expandedMenus[column.title] ? "text-[#da0e19]" : "text-zinc-500"}`}
+                        className={`text-xs font-mono font-bold uppercase tracking-widest ${expandedMenus[category.category_name] ? "text-[#da0e19]" : "text-zinc-500"}`}
                       >
-                        {column.title}
+                        {category.category_name}
                       </span>
-                      {expandedMenus[column.title] ? (
+
+                      {expandedMenus[category.category_name] ? (
                         <MdKeyboardArrowDown className="text-zinc-400" />
                       ) : (
                         <MdKeyboardArrowRight className="text-zinc-400" />
                       )}
                     </div>
 
-                    {expandedMenus[column.title] && (
+                    {expandedMenus[category.category_name] && (
                       <div className="w-full bg-white">
-                        {column.sections.map((sec, sIdx) => (
-                          <div key={sIdx} className="w-full">
+                        {category.subcategories?.map((subcategory, sIdx) => (
+                          <div
+                            key={subcategory.subcategory_id || sIdx}
+                            className="w-full"
+                          >
                             <div
                               className="flex justify-between items-center py-3 pl-10 pr-6 border-b border-zinc-100 cursor-pointer bg-zinc-50"
-                              onClick={() => toggleSubMenu(sec.subtitle)}
+                              onClick={() => toggleSubMenu(subcategory.name)}
                             >
                               <span
-                                className={`text-sm font-bold uppercase ${expandedMenus[sec.subtitle] ? "text-zinc-900" : "text-zinc-600"}`}
+                                className={`text-sm font-bold uppercase ${expandedMenus[subcategory.name] ? "text-zinc-900" : "text-zinc-600"}`}
                               >
-                                {sec.subtitle}
+                                {subcategory.name}
                               </span>
-                              {expandedMenus[sec.subtitle] ? (
+
+                              {expandedMenus[subcategory.name] ? (
                                 <MdKeyboardArrowDown className="text-zinc-400" />
                               ) : (
                                 <MdKeyboardArrowRight className="text-zinc-400" />
                               )}
                             </div>
 
-                            {expandedMenus[sec.subtitle] && (
+                            {expandedMenus[subcategory.name] && (
                               <div className="w-full bg-white py-2">
-                                {sec.links.map((link, lIdx) => (
+                                {subcategory.tags?.map((tag, lIdx) => (
                                   <Link
-                                    key={lIdx}
-                                    to={`/products?series=${link.path}`}
+                                    key={tag.tag_id || lIdx}
+                                    to={`/products?series=${tag.name}`}
                                     className="flex items-center gap-3 py-2.5 pl-14 pr-6 text-sm text-zinc-500 hover:text-[#da0e19] capitalize font-medium"
                                     onClick={() => setIsMenuOpen(false)}
                                   >
                                     <div className="w-1 h-1 bg-zinc-300"></div>
-                                    {link.name}
+                                    {tag.name}
                                   </Link>
                                 ))}
                               </div>
@@ -432,6 +444,7 @@ const Header = () => {
               >
                 Solutions
               </span>
+
               <span className="text-zinc-400">
                 {expandedMenus["solutions"] ? (
                   <FaXmark />
@@ -455,6 +468,7 @@ const Header = () => {
                       <span className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500 hover:text-[#da0e19] transition-colors">
                         {category}
                       </span>
+
                       <MdKeyboardArrowRight className="text-zinc-300" />
                     </Link>
                   ))}
@@ -472,6 +486,7 @@ const Header = () => {
             >
               About Us
             </span>
+
             <MdKeyboardArrowRight className="text-zinc-400 text-xl" />
           </Link>
 
@@ -485,6 +500,7 @@ const Header = () => {
             >
               News
             </span>
+
             <MdKeyboardArrowRight className="text-zinc-400 text-xl" />
           </Link>
 
@@ -498,10 +514,12 @@ const Header = () => {
             >
               Download
             </span>
+
             <MdKeyboardArrowRight className="text-zinc-400 text-xl" />
           </Link>
         </div>
       </div>
+
       <div
         className="lg:hidden absolute bottom-0 left-0 h-1 w-full bg-[#da0e19] z-50 origin-left transition-transform duration-200 ease-out"
         style={{ transform: `scaleX(${scrollProgress / 100})` }}
