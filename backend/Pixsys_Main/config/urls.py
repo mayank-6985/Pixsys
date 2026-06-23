@@ -35,5 +35,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('v1/api/news/' , include("apps.News.urls")),
     path('v1/api/solutions/' , include("apps.Solutions.urls")),
-    
+    path('v1/api/products/' , include("apps.Products.urls")),
 ]
