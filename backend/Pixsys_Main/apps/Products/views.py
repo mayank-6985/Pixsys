@@ -562,4 +562,17 @@ class ProductListView(APIView):
                 {"error": "An unexpected error occurred during deletion."}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-       
+
+class ProductView(APIView):
+    def get(self, request , product_id):
+        try:
+            data = service.get_product(product_id = product_id)
+            return Response(data , status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Error in ProductView GET: {str(e)}\n\n{traceback.format_exc()}")
+            return Response(
+                {"error": "An unexpected error occurred while fetching Product."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

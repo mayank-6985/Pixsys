@@ -20,6 +20,7 @@ urlpatterns = [
  
     # # Product (Level 4 - scoped via ?tag=<id>)
     path("products/", ProductListView.as_view(), name="product-list-create"),
+    path("products/<int:product_id>", ProductView.as_view(), name="product-list-create"),
     
 ]
  

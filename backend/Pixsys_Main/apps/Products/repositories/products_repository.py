@@ -10,7 +10,7 @@ from ..models import (
 )
 from ..objects.product_objects import ProductCategory, ProductSubcategory, Tag, Product
 from bson import ObjectId
-
+from django.forms.models import model_to_dict
 class ProductRepository:
 
     # ---------------------------------------------------------------
@@ -85,7 +85,7 @@ class ProductRepository:
 
     def _get_product_model(self, product_id: int) -> ProductModel:
         try:
-            return ProductModel.objects.get(product_id=product_id)
+            return ProductModel.objects.select_related('tag').get(product_id=product_id)
         except ObjectDoesNotExist:
             raise ValueError(f"Product with id={product_id} does not exist")
 
@@ -316,4 +316,8 @@ class ProductRepository:
         except ProductCategoryModel.DoesNotExist:
             return None
             
-            
+    def get_product(self ,product:Product):
+        from ..serializers import ProductSerializer
+        product = self._get_product(product=product)              
+        product_data = ProductSerializer(product).data
+        return product_data

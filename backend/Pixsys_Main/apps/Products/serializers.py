@@ -55,3 +55,13 @@ class ProductUpdateSerializer(serializers.Serializer):
     tagline = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
     product_img = serializers.URLField(required=True)
+
+class ProductSerializer(serializers.ModelSerializer):
+    
+    # This automatically crosses the relationship and grabs the custom tag_id
+    tag_id = serializers.IntegerField(source='tag.tag_id', read_only=True)
+
+    class Meta:
+        from .models import ProductModel
+        model = ProductModel
+        fields = ['tag_id', 'product_id', 'name', 'tagline', 'description', 'product_img']
