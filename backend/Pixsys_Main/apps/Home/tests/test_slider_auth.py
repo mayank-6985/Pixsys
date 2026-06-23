@@ -10,7 +10,8 @@ class SliderAuthTests(TestCase):
         User = get_user_model()
         self.username = 'testuser'
         self.password = 'pass1234'
-        self.user = User.objects.create_user(username=self.username, password=self.password)
+        # create_user now expects email as identifier
+        self.user = User.objects.create_user(email=f"{self.username}@example.com", password=self.password)
 
     def test_token_obtain_returns_json(self):
         # Generate tokens directly to avoid depending on the token endpoint
