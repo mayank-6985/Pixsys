@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers
+from apps.Auth.decorators import public_endpoint
 
 from .serializers import SliderSerializer
 from .Services.services import HomeService
@@ -33,6 +34,7 @@ class SliderView(APIView):
             )
         }
     )
+    @public_endpoint
     def get(self, request):
         try:
             data = home_service.get_slider_images()
@@ -62,6 +64,11 @@ class SliderView(APIView):
         }
     )
     def post(self, request):
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+
         serializer = SliderSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
