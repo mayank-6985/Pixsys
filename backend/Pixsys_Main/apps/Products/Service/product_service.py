@@ -148,4 +148,10 @@ class ProductService:
         category_list = self.repo.get_category_list()
         return category_list
     
- 
+    def get_product(self , product_id)->dict:
+        product = Product(
+            product_id= product_id,
+            operation=None
+        )
+        product_data = self.repo.get_product(product)
+        return product_data
