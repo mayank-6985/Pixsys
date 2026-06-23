@@ -17,7 +17,7 @@ export const productsData = [
   {
     id: 2,
     title: "HMI",
-    description: "Stable | Safe | Easy to use | Efficient",
+    description: "Stable | Safe | Easy to use | Efficient Stable | Safe | Easy to use | Efficient Stable | Safe | Easy to use | Efficient Stable | Safe | Easy to use | Efficient",
     image: "/pro2.png",
     link: "/products/hmi",
   },
@@ -31,7 +31,8 @@ export const productsData = [
   {
     id: 4,
     title: "Servo Motor",
-    description: "10 years of stable application with millions of axles",
+    description:
+      " High Performance | High reliability | Vector frequancy ",
     image: "/pro4.png",
     link: "/products/servo-drive",
   },

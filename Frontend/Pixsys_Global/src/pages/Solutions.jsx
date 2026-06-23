@@ -5,6 +5,7 @@ import { FiX } from "react-icons/fi";
 import { useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useSolutions } from "../hooks/useSolutions";
+import ReactPlayer from "react-player";
 
 const Solutions = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -14,6 +15,7 @@ const Solutions = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
   const [data, setData] = useState([]);
 
@@ -63,9 +65,12 @@ const Solutions = () => {
     setCurrentPage(1);
     setSearchParams({ category: category });
   };
+  const closeModal = () => {
+    setIsVideoReady(false);
+    setSelectedVideo(null);
+  };
   const totalPages = Math.ceil(filteredSolutions.length / itemsPerPage);
 
-  const closeModal = () => setSelectedVideo(null);
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500">
@@ -230,14 +235,35 @@ const Solutions = () => {
               <FiX className="text-2xl" />
             </button>
 
-            <video
-              src={selectedVideo.videoUrl}
-              controls
-              autoPlay
-              className="w-full h-auto aspect-video outline-none"
-            >
-              Your browser does not support the video tag.
-            </video>
+            {selectedVideo?.videoUrl?.includes("youtube.com") ||
+            selectedVideo?.videoUrl?.includes("youtu.be") ? (
+              <iframe
+                width="100%"
+                height="600"
+                src={`https://www.youtube.com/embed/${selectedVideo?.videoUrl?.split("v=")[1]?.split("&")[0] || selectedVideo?.videoUrl?.split("youtu.be/")[1]?.split("?")[0]}`}
+                title="YouTube video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                style={{ backgroundColor: "#000" }}
+              ></iframe>
+            ) : (
+              <video
+                key={selectedVideo?.solutions_id}
+                controls
+                autoPlay
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  maxHeight: "600px",
+                  backgroundColor: "#000",
+                }}
+                onError={(e) => console.error("Video Error:", e)}
+              >
+                <source src={selectedVideo?.videoUrl} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            )}
           </div>
         </div>
       )}

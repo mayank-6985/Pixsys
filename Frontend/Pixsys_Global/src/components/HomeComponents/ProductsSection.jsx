@@ -32,19 +32,13 @@ const ProductsSection = () => {
             <ScrollReveal key={product.id} delay={index * 100} direction="up">
               <Link
                 to={product.link}
-                className="group block h-full bg-white relative transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)]"
+                className="group block h-full bg-white relative transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] min-h-[500px]"
                 style={{
                   clipPath:
                     "polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%)",
                 }}
               >
-                <div
-                  className="absolute inset-0 border-2 border-transparent group-hover:border-[#da0e19] transition-colors duration-500 pointer-events-none z-20"
-                  style={{
-                    clipPath:
-                      "polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%)",
-                  }}
-                ></div>
+                
 
                 <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-end z-20 pointer-events-none">
                   {/* <div className="bg-zinc-900 text-white px-3 py-1 font-mono text-[10px] font-bold tracking-widest">
@@ -69,20 +63,28 @@ const ProductsSection = () => {
                   />
                 </div>
 
-                <div className="p-8 pb-12 flex flex-col relative z-20 bg-white">
-                  <h3 className="text-2xl font-black text-zinc-900 uppercase tracking-tight mb-3 group-hover:text-[#da0e19] transition-colors duration-300">
+                <div className="p-8 pb-12 flex flex-col relative z-20 bg-white max-h-[200px] min-h-[150px]">
+                  <h3 className="text-2xl font-black text-zinc-900 uppercase tracking-tight mb-3 group-hover:text-[#da0e19] transition-colors duration-300 ">
                     {product.title}
                   </h3>
-                  <p className="text-sm font-medium text-zinc-500 leading-relaxed line-clamp-2">
+                  <p className="text-sm font-medium text-zinc-500 leading-relaxed line-clamp-1">
                     {product.description}
                   </p>
                 </div>
 
-                <div
-                  className="absolute bottom-0 right-0 w-16 h-16 bg-zinc-100 group-hover:bg-[#da0e19] flex items-center justify-center transition-colors duration-500"
-                  style={{ clipPath: "polygon(100% 0, 100% 100%, 0 100%)" }}
-                >
-                  <FiArrowUpRight className="text-zinc-400 group-hover:text-white text-xl translate-x-2 translate-y-2 group-hover:translate-x-1 group-hover:translate-y-1 transition-all duration-300" />
+                <div className="absolute -bottom-[2px] -right-[2px] w-[50px] h-[50px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30 pointer-events-none">
+                  <div
+                    className="absolute inset-0 bg-[#da0e19]"
+                    style={{
+                      clipPath: "polygon(0 100%, 100% 0, 100% 20px, 20px 100%)",
+                    }}
+                  ></div>
+                  <div
+                    className="absolute inset-0 bg-[#f4f4f5]"
+                    style={{
+                      clipPath: "polygon(20px 100%, 100% 20px, 100% 100%)",
+                    }}
+                  ></div>
                 </div>
               </Link>
             </ScrollReveal>

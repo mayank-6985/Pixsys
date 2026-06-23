@@ -18,7 +18,8 @@ export const mainCategories = [
   },
   {
     title: "Servo Motor",
-    subtitle: "10 years of stable application with millions of axles",
+    subtitle:
+      "High Performance | High reliability | Vector frequency converter",
     img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80",
   },
   {
@@ -74,17 +75,13 @@ export const productMenu = [
           "High-definition, responsive human-machine interfaces designed for harsh industrial environments with smart connectivity.",
         bannerImg:
           "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80",
-        links: [
-          { name: "V300 series", path: "v300" },
-        ],
+        links: [{ name: "V300 series", path: "v300" }],
       },
     ],
   },
 ];
 
 export const productsBulkData = [
-
-
   // Q-Series (PAC/IPC)
   {
     id: 101,
@@ -275,7 +272,6 @@ export const productsBulkData = [
     isNew: true,
   },
 
-
   {
     id: 301,
     series: "730",
@@ -367,7 +363,6 @@ export const productsBulkData = [
     img: "https://images.unsplash.com/photo-1563770660-394463dfb12d?auto=format&fit=crop&q=80",
     isNew: true,
   },
-
 
   {
     id: 401,
