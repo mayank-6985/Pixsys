@@ -150,10 +150,13 @@ class Tag:
         elif self.operation is None:
             self.validate_tag_id()
 
+from typing import List
+from ...Download.Objects.download_factory import DownloadFactory
 class Product:
     def __init__(self, tag_id: int = None, product_id: int = None,
                  name: str = None, tagline: str = None,
                  description: str = None, product_img: str = None,
+                 specifications:list=None,list_of_downloads:List[DownloadFactory]=None ,
                  operation: Literal['create', 'update', None] = 'create'):
         self.tag_id = tag_id
         self.product_id = product_id
@@ -162,6 +165,8 @@ class Product:
         self.description = description
         self.product_img = product_img
         self.operation = operation
+        self.specifications = specifications
+        self.list_of_downloads = list_of_downloads
         self.validate()
 
     def validate_tag_id(self):
@@ -181,17 +186,28 @@ class Product:
         if self.operation == 'update':
             if self.product_id is None:
                 raise ValueError("Product id cant be empty!")
-
+    
+    def validate_specifications(self):
+        try:
+            if not self.specifications:
+                raise ValueError
+            for url in self.specifications:
+                UtilsService.is_valid_url_string(url)
+        except ValueError:
+            raise ValueError("Specification should have valid urls")    
+                
     def validate(self):
         if self.operation == 'create':
             self.validate_tag_id()
             self.validate_name()
             self.validate_product_image()
+            self.validate_specifications()
             # tagline and description are blank=True on the , so not required here
         elif self.operation == 'update':
             self.validate_tag_id()
             self.validate_name()
             self.validate_product_image()
             self.validate_product_id()
+            self.validate_specifications()
         elif self.operation is None:            
             self.validate_product_id()

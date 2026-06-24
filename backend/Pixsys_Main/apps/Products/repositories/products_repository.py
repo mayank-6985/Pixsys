@@ -58,6 +58,7 @@ class ProductRepository:
             tagline=product.tagline or "",
             description=product.description or "",
             product_img=product.product_img,
+            specifications=product.specifications
         )
         return True
 
@@ -151,6 +152,7 @@ class ProductRepository:
         instance.tagline = product.tagline or ""
         instance.description = product.description or ""
         instance.product_img = product.product_img
+        instance.specifications=product.specifications
         instance.save()
         return True
 
@@ -231,9 +233,7 @@ class ProductRepository:
             })
             
         return result
-
     
-
     def _convert_objectids(self,obj):
         """Recursively convert any ObjectId in a nested dict/list structure to str."""
         if isinstance(obj, ObjectId):
@@ -300,7 +300,6 @@ class ProductRepository:
         results = list(collection.aggregate(pipeline))
         return self._convert_objectids(results)
     
-
     def get_category_list(self):
         category_list = [
             {k: v for k, v in cat.items() if k != 'id'} 
@@ -334,3 +333,5 @@ class ProductRepository:
         product = self._get_product(product=product)              
         product_data = ProductSerializer(product).data
         return product_data
+    
+    

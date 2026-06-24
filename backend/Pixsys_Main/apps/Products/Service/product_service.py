@@ -48,6 +48,7 @@ class ProductService:
             tagline=data['tagline'],
             description=data['description'],  
             product_img=data['product_img'],
+            specifications=data['specifications']
         )
         success = self.repo.create_product(product=product)
         return success
@@ -96,6 +97,7 @@ class ProductService:
             tagline = data["tagline"],    
             description = data["description"] ,
             product_img = data['product_img'],
+            specification=data['specification'],
             operation = 'update',
         )
         
