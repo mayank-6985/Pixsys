@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'apps.Solutions',
     'apps.Products',
     'apps.Home',
-    
+    'apps.Download',    
 ]
 
 # Use custom user model with email as username
