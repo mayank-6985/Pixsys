@@ -1,6 +1,6 @@
+# models for Download app
 from django.db import models
 
-from ..Products.models import ProductModel , ProductCategoryModel , ProductSubCategoryModel, TagModel
 from ..Utils.Counter_Service.services import CounterServices
 # Create your models here.
 class DownloadModel(models.Model):
@@ -8,10 +8,10 @@ class DownloadModel(models.Model):
     name = models.CharField(max_length=100)
     resource_url = models.URLField()
     resource_type = models.CharField(max_length=50)
-    product_id = models.ForeignKey(ProductModel , on_delete=models.CASCADE , related_name="downloads")
-    tag_id = models.ForeignKey(TagModel , on_delete=models.CASCADE , related_name="downloads")
-    subcategory_id = models.ForeignKey(ProductSubCategoryModel , on_delete=models.CASCADE , related_name="downloads")
-    category_id = models.ForeignKey(ProductCategoryModel , on_delete=models.CASCADE , related_name="downloads")
+    product_id = models.BigIntegerField()
+    tag_id = models.BigIntegerField()
+    subcategory_id = models.BigIntegerField()
+    category_id = models.BigIntegerField()
     
     class Meta:
         db_table='Download_Table'

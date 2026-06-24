@@ -80,10 +80,11 @@ class TagModel(models.Model):
  
     class Meta:
         ordering = ["name"]
+        db_table = "Product_Tag_Table" 
         indexes = [
             # Speeds up "list all tags under SubCategory X" - the core
             # query for the SubCategory listing page.            
-            models.Index(fields=["tag_id"]),
+            models.Index(fields=["tag_id"] , name="product_tag_idx"),
         ]
  
     def __str__(self):
