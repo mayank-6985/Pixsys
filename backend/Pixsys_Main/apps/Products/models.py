@@ -131,6 +131,8 @@ class ProductModel(models.Model):
         help_text="Primary image for the product detail page.",
     )
     
+    specifications = models.JSONField(default=list)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         ordering = ["-name"]

@@ -49,16 +49,31 @@ class ProductRepository:
             # thumbnail_desktop=tag.thumbnail_desktop,
         )
         return True
-
+    
+    @transaction.atomic
     def create_product(self, product: Product) -> bool:
+        from ...Download.Services.product_download_service import ProductDownloadService
         parent = self._get_tag_model(product.tag_id)
-        ProductModel.objects.create(
+        product_qs = ProductModel(
             tag=parent,
             name=product.name,
             tagline=product.tagline or "",
             description=product.description or "",
             product_img=product.product_img,
+            specifications=product.specifications
         )
+        product_qs.save()
+        
+        tag_id = parent.tag_id
+        product_id = product_qs.product_id
+        
+        subcategory_id = parent.subcategory.subcategory_id
+        category_id = parent.subcategory.category.category_id
+        
+        product.handle_list_of_download(product_id=product_id ,tag_id= tag_id , subcategory_id=subcategory_id ,category_id= category_id)   
+        [print(f"{prd.product_id}---{prd.tag_id}---{prd.subcategory_id}---{prd.category_id}") for prd in product.list_of_downloads]
+        ProductDownloadService().add_downloads_for_product(product.list_of_downloads)
+    
         return True
 
     # ---------------------------------------------------------------
@@ -82,7 +97,7 @@ class ProductRepository:
 
     def _get_tag_model(self, tag_id: int) -> TagModel:
         try:
-            return TagModel.objects.get(tag_id=tag_id)
+            return TagModel.objects.select_related('subcategory').get(tag_id=tag_id)
         except ObjectDoesNotExist:
             raise ValueError(f"Tag with id={tag_id} does not exist")
 
@@ -142,8 +157,10 @@ class ProductRepository:
         # instance.thumbnail_desktop = tag.thumbnail_desktop
         instance.save()
         return True
-
+    
+    @transaction.atomic
     def update_product(self, product: Product) -> bool:
+        from ...Download.Services.product_download_service import ProductDownloadService
         instance = self._get_product(product)
         if product.tag_id is not None:
             instance.tag = self._get_tag_model(product.tag_id)
@@ -151,7 +168,17 @@ class ProductRepository:
         instance.tagline = product.tagline or ""
         instance.description = product.description or ""
         instance.product_img = product.product_img
+        instance.specifications=product.specifications
         instance.save()
+        
+        tag_id = instance.tag.tag_id
+        product_id = instance.product_id
+        subcategory_id = instance.tag.subcategory.subcategory_id
+        category_id = instance.tag.subcategory.category.category_id
+        
+        product.handle_list_of_download(product_id=product_id ,tag_id= tag_id , subcategory_id=subcategory_id ,category_id= category_id)           
+        ProductDownloadService().update_downloads_for_product(product.list_of_downloads)
+        # update_downloads_for_product
         return True
 
     # ---------------------------------------------------------------
@@ -231,9 +258,7 @@ class ProductRepository:
             })
             
         return result
-
     
-
     def _convert_objectids(self,obj):
         """Recursively convert any ObjectId in a nested dict/list structure to str."""
         if isinstance(obj, ObjectId):
@@ -300,7 +325,6 @@ class ProductRepository:
         results = list(collection.aggregate(pipeline))
         return self._convert_objectids(results)
     
-
     def get_category_list(self):
         category_list = [
             {k: v for k, v in cat.items() if k != 'id'} 
@@ -330,7 +354,12 @@ class ProductRepository:
             return None
             
     def get_product(self ,product:Product):
+        from ...Download.Services.product_download_service import ProductDownloadService
         from ..serializers import ProductSerializer
         product = self._get_product(product=product)              
         product_data = ProductSerializer(product).data
+        download = ProductDownloadService().get_product_download_data(product_id=product.product_id)
+        product_data['downloads'] = download
         return product_data
+    
+    

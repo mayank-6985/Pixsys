@@ -5,6 +5,7 @@ from ..objects.product_objects import (
     ProductSubcategory,
     Tag
 )
+from ...Download.Objects.download_factory import DownloadFactory ,DownloadType
 class ProductService:
     def __init__(self , repo:ProductRepository=None):
         self.repo = repo or ProductRepository()
@@ -40,14 +41,19 @@ class ProductService:
             )
         success = self.repo.create_tag(tag=tag)
         return success
-        
+    
+    
     def create_product(self , data):
+        from ...Download.Services.product_download_service import ProductDownloadService
+        download_objs = ProductDownloadService().handle_list_of_downloads(data.get('downloads', []))
         product = Product(
             tag_id=data['tag_id'],
             name=data['name'],
             tagline=data['tagline'],
-            description=data['description'],  
+            description=data['description'],
             product_img=data['product_img'],
+            specifications=data['specifications'],
+            list_of_downloads=download_objs,
         )
         success = self.repo.create_product(product=product)
         return success
@@ -89,6 +95,8 @@ class ProductService:
         return success
     
     def update_product(self, data):
+        from ...Download.Services.product_download_service import ProductDownloadService
+        download_objs = ProductDownloadService().handle_list_of_downloads(data.get('downloads', []))
         product = Product(
             tag_id = data['tag_id'],
             product_id = data["product_id"],
@@ -96,6 +104,8 @@ class ProductService:
             tagline = data["tagline"],    
             description = data["description"] ,
             product_img = data['product_img'],
+            specifications=data['specifications'],
+            list_of_downloads=download_objs,
             operation = 'update',
         )
         
