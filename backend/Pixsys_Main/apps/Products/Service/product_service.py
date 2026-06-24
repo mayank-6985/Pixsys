@@ -123,7 +123,7 @@ class ProductService:
         success = self.repo.delete_tag(tag=tag)
         return success
     
-    def delete_product(self , data):
+    def delete_product(self , product_id):
         product = Product(
             product_id=product_id,
             operation = None
