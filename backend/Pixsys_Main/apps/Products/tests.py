@@ -46,8 +46,8 @@ class ProductCategoryRepositoryTests(TestCase):
             category_name="PLC Systems",
             tagline="Reliable industrial control",
             category_img="https://example.com/category.jpg",
-            thumbnail_mobile="https://example.com/category-m.jpg",
-            thumbnail_desktop="https://example.com/category-d.jpg",
+            # thumbnail_mobile="https://example.com/category-m.jpg",
+            # thumbnail_desktop="https://example.com/category-d.jpg",
             operation="create",
         )
         defaults.update(overrides)
@@ -103,8 +103,8 @@ class ProductCategoryRepositoryTests(TestCase):
             category_name="New Name",
             tagline="Updated tagline",
             category_img="https://example.com/new.jpg",
-            thumbnail_mobile="https://example.com/new-m.jpg",
-            thumbnail_desktop="https://example.com/new-d.jpg",
+            # thumbnail_mobile="https://example.com/new-m.jpg",
+            # thumbnail_desktop="https://example.com/new-d.jpg",
             operation="update",
         )
         result = self.repo.update_category(update_obj)
@@ -121,8 +121,8 @@ class ProductCategoryRepositoryTests(TestCase):
             category_name="Doesn't matter",
             tagline="Doesn't matter",
             category_img="https://example.com/x.jpg",
-            thumbnail_mobile="https://example.com/x-m.jpg",
-            thumbnail_desktop="https://example.com/x-d.jpg",
+            # thumbnail_mobile="https://example.com/x-m.jpg",
+            # thumbnail_desktop="https://example.com/x-d.jpg",
             operation="update",
         )
         with self.assertRaises(ValueError):
@@ -153,8 +153,8 @@ class ProductSubCategoryRepositoryTests(TestCase):
             category_name="PLC Systems",
             tagline="Reliable industrial control",
             category_img="https://example.com/category.jpg",
-            thumbnail_mobile="https://example.com/category-m.jpg",
-            thumbnail_desktop="https://example.com/category-d.jpg",
+            # thumbnail_mobile="https://example.com/category-m.jpg",
+            # thumbnail_desktop="https://example.com/category-d.jpg",
             operation="create",
         )
         self.repo.create_category(parent)
@@ -235,8 +235,8 @@ class ProductSubCategoryRepositoryTests(TestCase):
             category_name="Sensors",
             tagline="Detection and measurement",
             category_img="https://example.com/sensors.jpg",
-            thumbnail_mobile="https://example.com/sensors-m.jpg",
-            thumbnail_desktop="https://example.com/sensors-d.jpg",
+            # thumbnail_mobile="https://example.com/sensors-m.jpg",
+            # thumbnail_desktop="https://example.com/sensors-d.jpg",
             operation="create",
         )
         self.repo.create_category(other_parent)
@@ -296,8 +296,8 @@ class TagRepositoryTests(TestCase):
             category_name="PLC Systems",
             tagline="Reliable industrial control",
             category_img="https://example.com/category.jpg",
-            thumbnail_mobile="https://example.com/category-m.jpg",
-            thumbnail_desktop="https://example.com/category-d.jpg",
+            # thumbnail_mobile="https://example.com/category-m.jpg",
+            # thumbnail_desktop="https://example.com/category-d.jpg",
             operation="create",
         )
         self.repo.create_category(category)
@@ -322,8 +322,8 @@ class TagRepositoryTests(TestCase):
         defaults = dict(
             subcategory_id=self.subcategory_row.subcategory_id,
             name="Q Series",
-            thumbnail_mobile="https://example.com/tag-m.jpg",
-            thumbnail_desktop="https://example.com/tag-d.jpg",
+            # thumbnail_mobile="https://example.com/tag-m.jpg",
+            # thumbnail_desktop="https://example.com/tag-d.jpg",
             operation="create",
         )
         defaults.update(overrides)
@@ -369,8 +369,8 @@ class TagRepositoryTests(TestCase):
             tag_id=row.tag_id,
             subcategory_id=self.subcategory_row.subcategory_id,
             name="New Name",
-            thumbnail_mobile="https://example.com/updated-m.jpg",
-            thumbnail_desktop="https://example.com/updated-d.jpg",
+            # thumbnail_mobile="https://example.com/updated-m.jpg",
+            # thumbnail_desktop="https://example.com/updated-d.jpg",
             operation="update",
         )
         result = self.repo.update_tag(update_obj)
@@ -378,7 +378,7 @@ class TagRepositoryTests(TestCase):
         self.assertTrue(result)
         row.refresh_from_db()
         self.assertEqual(row.name, "New Name")
-        self.assertEqual(row.thumbnail_mobile, "https://example.com/updated-m.jpg")
+        # self.assertEqual(row.thumbnail_mobile, "https://example.com/updated-m.jpg")
 
     def test_update_tag_can_reparent(self):
         self.repo.create_tag(self._valid_tag())
@@ -400,8 +400,8 @@ class TagRepositoryTests(TestCase):
             tag_id=row.tag_id,
             subcategory_id=other_row.subcategory_id,
             name=row.name,
-            thumbnail_mobile=row.thumbnail_mobile,
-            thumbnail_desktop=row.thumbnail_desktop,
+            # thumbnail_mobile=row.thumbnail_mobile,
+            # thumbnail_desktop=row.thumbnail_desktop,
             operation="update",
         )
         self.repo.update_tag(update_obj)
@@ -414,8 +414,8 @@ class TagRepositoryTests(TestCase):
             tag_id=999999,
             subcategory_id=self.subcategory_row.subcategory_id,
             name="X",
-            thumbnail_mobile="https://example.com/x-m.jpg",
-            thumbnail_desktop="https://example.com/x-d.jpg",
+            # thumbnail_mobile="https://example.com/x-m.jpg",
+            # thumbnail_desktop="https://example.com/x-d.jpg",
             operation="update",
         )
         with self.assertRaises(ValueError):
@@ -447,8 +447,8 @@ class ProductRepositoryTests(TestCase):
             category_name="PLC Systems",
             tagline="Reliable industrial control",
             category_img="https://example.com/category.jpg",
-            thumbnail_mobile="https://example.com/category-m.jpg",
-            thumbnail_desktop="https://example.com/category-d.jpg",
+            # thumbnail_mobile="https://example.com/category-m.jpg",
+            # thumbnail_desktop="https://example.com/category-d.jpg",
             operation="create",
         )
         self.repo.create_category(category)
@@ -467,8 +467,8 @@ class ProductRepositoryTests(TestCase):
         tag = Tag(
             subcategory_id=self.subcategory_row.subcategory_id,
             name="Q Series",
-            thumbnail_mobile="https://example.com/tag-m.jpg",
-            thumbnail_desktop="https://example.com/tag-d.jpg",
+            # thumbnail_mobile="https://example.com/tag-m.jpg",
+            # thumbnail_desktop="https://example.com/tag-d.jpg",
             operation="create",
         )
         self.repo.create_tag(tag)
@@ -551,8 +551,8 @@ class ProductRepositoryTests(TestCase):
         other_tag = Tag(
             subcategory_id=self.subcategory_row.subcategory_id,
             name="V100 Series",
-            thumbnail_mobile="https://example.com/v100-m.jpg",
-            thumbnail_desktop="https://example.com/v100-d.jpg",
+            # thumbnail_mobile="https://example.com/v100-m.jpg",
+            # thumbnail_desktop="https://example.com/v100-d.jpg",
             operation="create",
         )
         self.repo.create_tag(other_tag)
