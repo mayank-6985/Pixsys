@@ -44,7 +44,7 @@ class ProductTagUpdateSerializer(serializers.Serializer):
     # thumbnail_desktop = serializers.URLField(required=True)
 
 
-class downloadSerializer(serializers.Serializer):
+class downloadCreateSerializer(serializers.Serializer):
     # Maps the Enum values into DRF choices
     resource_type = serializers.ChoiceField(
         choices=[(type.name, type.value) for type in DownloadType],
@@ -54,7 +54,19 @@ class downloadSerializer(serializers.Serializer):
         }
     )
     name = serializers.CharField(max_length=None)
-    resourse_url = serializers.URLField()
+    resource_url = serializers.URLField()
+class downloadUpdateSerializer(serializers.Serializer):
+    # Maps the Enum values into DRF choices
+    download_id = serializers.BigIntegerField(required=True)
+    resource_type = serializers.ChoiceField(
+        choices=[(type.name, type.value) for type in DownloadType],
+        required=True,
+        error_messages={
+            'invalid_choice': 'Invalid resource type. Must be one of: SOFTWARE, SOFTWARE_MANUAL, CATALOG, DIMENTION.'
+        }
+    )
+    name = serializers.CharField(max_length=None)
+    resource_url = serializers.URLField()
     
 class ProductCreateSerializer(serializers.Serializer):
     tag_id = serializers.BigIntegerField(required=True)    
@@ -66,7 +78,7 @@ class ProductCreateSerializer(serializers.Serializer):
         child=serializers.URLField(),
         required=True  
     )
-    # downloads = downloadSerializer(many=True)
+    downloads = downloadCreateSerializer(many=True)
     
 class ProductUpdateSerializer(serializers.Serializer):
     tag_id = serializers.BigIntegerField(required=True)
@@ -79,7 +91,7 @@ class ProductUpdateSerializer(serializers.Serializer):
         child=serializers.URLField(),
         required=True  
     )
-    # downloads = downloadSerializer(many=True)
+    downloads = downloadUpdateSerializer(many=True)
 
 class ProductSerializer(serializers.ModelSerializer):
     

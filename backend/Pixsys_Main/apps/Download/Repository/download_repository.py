@@ -137,3 +137,61 @@ class DownloadRepository:
             logger.error(traceback.format_exc())
             return False
 
+
+    # ==================product section specific
+    def get_download_for_product(self , product_id):
+        if connection.connection is None:
+            connection.ensure_connection()
+            
+        client = connection.connection 
+        db_name = connection.settings_dict['NAME']
+        db = client[db_name]
+
+        collection = db[DownloadModel._meta.db_table]
+        pipeline = [ 
+            {
+            "$match": {
+                "product_id": product_id
+            }
+            },
+            # Step 1: Group by resource_type, collecting all documents per type
+            
+            {
+                "$group": {
+                    "_id": "$resource_type",
+                    "items": {
+                        "$push": {
+                            "download_id": "$download_id",
+                            "name": "$name",
+                            "resource_url": "$resource_url",
+                            "resource_type": "$resource_type",
+                            "product_id": "$product_id",
+                            "tag_id": "$tag_id",
+                            "subcategory_id": "$subcategory_id",
+                            "category_id": "$category_id",
+                        }
+                    }
+                }
+            },
+            # Step 2: Reshape into a list of {k, v} pairs for arrayToObject
+            {
+                "$group": {
+                    "_id": None,
+                    "grouped": {
+                        "$push": {
+                            "k": "$_id",
+                            "v": "$items"
+                        }
+                    }
+                }
+            },
+            # Step 3: Convert to a single object keyed by resource_type
+            {
+                "$replaceRoot": {
+                    "newRoot": { "$arrayToObject": "$grouped" }
+                }
+            }
+        ]
+
+        result = list(collection.aggregate(pipeline))
+        return result[0] if result else {}

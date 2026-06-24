@@ -195,13 +195,20 @@ class Product:
                 UtilsService.is_valid_url_string(url)
         except ValueError:
             raise ValueError("Specification should have valid urls")    
-                
+    
+    def handle_list_of_download(self ,product_id , tag_id , category_id , subcategory_id):        
+            for download in self.list_of_downloads:                
+                download.product_id = product_id
+                download.tag_id = tag_id
+                download.category_id = category_id
+                download.subcategory_id = subcategory_id
+                                        
     def validate(self):
         if self.operation == 'create':
             self.validate_tag_id()
             self.validate_name()
             self.validate_product_image()
-            self.validate_specifications()
+            self.validate_specifications()            
             # tagline and description are blank=True on the , so not required here
         elif self.operation == 'update':
             self.validate_tag_id()
