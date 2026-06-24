@@ -11,6 +11,9 @@ from ..models import (
 from ..objects.product_objects import ProductCategory, ProductSubcategory, Tag, Product
 from bson import ObjectId
 from django.forms.models import model_to_dict
+from django.db.models import ProtectedError
+from django.core.exceptions import ValidationError
+
 class ProductRepository:
 
     # ---------------------------------------------------------------
@@ -22,8 +25,8 @@ class ProductRepository:
             category_name=category.category_name,
             tagline=category.tagline,
             category_img=category.category_img,
-            thumbnail_mobile=category.thumbnail_mobile,
-            thumbnail_desktop=category.thumbnail_desktop,
+            # thumbnail_mobile=category.thumbnail_mobile,
+            # thumbnail_desktop=category.thumbnail_desktop,
         )
         return True
 
@@ -42,8 +45,8 @@ class ProductRepository:
         TagModel.objects.create(
             subcategory=parent,
             name=tag.name,
-            thumbnail_mobile=tag.thumbnail_mobile,
-            thumbnail_desktop=tag.thumbnail_desktop,
+            # thumbnail_mobile=tag.thumbnail_mobile,
+            # thumbnail_desktop=tag.thumbnail_desktop,
         )
         return True
 
@@ -113,8 +116,8 @@ class ProductRepository:
         instance.category_name = category.category_name
         instance.tagline = category.tagline
         instance.category_img = category.category_img
-        instance.thumbnail_mobile = category.thumbnail_mobile
-        instance.thumbnail_desktop = category.thumbnail_desktop
+        # instance.thumbnail_mobile = category.thumbnail_mobile
+        # instance.thumbnail_desktop = category.thumbnail_desktop
         instance.save()
         return True
 
@@ -135,8 +138,8 @@ class ProductRepository:
         if tag.subcategory_id is not None:
             instance.subcategory = self._get_subcategory_model(tag.subcategory_id)
         instance.name = tag.name
-        instance.thumbnail_mobile = tag.thumbnail_mobile
-        instance.thumbnail_desktop = tag.thumbnail_desktop
+        # instance.thumbnail_mobile = tag.thumbnail_mobile
+        # instance.thumbnail_desktop = tag.thumbnail_desktop
         instance.save()
         return True
 
@@ -157,17 +160,27 @@ class ProductRepository:
 
     def delete_category(self, category: ProductCategory) -> bool:
         instance = self._get_category(category)
-        instance.delete()
+        try:    
+            instance.delete()
+        except ProtectedError:
+            raise ValidationError("Can't delete this category! delete products to delete category.")            
         return True
 
     def delete_subcategory(self, subcategory: ProductSubcategory) -> bool:
+
         instance = self._get_subcategory(subcategory)
-        instance.delete()
+        try:
+            instance.delete()
+        except ProtectedError:
+            raise ValidationError("Can't delete this sub-category! delete products to delete sub-category.")            
         return True
 
     def delete_tag(self, tag: Tag) -> bool:
         instance = self._get_tag(tag)
-        instance.delete()
+        try:
+            instance.delete()
+        except ProtectedError:
+            raise ValidationError("Can't delete this Tag! delete products to delete tag")            
         return True
 
     def delete_product(self, product: Product) -> bool:

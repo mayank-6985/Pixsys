@@ -4,14 +4,14 @@ from typing import Literal ,Optional
 class ProductCategory:
     def __init__(self, category_name: str = None, category_id: int = None,
                  tagline: str = None, category_img: str = None,
-                 thumbnail_mobile: str = None, thumbnail_desktop: str = None,
+                #  thumbnail_mobile: str = None, thumbnail_desktop: str = None,
                  operation: Literal['create', 'update', None] = 'create'):
         self.category_name = category_name
         self.category_id = category_id
         self.tagline = tagline
         self.category_img = category_img
-        self.thumbnail_mobile = thumbnail_mobile
-        self.thumbnail_desktop = thumbnail_desktop
+        # self.thumbnail_mobile = thumbnail_mobile
+        # self.thumbnail_desktop = thumbnail_desktop
         self.operation = operation
         self.validate()
 
@@ -28,11 +28,11 @@ class ProductCategory:
             raise ValueError("Category image cant be empty!")
         UtilsService.is_valid_url_string(self.category_img)
 
-    def validate_thumbnail(self, thumbnail_mobile, thumbnail_desktop):
-        if thumbnail_mobile is None or thumbnail_desktop is None:
-            raise ValueError("Category thumbnails cant be empty!")
-        UtilsService.is_valid_url_string(thumbnail_mobile)
-        UtilsService.is_valid_url_string(thumbnail_desktop)
+    # def validate_thumbnail(self, thumbnail_mobile, thumbnail_desktop):
+    #     if thumbnail_mobile is None or thumbnail_desktop is None:
+    #         raise ValueError("Category thumbnails cant be empty!")
+    #     UtilsService.is_valid_url_string(thumbnail_mobile)
+    #     UtilsService.is_valid_url_string(thumbnail_desktop)
 
     def validate_category_id(self):
         if self.operation == 'update' or self.operation is None:
@@ -44,12 +44,12 @@ class ProductCategory:
             self.validate_category_name()
             self.validate_tagline()
             self.validate_category_image()
-            self.validate_thumbnail(self.thumbnail_mobile, self.thumbnail_desktop)
+            # self.validate_thumbnail(self.thumbnail_mobile, self.thumbnail_desktop)
         elif self.operation == 'update':
             self.validate_category_name()
             self.validate_tagline()
             self.validate_category_image()
-            self.validate_thumbnail(self.thumbnail_mobile, self.thumbnail_desktop)
+            # self.validate_thumbnail(self.thumbnail_mobile, self.thumbnail_desktop)
             self.validate_category_id()
         elif self.operation is None:
             self.validate_category_id()
@@ -106,13 +106,15 @@ class ProductSubcategory:
 
 class Tag:
     def __init__(self, subcategory_id: int = None, tag_id: int = None,
-                 name: str = None, thumbnail_mobile: str = None,
-                 thumbnail_desktop: str = None, operation: Literal['create', 'update', None] = 'create'):
+                 name: str = None,
+                #  thumbnail_mobile: str = None,
+                #  thumbnail_desktop: str = None, 
+                 operation: Literal['create', 'update', None] = 'create'):
         self.subcategory_id = subcategory_id
         self.tag_id = tag_id
         self.name = name
-        self.thumbnail_mobile = thumbnail_mobile
-        self.thumbnail_desktop = thumbnail_desktop
+        # self.thumbnail_mobile = thumbnail_mobile
+        # self.thumbnail_desktop = thumbnail_desktop
         self.operation = operation
         self.validate()
 
@@ -124,11 +126,11 @@ class Tag:
         if self.name is None:
             raise ValueError("Tag name cant be empty!")
 
-    def validate_thumbnail(self, thumbnail_mobile, thumbnail_desktop):
-        if thumbnail_mobile is None or thumbnail_desktop is None:
-            raise ValueError("Tag thumbnails cant be empty!")
-        UtilsService.is_valid_url_string(thumbnail_mobile)
-        UtilsService.is_valid_url_string(thumbnail_desktop)
+    # def validate_thumbnail(self, thumbnail_mobile, thumbnail_desktop):
+    #     if thumbnail_mobile is None or thumbnail_desktop is None:
+    #         raise ValueError("Tag thumbnails cant be empty!")
+    #     UtilsService.is_valid_url_string(thumbnail_mobile)
+    #     UtilsService.is_valid_url_string(thumbnail_desktop)
 
     def validate_tag_id(self):
         if self.operation == 'update':
@@ -139,11 +141,11 @@ class Tag:
         if self.operation == 'create':
             self.validate_subcategory_id()
             self.validate_name()
-            self.validate_thumbnail(self.thumbnail_mobile, self.thumbnail_desktop)
+            # self.validate_thumbnail(self.thumbnail_mobile, self.thumbnail_desktop)
         elif self.operation == 'update':
             self.validate_subcategory_id()
             self.validate_name()
-            self.validate_thumbnail(self.thumbnail_mobile, self.thumbnail_desktop)
+            # self.validate_thumbnail(self.thumbnail_mobile, self.thumbnail_desktop)
             self.validate_tag_id()
         elif self.operation is None:
             self.validate_tag_id()
