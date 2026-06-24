@@ -7,6 +7,7 @@ class DownloadModel(models.Model):
     download_id = models.BigIntegerField()
     name = models.CharField(max_length=100)
     resource_url = models.URLField()
+    resource_type = models.CharField(max_length=50)
     product_id = models.ForeignKey(ProductModel , on_delete=models.CASCADE , related_name="downloads")
     tag_id = models.ForeignKey(TagModel , on_delete=models.CASCADE , related_name="downloads")
     subcategory_id = models.ForeignKey(ProductSubCategoryModel , on_delete=models.CASCADE , related_name="downloads")
