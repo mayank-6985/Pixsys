@@ -14,8 +14,8 @@ class ProductService:
             category_name=data['category_name'],
             tagline = data['tagline'],
             category_img= data['category_img'],
-            thumbnail_mobile=data['thumbnail_mobile'],
-            thumbnail_desktop=data['thumbnail_desktop']
+            # thumbnail_mobile=data['thumbnail_mobile'],
+            # thumbnail_desktop=data['thumbnail_desktop']
         )
         success = self.repo.create_category(category=category)
         return success
@@ -35,8 +35,8 @@ class ProductService:
         tag = Tag(
             subcategory_id= data['subcategory_id'],
             name=data['name'],
-            thumbnail_desktop=data['thumbnail_desktop'],
-            thumbnail_mobile=data['thumbnail_mobile']
+            # thumbnail_desktop=data['thumbnail_desktop'],
+            # thumbnail_mobile=data['thumbnail_mobile']
             )
         success = self.repo.create_tag(tag=tag)
         return success
@@ -58,8 +58,8 @@ class ProductService:
             category_img=data['category_img'],
             category_name=data['category_name'],
             tagline=data['tagline'],
-            thumbnail_desktop=data['thumbnail_desktop'],
-            thumbnail_mobile=data['thumbnail_mobile'],
+            # thumbnail_desktop=data['thumbnail_desktop'],
+            # thumbnail_mobile=data['thumbnail_mobile'],
             operation='update'            
             )
         success = self.repo.update_category(category=category)
@@ -82,8 +82,8 @@ class ProductService:
             subcategory_id=data['subcategory_id'],
             tag_id=data['tag_id'],
             name=data['name'],
-            thumbnail_desktop=data['thumbnail_desktop'],
-            thumbnail_mobile=data['thumbnail_mobile'],
+            # thumbnail_desktop=data['thumbnail_desktop'],
+            # thumbnail_mobile=data['thumbnail_mobile'],
         )
         success = self.repo.update_tag(tag=tag)
         return success

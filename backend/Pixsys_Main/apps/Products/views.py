@@ -1,6 +1,7 @@
 from rest_framework import status, permissions
 from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema, inline_serializer ,OpenApiParameter
+from django.core.exceptions import ValidationError
 import traceback
 import logging
 from rest_framework.views import APIView
@@ -162,6 +163,8 @@ class CategoryListView(APIView):
             if success:
                 return Response({"message": "Category deleted successfully"}, status=status.HTTP_200_OK)
             return Response({"error": "Deletion failed"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -309,6 +312,8 @@ class SubCategoryListUpdateView(APIView):
             if success:
                 return Response({"message": "Category deleted successfully"}, status=status.HTTP_200_OK)
             return Response({"error": "Deletion failed"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -431,6 +436,8 @@ class TagListUpdateView(APIView):
             if success:
                 return Response({"message": "Category deleted successfully"}, status=status.HTTP_200_OK)
             return Response({"error": "Deletion failed"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -554,6 +561,8 @@ class ProductListView(APIView):
             if success:
                 return Response({"message": "Category deleted successfully"}, status=status.HTTP_200_OK)
             return Response({"error": "Deletion failed"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:

@@ -6,8 +6,8 @@ class ProductCategoryModel(models.Model):
     category_name = models.CharField(max_length=50)
     tagline = models.CharField(max_length=100)
     category_img = models.URLField()
-    thumbnail_mobile = models.URLField()
-    thumbnail_desktop = models.URLField()
+    # thumbnail_mobile = models.URLField()
+    # thumbnail_desktop = models.URLField()
 
     class Meta:
         db_table = "Product_Category_Table"
@@ -71,12 +71,12 @@ class TagModel(models.Model):
         help_text="e.g. 'Q series', 'V100 series'.",
     )
     tag_id = models.BigIntegerField()
-    thumbnail_mobile = models.URLField(    
-        help_text="Mobile-cropped thumbnail, same rationale as Category's mobile/desktop split.",
-    )
-    thumbnail_desktop = models.URLField(        
-        help_text="Desktop-cropped thumbnail, same rationale as Category's mobile/desktop split.",
-    )
+    # thumbnail_mobile = models.URLField(    
+    #     help_text="Mobile-cropped thumbnail, same rationale as Category's mobile/desktop split.",
+    # )
+    # thumbnail_desktop = models.URLField(        
+    #     help_text="Desktop-cropped thumbnail, same rationale as Category's mobile/desktop split.",
+    # )
  
     class Meta:
         ordering = ["name"]
