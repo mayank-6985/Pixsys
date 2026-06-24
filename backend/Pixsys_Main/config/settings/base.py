@@ -26,13 +26,18 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'drf_spectacular',
-    'drf_spectacular_sidecar',
+    'drf_spectacular_sidecar',    
+    'apps.Auth',
     'apps.News',
     'apps.Utils',
     'apps.Solutions',
     'apps.Products',
     'apps.Home',
+    
 ]
+
+# Use custom user model with email as username
+AUTH_USER_MODEL = 'Auth.User'
 
 MIDDLEWARE = [
     'django.middleware.gzip.GZipMiddleware',
@@ -170,14 +175,29 @@ LOGGING = {
 
 # REST Framework settings
 REST_FRAMEWORK = {
-    # This completely removes Session and Basic authentication defaults
-    'DEFAULT_AUTHENTICATION_CLASSES': [], 
+    # Use header-based JWT authentication (Authorization: Bearer <token>)
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     # This ensures no permissions are required globally
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
 }
+
+# Simple JWT and cookie config
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
+JWT_AUTH_COOKIE_NAME = 'access_token'
+JWT_REFRESH_COOKIE_NAME = 'refresh_token'
+JWT_COOKIE_SECURE = False
+JWT_COOKIE_SAMESITE = 'Lax'
 
 
 # API DOCUMENTATION SETTINGS
@@ -195,6 +215,20 @@ SPECTACULAR_SETTINGS = {
     # Swagger always accessible
     'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
 }
+
+# Document Bearer token authentication for Swagger/OpenAPI
+SPECTACULAR_SETTINGS.setdefault('COMPONENTS', {})
+SPECTACULAR_SETTINGS['COMPONENTS'].setdefault('securitySchemes', {})
+SPECTACULAR_SETTINGS['COMPONENTS']['securitySchemes']['bearerAuth'] = {
+    'type': 'http',
+    'scheme': 'bearer',
+    'bearerFormat': 'JWT',
+}
+
+# Apply bearerAuth globally (individual views can override)
+SPECTACULAR_SETTINGS.setdefault('SECURITY', [])
+if {'bearerAuth': []} not in SPECTACULAR_SETTINGS['SECURITY']:
+    SPECTACULAR_SETTINGS['SECURITY'].append({'bearerAuth': []})
 
 
 

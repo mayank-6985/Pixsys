@@ -8,7 +8,8 @@ class HomeService:
     def get_slider_images(self):
         slider = self.repo.get_slider()
         if not slider:
-            raise ValueError("No slider data found.")
+            # No slider configured yet — return empty list for public GET
+            return []
         return slider.slideImages
 
     def save_slider_images(self, slider_images: list):
