@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { FiSend, FiArrowRight } from "react-icons/fi";
 import ScrollReveal from "../components/ScrollReveal";
+import api from "../api";
 const About = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    number: "",
-    email: "",
+    full_name: "",
+    phone_number: "",
+    email_address: "",
     poul: "",
     industry: "",
-    product: "",
+    product_of_interest: "",
     description: "",
   });
 
@@ -24,32 +25,22 @@ const About = () => {
     setStatus("loading");
 
     try {
-      const response = await fetch("aboutus/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to submit form.");
-      }
-
+      const response = await api.post("contactus/inquiries/", formData);
       setStatus("success");
       setFormData({
-        name: "",
-        number: "",
-        email: "",
+        full_name: "",
+        phone_number: "",
+        email_address: "",
         poul: "",
         industry: "",
-        product: "",
+        product_of_interest: "",
         description: "",
       });
 
       setTimeout(() => setStatus("idle"), 5000);
     } catch (error) {
       console.error("Submission Error:", error);
+      throw new Error(error?.response?.data?.message);
       setStatus("error");
     }
   };
@@ -96,9 +87,9 @@ const About = () => {
                 </label>
                 <input
                   type="text"
-                  name="name"
+                  name="full_name"
                   required
-                  value={formData.name}
+                  value={formData.full_name}
                   onChange={handleChange}
                   placeholder="John Doe"
                   className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400"
@@ -111,9 +102,9 @@ const About = () => {
                 </label>
                 <input
                   type="tel"
-                  name="number"
+                  name="phone_number"
                   required
-                  value={formData.number}
+                  value={formData.phone_number}
                   onChange={handleChange}
                   placeholder="+91 98765 43210"
                   className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400"
@@ -126,9 +117,9 @@ const About = () => {
                 </label>
                 <input
                   type="email"
-                  name="email"
+                  name="email_address"
                   required
-                  value={formData.email}
+                  value={formData.email_address}
                   onChange={handleChange}
                   placeholder="john@company.com"
                   className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400"
@@ -169,8 +160,8 @@ const About = () => {
                 </label>
                 <input
                   type="text"
-                  name="product"
-                  value={formData.product}
+                  name="product_of_interest"
+                  value={formData.product_of_interest}
                   onChange={handleChange}
                   placeholder="e.g. Servo Drives, PLC"
                   className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400"

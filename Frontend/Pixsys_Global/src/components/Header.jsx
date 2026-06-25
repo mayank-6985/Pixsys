@@ -117,7 +117,7 @@ const Header = () => {
                       className="border-l border-zinc-200 pl-6 first:border-0 first:pl-0"
                     >
                       <Link
-                        to={`/products?category=${category.category_name}`}
+                        to={`/products?category=${category.category_id}`}
                         onClick={() => setIsMenuOpen(false)}
                         className="inline-block text-xl font-mono font-bold text-zinc-950 hover:text-[#da0e19] uppercase tracking-widest mb-6 transition-colors"
                       >
@@ -134,7 +134,7 @@ const Header = () => {
                           }
                         >
                           <Link
-                            to={`/products?series=${subcategory.tags?.[0]?.name || ""}`}
+                            to={`/products?category=${category.category_id}&sub=${subcategory.subcategory_id}`}
                             onClick={() => setIsMenuOpen(false)}
                             className="inline-block text-zinc-900 hover:text-[#da0e19] font-bold uppercase text-sm mb-3 transition-colors"
                           >
@@ -145,7 +145,7 @@ const Header = () => {
                             {subcategory.tags?.map((tag, lIdx) => (
                               <li key={tag.tag_id || lIdx}>
                                 <Link
-                                  to={`/products?series=${tag.name}`}
+                                  to={`/products?category=${category.category_id}&sub=${subcategory.subcategory_id}&series=${tag.tag_id}`}
                                   className="group/link flex items-center gap-2 text-sm text-zinc-500 hover:text-[#da0e19] transition-colors font-medium capitalize w-fit"
                                   onClick={() => setIsMenuOpen(false)}
                                 >
@@ -414,7 +414,7 @@ const Header = () => {
                                 {subcategory.tags?.map((tag, lIdx) => (
                                   <Link
                                     key={tag.tag_id || lIdx}
-                                    to={`/products?series=${tag.name}`}
+                                    to={`/products?category=${category.category_id}&sub=${subcategory.subcategory_id}&series=${tag.tag_id}`}
                                     className="flex items-center gap-3 py-2.5 pl-14 pr-6 text-sm text-zinc-500 hover:text-[#da0e19] capitalize font-medium"
                                     onClick={() => setIsMenuOpen(false)}
                                   >
