@@ -58,11 +58,11 @@ const DetailedProductView = ({
             {activeSection?.description}
           </p>
         </div>
-        <div className="w-full md:w-5/12 hidden md:block">
+        <div className="w-full md:w-5/12 hidden md:block h-80 overflow-hidden">
           <img
             src={activeSection?.category_img}
             alt={activeSection?.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-fit"
           />
         </div>
       </div>

@@ -16,6 +16,7 @@ import About from "./pages/About";
 import News from "./pages/News";
 import Download from "./pages/Download";
 import NewsDetail from "./pages/NewsDetail";
+import Search from "./pages/Search";
 
 const rootErrorBoundary = () => {
   const error = useRouteError();
@@ -36,7 +37,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />,
-    errorElement: <rootErrorBoundaryx />,
+    errorElement: <rootErrorBoundary />,
     children: [
       { index: true, element: <Home /> },
       { path: "/products", element: <Products /> },
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
       { path: "/news", element: <News /> },
       { path: "/news/:id", element: <NewsDetail /> },
       { path: "/download", element: <Download /> },
+      { path: "/search", element: <Search /> },
       { path: "*", element: <PageNotFound /> },
     ],
   },

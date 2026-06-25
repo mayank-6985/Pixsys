@@ -1,3 +1,5 @@
+import api from "../api.js";
+
 export const fetchAllDownloads = async () => {
   try {
     const response = await api.get("downloads/");

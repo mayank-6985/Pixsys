@@ -37,9 +37,6 @@ const SingleProductView = ({ product, onBack }) => {
         </div>
 
         <div className="flex flex-col justify-center">
-          <span className="text-[#da0e19] font-bold text-sm tracking-wider uppercase bg-red-50 px-3 py-1 rounded-full w-fit mb-4">
-            ID: {product.product_id}
-          </span>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             {product.name}
           </h1>
@@ -77,23 +74,17 @@ const SingleProductView = ({ product, onBack }) => {
           )}
 
           {activeTab === "specifications" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {product.specifications.map((url, idx) => (
                 <div
                   key={idx}
-                  className="flex justify-between items-center p-5 border border-gray-100 rounded-lg hover:border-[#da0e19] hover:shadow-md transition-all group"
+                  className="w-full overflow-hidden rounded-xl border border-gray-100 shadow-sm"
                 >
-                  <span className="text-base font-bold text-gray-700 group-hover:text-[#da0e19] transition-colors">
-                    Specification Document {idx + 1}
-                  </span>
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2 bg-gray-50 group-hover:bg-red-50 text-gray-600 group-hover:text-[#da0e19] px-4 py-2 rounded font-bold text-sm transition-colors"
-                  >
-                    <HiOutlineDownload className="text-lg" />
-                  </a>
+                  <img
+                    src={url}
+                    alt={`Specification ${idx + 1}`}
+                    className="w-full h-auto object-contain"
+                  />
                 </div>
               ))}
             </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { BiMenu, BiSearch } from "react-icons/bi";
 import { FaXmark } from "react-icons/fa6";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MdKeyboardArrowRight, MdKeyboardArrowDown } from "react-icons/md";
 import { useSolutions } from "../hooks/useSolutions";
 import { useProducts } from "../hooks/useProducts";
@@ -9,7 +9,9 @@ import { useProducts } from "../hooks/useProducts";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchText, setSearchText] = useState("");
   const location = useLocation();
+  const navigate = useNavigate();
   const [scrollProgress, setScrollProgress] = useState(0);
   const [expandedMenus, setExpandedMenus] = useState({});
   const circleRef = useRef(null);
@@ -325,11 +327,33 @@ const Header = () => {
                 <input
                   className="outline-none font-light w-full pr-4 bg-transparent"
                   type="text"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const trimmed = searchText.trim();
+                      if (trimmed) {
+                        navigate(
+                          `/search?keyword=${encodeURIComponent(trimmed)}`,
+                        );
+                        setIsSearchOpen(false);
+                      }
+                    }
+                  }}
                   placeholder="Search Keyword..."
                   autoFocus={isSearchOpen}
                 />
 
-                <button className="text-gray-400 hover:text-[#da0e19] transition-colors flex-shrink-0 cursor-pointer">
+                <button
+                  onClick={() => {
+                    const trimmed = searchText.trim();
+                    if (!trimmed) return;
+                    navigate(`/search?keyword=${encodeURIComponent(trimmed)}`);
+                    setIsSearchOpen(false);
+                  }}
+                  className="text-gray-400 hover:text-[#da0e19] transition-colors flex-shrink-0 cursor-pointer"
+                >
                   <BiSearch size={24} />
                 </button>
               </div>
