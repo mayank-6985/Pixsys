@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, serializers
 from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiExample
+from apps.Auth.decorators import public_endpoint
 
 # Assuming you have your service and serializers imported
 from .serializers import SearchSerializer
@@ -54,6 +55,7 @@ class ProductSearchView(APIView):
             )
         ]
     )
+    @public_endpoint
     def get(self, request):
         # Validate query parameters instead of request body for GET requests
         serializer = SearchSerializer(data=request.query_params)
@@ -163,6 +165,7 @@ class GlobalSearchView(APIView):
             )
         ]
     )
+    @public_endpoint
     def get(self, request):
         # Validate query parameters for GET requests
         serializer = SearchSerializer(data=request.query_params)
