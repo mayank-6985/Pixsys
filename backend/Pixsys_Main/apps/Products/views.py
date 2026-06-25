@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import serializers
 from .Service.product_service import ProductService
+from apps.Auth.decorators import public_endpoint
+
 from .serializers import *
 logger = logging.getLogger(__name__)
 
@@ -17,6 +19,7 @@ service = ProductService()
 # navigation bar view
 """No need for the authentication"""
 class NavTreeView(APIView):
+    @public_endpoint
     def get(self, request):
         try:
             data = service.get_navigation_product_list()
@@ -62,6 +65,11 @@ class CategoryListView(APIView):
         """
         Handles: Adding new Category.
         """
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+
         serializer = ProductCategoryCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -75,7 +83,7 @@ class CategoryListView(APIView):
                 {"error": "An error occurred while creating the news entry."}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-            
+    @public_endpoint       
     def get(self, request):
         try:
             data = service.get_category_list()
@@ -110,6 +118,11 @@ class CategoryListView(APIView):
         """
         Handles: Updating old Category.
         """             
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+        
         serializer = ProductCategoryUpdateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -153,7 +166,12 @@ class CategoryListView(APIView):
     def delete(self, request):
         """
         Handles: deleteing old Category.
-        """   
+        """
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+           
         category_id = request.query_params.get("category_id")
         if not category_id:
             return Response({"error": "Missing required field: 'category_id'."}, status=status.HTTP_400_BAD_REQUEST)
@@ -182,6 +200,7 @@ class CategoryListView(APIView):
 GET : returns the complete details fort the category , including sub-category , tags, product.
 """
 class SubCategoryPageView(APIView):
+    @public_endpoint
     def get(self, request , category_id):
         try:
             data = service.get_list_of_product_for_category(category_id=category_id)
@@ -223,6 +242,11 @@ class SubCategoryListUpdateView(APIView):
         """
         Handles: Adding new Subcategory.
         """
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+        
         serializer = ProductSubCategoryCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -258,6 +282,11 @@ class SubCategoryListUpdateView(APIView):
         """
         Handles: Updating Old Subcategory
         """
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+        
         serializer = ProductSubCategoryUpdateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -302,7 +331,12 @@ class SubCategoryListUpdateView(APIView):
     def delete(self, request):
         """
         Handles: deleteing old Category.
-        """   
+        """  
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+         
         subcategory_id = request.query_params.get("subcategory_id")
         if not subcategory_id:
             return Response({"error": "Missing required field: 'subcategory_id'."}, status=status.HTTP_400_BAD_REQUEST)
@@ -349,6 +383,11 @@ class TagListUpdateView(APIView):
         """
         Handles: Adding new news.
         """
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+        
         serializer = ProductTagCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -382,6 +421,11 @@ class TagListUpdateView(APIView):
         """
         Handles: Updating Old Tag
         """
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+        
         serializer = ProductTagUpdateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -427,6 +471,11 @@ class TagListUpdateView(APIView):
         """
         Handles: deleteing old Category.
         """   
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+        
         tag_id = request.query_params.get("tag_id")
         if not tag_id:
             return Response({"error": "Missing required field: 'tag_id'."}, status=status.HTTP_400_BAD_REQUEST)
@@ -473,6 +522,11 @@ class ProductListView(APIView):
         """
         Handles: Adding new news.
         """
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+        
         serializer = ProductCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -507,6 +561,11 @@ class ProductListView(APIView):
         """
         Handles: Updating Old Product
         """
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+
         serializer = ProductUpdateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -552,6 +611,11 @@ class ProductListView(APIView):
         """
         Handles: deleteing old Category.
         """   
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+        
         product_id = request.query_params.get("product_id")
         if not product_id:
             return Response({"error": "Missing required field: 'product_id'."}, status=status.HTTP_400_BAD_REQUEST)
@@ -573,6 +637,7 @@ class ProductListView(APIView):
             )
 
 class ProductView(APIView):
+    @public_endpoint
     def get(self, request , product_id):
         try:
             data = service.get_product(product_id = product_id)
