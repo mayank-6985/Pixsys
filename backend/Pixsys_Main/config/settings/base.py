@@ -233,4 +233,3 @@ if {'bearerAuth': []} not in SPECTACULAR_SETTINGS['SECURITY']:
     SPECTACULAR_SETTINGS['SECURITY'].append({'bearerAuth': []})
 
 
-
