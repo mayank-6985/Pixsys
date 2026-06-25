@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers
+from apps.Auth.decorators import public_endpoint
 
 from .serializers import ContactSubmissionSerializer
 from .Services.inquiry_services import InquiryService
@@ -35,9 +36,9 @@ class ContactSubmissionView(APIView):
     )
     def get(self, request):
         # Depending on your setup, you may want to restrict GET to admins:
-        # from rest_framework.permissions import IsAdminUser
-        # self.permission_classes = [IsAdminUser]
-        # self.check_permissions(request)
+        from rest_framework.permissions import IsAdminUser
+        self.permission_classes = [IsAdminUser]
+        self.check_permissions(request)
         
         try:
             data = inquiry_service.get_all_submissions()
@@ -66,6 +67,7 @@ class ContactSubmissionView(APIView):
             )
         }
     )
+    @public_endpoint
     def post(self, request):
         serializer = ContactSubmissionSerializer(data=request.data)
         
