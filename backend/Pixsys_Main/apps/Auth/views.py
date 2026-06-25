@@ -6,17 +6,17 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
+User = get_user_model()
 class EmailTokenObtainSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
         email = attrs.get('email')
-        password = attrs.get('password')
-        User = get_user_model()
-        user = User.objects.filter(email__iexact=email).first()
+        password = attrs.get('password')        
+        user = User.objects.filter(email=email).first()
         if user is None or not user.check_password(password):
+        # if user is None:
             raise serializers.ValidationError('No active account found with the given credentials')
         attrs['user'] = user
         return attrs
