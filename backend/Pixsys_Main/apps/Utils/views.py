@@ -47,6 +47,11 @@ class GenerateUploadURLView(APIView):
         }
     )    
     def post(self, request):
+        # Require authentication for POST requests only
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+        
         try:
             # DRF's request.data automatically handles JSON parsing
             file_name = request.data.get('file_name')
