@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { FiPlus, FiEdit2, FiTrash2, FiSave, FiX } from "react-icons/fi";
 import { AiFillProduct } from "react-icons/ai";
 import {
@@ -8,6 +8,7 @@ import {
   useTagMutations,
   useProductMutations,
   useCategoryDetails,
+  useProductDetail,
 } from "../hooks/useProducts";
 
 const emptyCategory = {
@@ -31,6 +32,41 @@ const emptyProduct = {
   tagline: "",
   description: "",
   product_img: "",
+  specifications: [""],
+  downloads: [{ resource_type: "CATALOG", name: "", resource_url: "" }],
+};
+
+const normalizeDownloadsForForm = (downloads) => {
+  if (Array.isArray(downloads) && downloads.length) return downloads;
+  if (downloads && typeof downloads === "object") {
+    const flattened = [];
+    Object.entries(downloads).forEach(([resource_type, items]) => {
+      if (!Array.isArray(items)) return;
+      items.forEach((item) => {
+        flattened.push({
+          resource_type,
+          name: item?.name || "",
+          resource_url: item?.resource_url || item?.resourceUrl || "",
+          ...(item?.download_id ? { download_id: item.download_id } : {}),
+        });
+      });
+    });
+    if (flattened.length) return flattened;
+  }
+  return [{ resource_type: "CATALOG", name: "", resource_url: "" }];
+};
+
+const groupDownloadsForPayload = (downloads) => {
+  return (downloads || []).reduce((acc, dl) => {
+    if (!dl || !dl.resource_type || !dl.name || !dl.resource_url) return acc;
+    const item = {
+      name: dl.name,
+      resource_url: dl.resource_url,
+      ...(dl.download_id ? { download_id: dl.download_id } : {}),
+    };
+    acc[dl.resource_type] = [...(acc[dl.resource_type] || []), item];
+    return acc;
+  }, {});
 };
 
 const Products = () => {
@@ -40,10 +76,13 @@ const Products = () => {
   const [view, setView] = useState("list");
   const [formType, setFormType] = useState("categories");
   const [editingId, setEditingId] = useState(null);
+  const [productEditId, setProductEditId] = useState(null);
 
   const [formData, setFormData] = useState({});
 
   const { data: rawData = [], isLoading } = useAdminProductsData();
+  const { data: productDetail, isLoading: isProductDetailLoading } =
+    useProductDetail(productEditId);
 
   const { data: detailedCategoryData = [], isLoading: isDetailsLoading } =
     useCategoryDetails(selCat);
@@ -99,6 +138,7 @@ const Products = () => {
 
   const handleOpenCreate = () => {
     setEditingId(null);
+    setProductEditId(null);
     setFormType(activeLevel);
 
     if (activeLevel === "categories") {
@@ -140,13 +180,8 @@ const Products = () => {
       });
     } else if (type === "products") {
       setEditingId(item.product_id);
-      setFormData({
-        tag_id: item.tag_id || selTag || "",
-        name: item.name || "",
-        tagline: item.tagline || "",
-        description: item.description || "",
-        product_img: item.product_img || "",
-      });
+      setProductEditId(item.product_id);
+      setFormData({ ...emptyProduct, tag_id: item.tag_id || selTag || "" });
     }
     setView("form");
   };
@@ -179,12 +214,76 @@ const Products = () => {
     }
   };
 
+  const handleSpecChange = (index, value) => {
+    const newSpecs = [...(formData.specifications || [])];
+    newSpecs[index] = value;
+    setFormData((prev) => ({ ...prev, specifications: newSpecs }));
+  };
+  const addSpec = () => {
+    setFormData((prev) => ({
+      ...prev,
+      specifications: [...(prev.specifications || []), ""],
+    }));
+  };
+  const removeSpec = (index) => {
+    const newSpecs = formData.specifications.filter((_, i) => i !== index);
+    setFormData((prev) => ({ ...prev, specifications: newSpecs }));
+  };
+
+  const handleDownloadChange = (index, field, value) => {
+    const newDownloads = [...(formData.downloads || [])];
+    newDownloads[index][field] = value;
+    setFormData((prev) => ({ ...prev, downloads: newDownloads }));
+  };
+  const addDownload = () => {
+    setFormData((prev) => ({
+      ...prev,
+      downloads: [
+        ...(prev.downloads || []),
+        { resource_type: "CATALOG", name: "", resource_url: "" },
+      ],
+    }));
+  };
+  const removeDownload = (index) => {
+    const newDownloads = formData.downloads.filter((_, i) => i !== index);
+    setFormData((prev) => ({ ...prev, downloads: newDownloads }));
+  };
+
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     const parsedValue =
       name.includes("_id") && type !== "text" ? parseInt(value) || "" : value;
     setFormData((prev) => ({ ...prev, [name]: parsedValue }));
   };
+
+  useEffect(() => {
+    if (
+      formType === "products" &&
+      productEditId &&
+      productDetail &&
+      productDetail.product_id === productEditId
+    ) {
+      const existingSpecs =
+        Array.isArray(productDetail.specifications) &&
+        productDetail.specifications.length
+          ? productDetail.specifications
+          : [""];
+
+      const existingDownloads = normalizeDownloadsForForm(
+        productDetail.downloads || productDetail.original?.downloads,
+      );
+
+      setFormData({
+        tag_id: productDetail.tag_id || selTag || "",
+        name: productDetail.name || "",
+        tagline: productDetail.tagline || "",
+        description: productDetail.description || "",
+        product_img: productDetail.product_img || "",
+        specifications: existingSpecs,
+        downloads: existingDownloads,
+      });
+    }
+  }, [formType, productEditId, productDetail, selTag]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -210,16 +309,57 @@ const Products = () => {
           )
         : createTag.mutate(formData, { onSuccess: () => setView("list") });
     } else if (formType === "products") {
+      const cleanedSpecs = (formData.specifications || []).filter(
+        (s) => s.trim() !== "",
+      );
+
+      const payload = {
+        tag_id: formData.tag_id,
+        name: formData.name,
+        tagline: formData.tagline,
+        description: formData.description,
+        product_img: formData.product_img,
+        specifications: cleanedSpecs,
+        downloads: formData.downloads || [],
+      };
+
       editingId
         ? updateProd.mutate(
-            { product_id: editingId, ...formData },
-            { onSuccess: () => setView("list") },
+            { product_id: editingId, ...payload },
+            {
+              onSuccess: () => {
+                setView("list");
+                setProductEditId(null);
+              },
+            },
           )
-        : createProd.mutate(formData, { onSuccess: () => setView("list") });
+        : createProd.mutate(payload, {
+            onSuccess: () => {
+              setView("list");
+              setProductEditId(null);
+            },
+          });
     }
   };
 
   if (view === "form") {
+    if (
+      formType === "products" &&
+      productEditId &&
+      isProductDetailLoading &&
+      !productDetail
+    ) {
+      return (
+        <div className="min-h-screen bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 w-full font-sans flex items-center justify-center">
+          <div className="text-center p-8 bg-white border border-zinc-200 rounded-xl shadow-sm">
+            <p className="text-zinc-500 text-sm uppercase tracking-widest">
+              Loading product details...
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 w-full font-sans">
         <div className="max-w-3xl mx-auto bg-white border border-zinc-200 shadow-xl overflow-hidden">
@@ -470,13 +610,144 @@ const Products = () => {
                       className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
                     />
                   </div>
+
+                  <div className="pt-4 border-t border-zinc-200">
+                    <div className="flex justify-between items-center mb-4">
+                      <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest">
+                        Specifications
+                      </label>
+                      <button
+                        type="button"
+                        onClick={addSpec}
+                        className="text-xs font-bold text-[#da0e19] uppercase tracking-widest flex items-center gap-1 hover:underline"
+                      >
+                        <FiPlus /> Add Spec
+                      </button>
+                    </div>
+                    {formData.specifications?.map((spec, index) => (
+                      <div key={index} className="flex gap-2 mb-3">
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. 24V DC Power"
+                          value={spec}
+                          onChange={(e) =>
+                            handleSpecChange(index, e.target.value)
+                          }
+                          className="flex-1 px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] outline-none transition-all text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeSpec(index)}
+                          className="px-4 bg-zinc-200 text-zinc-600 hover:bg-red-100 hover:text-red-600 transition-colors"
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-4 border-t border-zinc-200">
+                    <div className="flex justify-between items-center mb-4">
+                      <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest">
+                        Downloads
+                      </label>
+                      <button
+                        type="button"
+                        onClick={addDownload}
+                        className="text-xs font-bold text-[#da0e19] uppercase tracking-widest flex items-center gap-1 hover:underline"
+                      >
+                        <FiPlus /> Add Download
+                      </button>
+                    </div>
+                    {formData.downloads?.map((dl, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-col gap-3 p-4 mb-4 bg-zinc-50 border border-zinc-200 relative"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => removeDownload(index)}
+                          className="absolute top-2 right-2 text-zinc-400 hover:text-red-600 transition-colors"
+                        >
+                          <FiX size={18} />
+                        </button>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">
+                              Type *
+                            </label>
+                            <select
+                              required
+                              value={dl.resource_type}
+                              onChange={(e) =>
+                                handleDownloadChange(
+                                  index,
+                                  "resource_type",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm"
+                            >
+                              <option value="SOFTWARE">SOFTWARE</option>
+                              <option value="SOFTWARE_MANUAL">
+                                SOFTWARE_MANUAL
+                              </option>
+                              <option value="CATALOG">CATALOG</option>
+                              <option value="DIMENTION">DIMENTION</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">
+                              Name *
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={dl.name}
+                              onChange={(e) =>
+                                handleDownloadChange(
+                                  index,
+                                  "name",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm"
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">
+                              URL *
+                            </label>
+                            <input
+                              type="url"
+                              required
+                              value={dl.resource_url}
+                              onChange={(e) =>
+                                handleDownloadChange(
+                                  index,
+                                  "resource_url",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </>
               )}
 
               <div className="flex justify-end pt-6 border-t border-zinc-200 gap-4">
                 <button
                   type="button"
-                  onClick={() => setView("list")}
+                  onClick={() => {
+                    setView("list");
+                    setProductEditId(null);
+                  }}
                   className="px-6 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs hover:bg-zinc-50 transition-colors"
                 >
                   Cancel
