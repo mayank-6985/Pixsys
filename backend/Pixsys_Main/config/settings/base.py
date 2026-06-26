@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'apps.Download', 
     'apps.Contact',
     'apps.Search',
+    'apps.Customers',
 ]
 
 # Use custom user model with email as username
@@ -181,6 +182,7 @@ REST_FRAMEWORK = {
         # DRF checks these in order top-to-bottom.
         'apps.Auth.authentication.AdminJWTAuthentication',
         'apps.Auth.authentication.CustomerJWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     # This ensures no permissions are required globally
