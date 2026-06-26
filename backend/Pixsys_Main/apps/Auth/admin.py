@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User
+from .models import User , PixsysAdminModel  , PixsysCustomerModel
 from .forms import UserCreationForm, UserChangeForm
-
 
 class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
@@ -28,3 +27,19 @@ class UserAdmin(BaseUserAdmin):
 
 
 admin.site.register(User, UserAdmin)
+
+
+@admin.register(PixsysAdminModel)
+class PixsysAdminModelAdmin(admin.ModelAdmin):
+    list_display = ('email', 'first_name', 'last_name', 'created_at')
+    search_fields = ('email', 'first_name', 'last_name')
+    readonly_fields = ('created_at',)
+        
+
+@admin.register(PixsysCustomerModel)
+class PixsysCustomerModelAdmin(admin.ModelAdmin):
+    list_display = ('email', 'phone_number', 'created_at')
+    search_fields = ('email', 'phone_number')
+    readonly_fields = ('created_at',)
+    
+    # Optional: Hide the password hash from the admin panel    

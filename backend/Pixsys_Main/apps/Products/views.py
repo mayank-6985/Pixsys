@@ -45,7 +45,16 @@ class CategoryListView(APIView):
     Endpoint: POST /categories/
     Updates the CAtegory List records without their deep content block.
     """    
-            
+    # Route permissions natively through DRF's lifecycle
+    def get_permissions(self):
+        if self.request.method == 'POST' or self.request.method == 'PUT' or self.request.method == 'DELETE':
+            # Only WebSiteAdmins can create/update the slider
+            return [IsWebSiteAdmin()]
+                
+        # Define who can view the slider (GET). 
+        # Example: Allow anyone to view it.
+        return [AllowAny()]
+
     @extend_schema(
         summary="Create fresh Category",
         description="Adds a new Category entry. Expects the object data fields directly at the root of the JSON body.",
@@ -65,10 +74,10 @@ class CategoryListView(APIView):
         """
         Handles: Adding new Category.
         """
-        # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
 
         serializer = ProductCategoryCreateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -118,10 +127,10 @@ class CategoryListView(APIView):
         """
         Handles: Updating old Category.
         """             
-        # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         serializer = ProductCategoryUpdateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -167,10 +176,10 @@ class CategoryListView(APIView):
         """
         Handles: deleteing old Category.
         """
-        # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
            
         category_id = request.query_params.get("category_id")
         if not category_id:
@@ -222,7 +231,16 @@ class SubCategoryListUpdateView(APIView):
     Endpoint: POST /subcategories/
     Updates the CAtegory List records without their deep content block.
     """    
-            
+    # Route permissions natively through DRF's lifecycle
+    def get_permissions(self):
+        if self.request.method == 'POST' or self.request.method == 'PUT' or self.request.method == 'DELETE':
+            # Only WebSiteAdmins can create/update the slider
+            return [IsWebSiteAdmin()]
+                
+        # Define who can view the slider (GET). 
+        # Example: Allow anyone to view it.
+        return [AllowAny()]
+  
     @extend_schema(
         summary="Create fresh SubCategory for Existing Category",
         description="Adds a new Sub Category entry. Expects the object data fields directly at the root of the JSON body.",
@@ -242,10 +260,10 @@ class SubCategoryListUpdateView(APIView):
         """
         Handles: Adding new Subcategory.
         """
-        # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         serializer = ProductSubCategoryCreateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -282,10 +300,10 @@ class SubCategoryListUpdateView(APIView):
         """
         Handles: Updating Old Subcategory
         """
-        # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         serializer = ProductSubCategoryUpdateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -332,10 +350,10 @@ class SubCategoryListUpdateView(APIView):
         """
         Handles: deleteing old Category.
         """  
-        # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
          
         subcategory_id = request.query_params.get("subcategory_id")
         if not subcategory_id:
@@ -363,7 +381,16 @@ class TagListUpdateView(APIView):
     Endpoint: POST /tags/
     Updates the Tag List records without their deep content block.
     """    
-            
+    # Route permissions natively through DRF's lifecycle
+    def get_permissions(self):
+        if self.request.method == 'POST' or self.request.method == 'PUT' or self.request.method == 'DELETE':
+            # Only WebSiteAdmins can create/update the slider
+            return [IsWebSiteAdmin()]
+                
+        # Define who can view the slider (GET). 
+        # Example: Allow anyone to view it.
+        return [AllowAny()]
+         
     @extend_schema(
         summary="Create fresh tags for Existing Category",
         description="Adds a new tags for existing Sub Category entry. Expects the object data fields directly at the root of the JSON body.",
@@ -383,10 +410,10 @@ class TagListUpdateView(APIView):
         """
         Handles: Adding new news.
         """
-        # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         serializer = ProductTagCreateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -421,10 +448,10 @@ class TagListUpdateView(APIView):
         """
         Handles: Updating Old Tag
         """
-        # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         serializer = ProductTagUpdateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -471,10 +498,10 @@ class TagListUpdateView(APIView):
         """
         Handles: deleteing old Category.
         """   
-        # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         tag_id = request.query_params.get("tag_id")
         if not tag_id:
@@ -502,7 +529,16 @@ class ProductListView(APIView):
     Endpoint: POST /products/
     Updates the CAtegory List records without their deep content block.
     """    
-            
+    # Route permissions natively through DRF's lifecycle
+    def get_permissions(self):
+        if self.request.method == 'POST' or self.request.method == 'PUT' or self.request.method == 'DELETE':
+            # Only WebSiteAdmins can create/update the slider
+            return [IsWebSiteAdmin()]
+                
+        # Define who can view the slider (GET). 
+        # Example: Allow anyone to view it.
+        return [AllowAny()]
+               
     @extend_schema(
         summary="Create fresh product for Existing Category",
         description="Adds a new product for existing Sub Category entry. Expects the object data fields directly at the root of the JSON body.",
@@ -522,10 +558,10 @@ class ProductListView(APIView):
         """
         Handles: Adding new news.
         """
-        # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         serializer = ProductCreateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -561,10 +597,10 @@ class ProductListView(APIView):
         """
         Handles: Updating Old Product
         """
-        # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
 
         serializer = ProductUpdateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -612,9 +648,9 @@ class ProductListView(APIView):
         Handles: deleteing old Category.
         """   
         # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         product_id = request.query_params.get("product_id")
         if not product_id:

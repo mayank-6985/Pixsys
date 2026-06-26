@@ -3,6 +3,8 @@ from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema, inline_serializer ,OpenApiParameter
 import logging
 import traceback
+from apps.Auth.permissions import IsWebSiteAdmin
+from rest_framework.permissions import AllowAny
 
 from .serializers import *
 from .Services.solutions_service import SolutionsService
@@ -55,6 +57,17 @@ class SolutonDetailView(APIView):
             
 
 class SolutionUpdateView(APIView):
+    
+    # Route permissions natively through DRF's lifecycle
+    def get_permissions(self):
+        if self.request.method == 'POST' or self.request.method == 'PUT' or self.request.method == 'DELETE':
+            # Only WebSiteAdmins can create/update the slider
+            return [IsWebSiteAdmin()]
+                
+        # Define who can view the slider (GET). 
+        # Example: Allow anyone to view it.
+        return [AllowAny()]
+
     @extend_schema(
         summary="Create fresh Solution",
         description="Adds a new solution entry. Expects the object data fields directly at the root of the JSON body.",
@@ -74,10 +87,10 @@ class SolutionUpdateView(APIView):
         """
         Handles: Adding new Solution.
         """
-        # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
 
         serializer = SolutionsCreateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -118,9 +131,9 @@ class SolutionUpdateView(APIView):
         """
         Handles: Adding new Solution.
         """
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         serializer = SolutionsUpdateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -171,9 +184,9 @@ class SolutionUpdateView(APIView):
         """
         Handles: Deleting the Solution.
         """
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         solutions_id = request.query_params.get("solutions_id")
         if not solutions_id:
@@ -197,6 +210,16 @@ class SolutionUpdateView(APIView):
             )
             
 class SolutionCategoryUpdateView(APIView):
+    # Route permissions natively through DRF's lifecycle
+    def get_permissions(self):
+        if self.request.method == 'POST' or self.request.method == 'PUT' or self.request.method == 'DELETE':
+            # Only WebSiteAdmins can create/update the slider
+            return [IsWebSiteAdmin()]
+                
+        # Define who can view the slider (GET). 
+        # Example: Allow anyone to view it.
+        return [AllowAny()]
+    
     @extend_schema(
         summary="Create fresh Solution Category",
         description="Adds a new solution category. Expects the object data fields directly at the root of the JSON body.",
@@ -216,9 +239,9 @@ class SolutionCategoryUpdateView(APIView):
         """
         Handles: Adding new Solution.
         """
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         serializer = SolutiosCategoryCreateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -260,9 +283,9 @@ class SolutionCategoryUpdateView(APIView):
         """
         Handles: Adding Updating Solution Category.
         """
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         serializer = SolutionCategoryUpdateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -314,9 +337,9 @@ class SolutionCategoryUpdateView(APIView):
         """
         Handles: Deleting the Solution.
         """
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         category_id = request.query_params.get("category_id")
         if not category_id:

@@ -5,10 +5,22 @@ import logging
 from .Utils_Service.utils_service import AWSUtilService
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers
+from apps.Auth.permissions import IsWebSiteAdmin
+from rest_framework.permissions import AllowAny
+
 
 logger = logging.getLogger(__name__)
 
 class GenerateUploadURLView(APIView):
+    # Route permissions natively through DRF's lifecycle
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            # Only WebSiteAdmins can create/update the slider
+            return [IsWebSiteAdmin()]
+                
+        # Define who can view the slider (GET). 
+        # Example: Allow anyone to view it.
+        return [AllowAny()]
     """
     Endpoint: POST /api/generate-upload-url/
     Generates a secure S3 presigned URL for direct frontend file uploads.
