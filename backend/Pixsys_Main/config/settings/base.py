@@ -177,10 +177,11 @@ LOGGING = {
 
 # REST Framework settings
 REST_FRAMEWORK = {
-    # Use header-based JWT authentication (Authorization: Bearer <token>)
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        # DRF checks these in order top-to-bottom.
+        'apps.Auth.authentication.AdminJWTAuthentication',
+        'apps.Auth.authentication.CustomerJWTAuthentication',
+    ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     # This ensures no permissions are required globally
     'DEFAULT_PERMISSION_CLASSES': [
