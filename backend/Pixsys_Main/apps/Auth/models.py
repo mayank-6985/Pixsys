@@ -81,6 +81,12 @@ class PixsysAdminModel(models.Model):
     def check_password(self, raw_password):
         return django_check_password(raw_password, self.password)
     
+    # Add this to mimic Django's authenticated state
+    @property
+    def is_authenticated(self):
+        """Always return True. This is a way to tell DRF that if this user object exists, they are authenticated."""
+        return True
+
 
 class PixsysCustomerModel(models.Model):
     email = models.EmailField(unique=True, db_index=True)
@@ -107,3 +113,9 @@ class PixsysCustomerModel(models.Model):
     # Helper method to mimic Django's native password checking
     def check_password(self, raw_password):
         return django_check_password(raw_password, self.password)
+    
+    # Add this to mimic Django's authenticated state
+    @property
+    def is_authenticated(self):
+        """Always return True. This is a way to tell DRF that if this user object exists, they are authenticated."""
+        return True
