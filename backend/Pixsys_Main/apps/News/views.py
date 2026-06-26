@@ -59,7 +59,17 @@ class NewsUpdateAPIView(APIView):
     - PUT:    Update an existing news record
     - DELETE: Remove a news record
     """
+    # Route permissions natively through DRF's lifecycle
+    def get_permissions(self):
+        if self.request.method == 'POST' or self.request.method == 'PUT' or self.request.method == 'DELETE':
+            # Only WebSiteAdmins can create/update the slider
+            return [IsWebSiteAdmin()]
+                
+        # Define who can view the slider (GET). 
+        # Example: Allow anyone to view it.
+        return [AllowAny()]
 
+    
     @extend_schema(
         summary="Create fresh news",
         description="Adds a new news entry. Expects the object data fields directly at the root of the JSON body.",
@@ -80,9 +90,9 @@ class NewsUpdateAPIView(APIView):
         Handles: Adding new news.
         """
         # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
 
         serializer = NewsSerializer(data=request.data)
         if not serializer.is_valid():
@@ -122,9 +132,9 @@ class NewsUpdateAPIView(APIView):
         Handles: Updating old news.
         """
         # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
 
         news_id = request.data.get('news_id')
         if not news_id:
@@ -174,9 +184,9 @@ class NewsUpdateAPIView(APIView):
         Handles: Deleting the news.
         """
         # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
         
         news_id = request.query_params.get("news_id")
         if not news_id:
