@@ -127,21 +127,22 @@ const News = () => {
                   <Link
                     to={`/news/${article.news_id}`}
                     key={article.news_id}
-                    className="w-full flex-shrink-0 grid grid-cols-1 lg:grid-cols-2 min-h-[350px] lg:h-[450px]"
+                    className="w-full flex-shrink-0 grid grid-cols-1 lg:grid-cols-5 min-h-[350px] lg:h-[450px]"
                   >
-                    <div className="w-full h-[250px] lg:h-full overflow-hidden">
+                    <div className="w-full h-[250px] lg:h-full overflow-hidden lg:col-span-3">
                       <img
                         src={article.thumbnail}
                         alt={article.heading}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-fit"
                       />
                     </div>
-                    <div className="p-8 md:p-12 flex flex-col justify-center overflow-hidden ">
-                      <div className="flex items-center gap-2 text-gray-400 text-sm mb-4 shrink-0 ">
+
+                    <div className="p-8 md:p-12 flex flex-col justify-center overflow-hidden lg:col-span-2">
+                      <div className="flex items-center gap-2 text-gray-400 text-sm mb-4 shrink-0">
                         <span className="w-8 h-[1px] bg-gray-300"></span>
                         {article.date.replace(/-/g, ".")}
                       </div>
-                      <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 line-clamp-2 shrink-0 ">
+                      <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 line-clamp-2 shrink-0">
                         {article.heading}
                       </h2>
 
@@ -220,7 +221,7 @@ const News = () => {
                   <img
                     src={article.thumbnail}
                     alt={article.heading}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    className="w-full h-full object-fit group-hover:scale-105 transition-transform duration-700"
                   />
                 </div>
                 <div className="flex items-center gap-2 text-gray-400 text-xs mb-2">
