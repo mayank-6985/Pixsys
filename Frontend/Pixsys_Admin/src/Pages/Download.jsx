@@ -15,6 +15,8 @@ import {
 } from "../hooks/useDownloads";
 import { useAdminProductsData, useCategoryDetails } from "../hooks/useProducts";
 
+import S3Uploader from "../Components/S3Uploader";
+
 const emptyDownload = {
   product_id: "",
   tag_id: "",
@@ -31,7 +33,7 @@ const Download = () => {
   const deleteMutation = useDeleteDownload();
   const createMutation = useCreateDownload();
 
-  const [view, setView] = useState("list"); // "list" | "form"
+  const [view, setView] = useState("list");
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState(emptyDownload);
 
@@ -159,7 +161,6 @@ const Download = () => {
     }
   };
 
-
   if (view === "form") {
     return (
       <div className="min-h-screen bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 w-full font-sans">
@@ -211,21 +212,30 @@ const Download = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
-                  Resource URL *
-                </label>
+                <S3Uploader
+                  label={`Upload ${formData.resource_type.replace("_", " ")} File *`}
+                  accept={
+                    formData.resource_type.includes("SOFTWARE")
+                      ? ".exe,.zip,.rar,.msi"
+                      : ".pdf,image/*"
+                  }
+                  folder={formData.resource_type.toLowerCase()}
+                  currentFileUrl={formData.resource_url}
+                  onUploadSuccess={(url) =>
+                    setFormData((prev) => ({ ...prev, resource_url: url }))
+                  }
+                />
+
                 <input
-                  type="url"
+                  type="hidden"
                   name="resource_url"
                   required
                   value={formData.resource_url || ""}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
                 />
               </div>
 
               <div className="pt-4 border-t border-zinc-200">
-                <h3 className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-4">
+                {/* <h3 className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-4">
                   Product Linkage *
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -320,7 +330,7 @@ const Download = () => {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
               </div>
 
               <div className="flex justify-end pt-6 border-t border-zinc-200 gap-4">
@@ -345,7 +355,6 @@ const Download = () => {
     );
   }
 
-  
   return (
     <div className="min-h-screen bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 w-full font-sans flex flex-col gap-6">
       <div className="bg-white border border-zinc-200 shadow-sm p-6 flex flex-col gap-6">
@@ -481,7 +490,14 @@ const Download = () => {
                         {d.resource_type}
                       </td>
                       <td className="py-4 px-6 text-zinc-500 text-sm truncate max-w-xs">
-                        {d.resource_url}
+                        <a
+                          href={d.resource_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="hover:text-[#da0e19] hover:underline"
+                        >
+                          {d.resource_url}
+                        </a>
                       </td>
                       <td className="py-4 px-6 flex justify-end gap-2">
                         <button
