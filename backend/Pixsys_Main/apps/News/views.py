@@ -10,6 +10,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import serializers
 from apps.Auth.decorators import public_endpoint
+from apps.Auth.permissions import IsWebSiteAdmin
+from rest_framework.permissions import AllowAny
 
 news_service = NewsService()
 
