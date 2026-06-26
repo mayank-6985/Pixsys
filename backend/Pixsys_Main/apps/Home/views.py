@@ -8,7 +8,8 @@ from apps.Auth.decorators import public_endpoint
 
 from .serializers import SliderSerializer
 from .Services.services import HomeService
-
+from apps.Auth.permissions import IsWebSiteAdmin
+from rest_framework.permissions import AllowAny
 logger = logging.getLogger(__name__)
 home_service = HomeService()
 
@@ -19,6 +20,15 @@ class SliderView(APIView):
     - GET  : fetches the current slider data.
     - POST : Creates/Update slider data.
     """
+    # Route permissions natively through DRF's lifecycle
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            # Only WebSiteAdmins can create/update the slider
+            return [IsWebSiteAdmin()]
+                
+        # Define who can view the slider (GET). 
+        # Example: Allow anyone to view it.
+        return [AllowAny()]
 
     @extend_schema(
         summary="Fetch Slider Images",
@@ -65,9 +75,9 @@ class SliderView(APIView):
     )
     def post(self, request):
         # Require authentication for POST requests only
-        from rest_framework.permissions import IsAuthenticated
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsWebSiteAdmin]
+        # self.check_permissions(request)
 
         serializer = SliderSerializer(data=request.data)
         if not serializer.is_valid():
