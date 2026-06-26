@@ -42,9 +42,6 @@ const ProductsSection = () => {
                     "polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%)",
                 }}
               >
-                {/* http://localhost:5173/products?category=Control%20Technologies */}
-
-                {/* http://localhost:5173/products?category=1&sub=1&series=20 */}
                 <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-end z-20 pointer-events-none">
                   {/* <div className="bg-zinc-900 text-white px-3 py-1 font-mono text-[10px] font-bold tracking-widest">
                     ID.00{index + 1}
