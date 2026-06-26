@@ -34,7 +34,7 @@ class SliderView(APIView):
             )
         }
     )
-    # @public_endpoint
+    @public_endpoint
     def get(self, request):
         try:
             data = home_service.get_slider_images()
@@ -65,9 +65,9 @@ class SliderView(APIView):
     )
     def post(self, request):
         # Require authentication for POST requests only
-        # from rest_framework.permissions import IsAuthenticated
-        # self.permission_classes = [IsAuthenticated]
-        # self.check_permissions(request)
+        from rest_framework.permissions import IsAuthenticated
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
 
         serializer = SliderSerializer(data=request.data)
         if not serializer.is_valid():
