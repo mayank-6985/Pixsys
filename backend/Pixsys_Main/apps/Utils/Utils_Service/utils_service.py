@@ -68,3 +68,35 @@ class AWSUtilService:
         except ClientError as e:
             print(f"Error generating presigned URL: {e}")
             return None
+        
+    def upload_file_stream_to_s3(self, file_stream, file_name: str, file_type: str = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") -> str:
+        """
+        Accepts an in-memory file stream and uploads it directly to S3.
+        Returns the public/protected URL of the uploaded file.
+        """
+        s3_client = boto3.client(
+            's3',
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_S3_REGION_NAME,
+            config=boto3.session.Config(signature_version=settings.AWS_S3_SIGNATURE_VERSION)
+        )
+
+        unique_id = uuid.uuid4().hex
+        s3_file_key = f"reports/{unique_id}_{file_name}"
+
+        try:
+            # Upload the in-memory file object
+            s3_client.upload_fileobj(
+                file_stream,
+                settings.AWS_STORAGE_BUCKET_NAME,
+                s3_file_key,
+                ExtraArgs={'ContentType': file_type}
+            )
+            
+            final_file_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com/{s3_file_key}"
+            return final_file_url
+            
+        except ClientError as e:
+            print(f"Error uploading file to S3: {e}")
+            return None
