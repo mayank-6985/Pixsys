@@ -11,6 +11,8 @@ import {
   useProductDetail,
 } from "../hooks/useProducts";
 
+import S3Uploader from "../Components/S3Uploader";
+
 const emptyCategory = {
   category_name: "",
   tagline: "",
@@ -166,7 +168,6 @@ const Products = () => {
     } else if (type === "subcategories") {
       setEditingId(item.subcategory_id);
       setFormData({
-        // Fallback to selCat because nested API objects often strip the parent ID
         category_id: item.category_id || selCat || "",
         name: item.name || "",
         description: item.description || item.original?.description || "",
@@ -379,7 +380,7 @@ const Products = () => {
 
           <div className="p-8 bg-white">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {formType === "categories" && (
+                    {formType === "categories" && (
                 <>
                   <div>
                     <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
@@ -407,45 +408,22 @@ const Products = () => {
                       className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
                     />
                   </div>
+                  
                   <div>
-                    <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
-                      Category Image URL *
-                    </label>
-                    <input
-                      type="url"
-                      name="category_img"
-                      required
-                      value={formData.category_img || ""}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                    <S3Uploader 
+                      label="Category Image *"
+                      accept="image/jpeg, image/png, image/webp"
+                      folder="categories"
+                      currentFileUrl={formData.category_img}
+                      onUploadSuccess={(url) => setFormData((prev) => ({ ...prev, category_img: url }))}
                     />
+                    <input type="hidden" name="category_img" required value={formData.category_img || ""} />
                   </div>
                 </>
               )}
 
               {formType === "subcategories" && (
                 <>
-                  {/* <div>
-                    <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
-                      Parent Category *
-                    </label>
-                    <select
-                      name="category_id"
-                      required
-                      value={formData.category_id || ""}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
-                    >
-                      <option value="" disabled>
-                        Select a Category...
-                      </option>
-                      {categories.map((cat) => (
-                        <option key={cat.category_id} value={cat.category_id}>
-                          {cat.category_name}
-                        </option>
-                      ))}
-                    </select>
-                  </div> */}
                   <div>
                     <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
                       Subcategory Name *
@@ -473,49 +451,20 @@ const Products = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
-                      Category Image URL *
-                    </label>
-                    <input
-                      type="url"
-                      name="category_img"
-                      required
-                      value={formData.category_img || ""}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                    <S3Uploader 
+                      label="Subcategory Image *"
+                      accept="image/jpeg, image/png, image/webp"
+                      folder="subcategories"
+                      currentFileUrl={formData.category_img}
+                      onUploadSuccess={(url) => setFormData((prev) => ({ ...prev, category_img: url }))}
                     />
+                    <input type="hidden" name="category_img" required value={formData.category_img || ""} />
                   </div>
                 </>
               )}
 
               {formType === "tags" && (
                 <>
-                  {/* <div>
-                    <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
-                      Parent Subcategory *
-                    </label>
-                    <select
-                      name="subcategory_id"
-                      required
-                      value={formData.subcategory_id || ""}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
-                    >
-                      <option value="" disabled>
-                        Select a Subcategory...
-                      </option>
-                      {categories
-                        .flatMap((c) => c.subcategories || [])
-                        .map((sub) => (
-                          <option
-                            key={sub.subcategory_id}
-                            value={sub.subcategory_id}
-                          >
-                            {sub.name}
-                          </option>
-                        ))}
-                    </select>
-                  </div> */}
                   <div>
                     <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
                       Tag Name *
@@ -534,30 +483,6 @@ const Products = () => {
 
               {formType === "products" && (
                 <>
-                  {/* <div>
-                    <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
-                      Parent Tag *
-                    </label>
-                    <select
-                      name="tag_id"
-                      required
-                      value={formData.tag_id || ""}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
-                    >
-                      <option value="" disabled>
-                        Select a Tag...
-                      </option>
-                      {categories
-                        .flatMap((c) => c.subcategories || [])
-                        .flatMap((s) => s.tags || [])
-                        .map((tag) => (
-                          <option key={tag.tag_id} value={tag.tag_id}>
-                            {tag.name}
-                          </option>
-                        ))}
-                    </select>
-                  </div> */}
                   <div>
                     <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
                       Product Name *
@@ -597,18 +522,16 @@ const Products = () => {
                       className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm resize-none"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
-                      Product Image URL *
-                    </label>
-                    <input
-                      type="url"
-                      name="product_img"
-                      required
-                      value={formData.product_img || ""}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                    <S3Uploader 
+                      label="Product Image *"
+                      accept="image/jpeg, image/png, image/webp"
+                      folder="products"
+                      currentFileUrl={formData.product_img}
+                      onUploadSuccess={(url) => setFormData((prev) => ({ ...prev, product_img: url }))}
                     />
+                    <input type="hidden" name="product_img" required value={formData.product_img || ""} />
                   </div>
 
                   <div className="pt-4 border-t border-zinc-200">
@@ -717,22 +640,14 @@ const Products = () => {
                             />
                           </div>
                           <div className="md:col-span-2">
-                            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">
-                              URL *
-                            </label>
-                            <input
-                              type="url"
-                              required
-                              value={dl.resource_url}
-                              onChange={(e) =>
-                                handleDownloadChange(
-                                  index,
-                                  "resource_url",
-                                  e.target.value,
-                                )
-                              }
-                              className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm"
+                            <S3Uploader 
+                              label={`Upload ${dl.resource_type.replace('_', ' ')} File *`}
+                              accept={dl.resource_type.includes("SOFTWARE") ? ".exe,.zip,.rar,.msi" : ".pdf,image/*"}
+                              folder={`products/${dl.resource_type.toLowerCase()}`}
+                              currentFileUrl={dl.resource_url} 
+                              onUploadSuccess={(url) => handleDownloadChange(index, "resource_url", url)}
                             />
+                            <input type="hidden" required value={dl.resource_url || ""} />
                           </div>
                         </div>
                       </div>
