@@ -18,7 +18,31 @@ const getYoutubeId = (url) => {
   const match = url.match(regExp);
   return match && match[2].length === 11 ? match[2] : null;
 };
+const forceDownload = async (url, customFilename) => {
+  try {
+    const response = await fetch(url, { method: "GET" });
+    if (!response.ok) throw new Error("Failed to fetch file");
 
+    const blob = await response.blob();
+
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = blobUrl;
+
+    link.download =
+      customFilename || url.split("/").pop().split("?")[0] || "download";
+
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error("Forced download failed, falling back to new tab:", error);
+    window.open(url, "_blank");
+  }
+};
 const SingleProductView = ({ product, onBack }) => {
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -119,14 +143,12 @@ const SingleProductView = ({ product, onBack }) => {
                       {item.name}
                     </h4>
                   </div>
-                  <a
-                    href={item.resource_url}
-                    target="_blank"
-                    rel="noreferrer"
+                  <button
+                    onClick={() => forceDownload(item.resource_url, item.name)}
                     className="flex items-center justify-center gap-2 bg-gray-50 group-hover:bg-[#da0e19] text-gray-600 group-hover:text-white px-6 py-2.5 rounded font-bold text-sm transition-all"
                   >
                     Download File <HiOutlineDownload className="text-lg" />
-                  </a>
+                  </button>
                 </div>
               ))}
             </div>
@@ -230,7 +252,7 @@ const Search = () => {
   const [activeTab, setActiveTab] = useState("downloads");
   const [downloadFilter, setDownloadFilter] = useState("ALL");
 
-  const [selectedProduct, setSelectedProduct] = useState(null); // Added for SingleProductView
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedSolution, setSelectedSolution] = useState(null);
   const [activeVideoPopup, setActiveVideoPopup] = useState(null);
 
@@ -435,19 +457,27 @@ const Search = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
-                            <button className="flex items-center gap-2 px-4 py-2 rounded border border-gray-300 text-gray-700 hover:border-[#da0e19] hover:text-[#da0e19] transition-all text-xs font-bold uppercase tracking-widest bg-gray-50 hover:bg-white">
-                              <FiEye size={14} />
-                              <span>View</span>
-                            </button>
                             <a
+                              className="flex items-center gap-2 px-4 py-2 rounded border border-gray-300 text-gray-700 hover:border-[#da0e19] hover:text-[#da0e19] transition-all text-xs font-bold uppercase tracking-widest bg-gray-50 hover:bg-white"
                               href={download.resource_url}
                               target="_blank"
                               rel="noopener noreferrer"
+                            >
+                              <FiEye size={14} />
+                              <span>View</span>
+                            </a>
+                            <button
+                              onClick={() =>
+                                forceDownload(
+                                  download.resource_url,
+                                  download.name,
+                                )
+                              }
                               className="flex items-center gap-2 px-4 py-2 rounded border border-gray-300 text-gray-700 hover:border-[#da0e19] hover:text-[#da0e19] transition-all text-xs font-bold uppercase tracking-widest bg-gray-50 hover:bg-white"
                             >
                               <FiDownload size={14} />
                               <span>Download</span>
-                            </a>
+                            </button>
                           </div>
                         </div>
                       ))

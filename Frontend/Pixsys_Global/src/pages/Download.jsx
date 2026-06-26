@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { FaHome } from "react-icons/fa";
 import { HiOutlineDownload } from "react-icons/hi";
+import { FiEye } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useProducts, useCategoryDetails } from "../hooks/useProducts";
 import { useAllDownloads } from "../hooks/useDownload";
@@ -179,6 +180,32 @@ const Downloads = () => {
     return groups;
   }, [filteredDownloads]);
 
+  const forceDownload = async (url, customFilename) => {
+    try {
+      const response = await fetch(url, { method: "GET" });
+      if (!response.ok) throw new Error("Failed to fetch file");
+
+      const blob = await response.blob();
+
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+
+      link.download =
+        customFilename || url.split("/").pop().split("?")[0] || "download";
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Forced download failed, falling back to new tab:", error);
+      window.open(url, "_blank");
+    }
+  };
+
   if (isCatLoading || isDlLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500 font-medium">
@@ -333,15 +360,15 @@ const Downloads = () => {
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
-                      <thead>
+                      <thead className="hidden md:table-header-group">
                         <tr className="bg-white border-b border-gray-100">
-                          <th className="px-6 py-4 text-sm font-semibold text-gray-500 w-[60%]">
+                          <th className="px-6 py-4 text-sm font-semibold text-gray-500 w-[50%]">
                             Document Details
                           </th>
                           <th className="px-6 py-4 text-sm font-semibold text-gray-500 w-[20%]">
                             Product ID
                           </th>
-                          <th className="px-6 py-4 text-sm font-semibold text-gray-500 text-right">
+                          <th className="px-6 py-4 text-sm font-semibold text-gray-500 text-right w-[30%]">
                             Action
                           </th>
                         </tr>
@@ -350,26 +377,48 @@ const Downloads = () => {
                         {groupedDownloads[type].map((doc) => (
                           <tr
                             key={doc.download_id}
-                            className="hover:bg-red-50 transition-colors group"
+                            className="flex flex-wrap md:table-row hover:bg-red-50 transition-colors group p-4 md:p-0 border-b border-gray-100 md:border-none"
                           >
-                            <td className="px-6 py-4">
-                              <div className="font-bold text-gray-900 group-hover:text-[#da0e19] transition-colors">
+                            <td className="w-full md:w-auto block md:table-cell md:px-6 md:py-4 mb-1 md:mb-0 align-middle">
+                              <div className="font-bold text-gray-900 group-hover:text-[#da0e19] transition-colors text-lg md:text-base">
                                 {doc.name}
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-sm font-mono text-gray-500">
+
+                            <td className="w-full md:w-auto block md:table-cell md:px-6 md:py-4 text-sm font-mono text-gray-500 mb-4 md:mb-0 border-b border-gray-100 md:border-none pb-4 md:pb-0 align-middle">
+                              <span className="md:hidden text-[10px] font-bold uppercase tracking-widest text-gray-400 mr-2">
+                                Product:
+                              </span>
                               {getProductName(doc.product_id)}
                             </td>
-                            <td className="px-6 py-4 text-right">
-                              <a
-                                href={doc.resource_url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-bold group-hover:border-[#da0e19] group-hover:text-[#da0e19] shadow-sm hover:shadow transition-all"
-                              >
-                                Download{" "}
-                                <HiOutlineDownload className="text-lg" />
-                              </a>
+
+                            <td className="w-full md:w-auto block md:table-cell md:px-6 md:py-4 pt-4 md:pt-0 align-middle">
+                              <div className="flex items-center md:justify-end gap-3 w-full">
+                                <a
+                                  className="flex-1 md:flex-none inline-flex justify-center items-center gap-2 px-4 py-2.5 md:py-2 rounded border border-gray-300 text-gray-700 hover:border-[#da0e19] hover:text-[#da0e19] transition-all text-xs font-bold uppercase tracking-widest bg-gray-50 hover:bg-white"
+                                  href={doc.resource_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <FiEye size={14} />
+                                  <span>View</span>
+                                </a>
+
+                                <button
+                                  onClick={() =>
+                                    forceDownload(doc.resource_url, doc.name)
+                                  }
+                                  className="flex-1 md:flex-none inline-flex justify-center items-center gap-2 px-4 py-2.5 md:py-2 bg-white border border-gray-200 text-gray-700 rounded text-xs md:text-sm font-bold group-hover:border-[#da0e19] group-hover:text-[#da0e19] shadow-sm hover:shadow transition-all"
+                                >
+                                  <span className="hidden sm:inline">
+                                    Download
+                                  </span>
+                                  <span className="sm:hidden uppercase tracking-widest text-xs">
+                                    Save
+                                  </span>
+                                  <HiOutlineDownload className="text-lg" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}

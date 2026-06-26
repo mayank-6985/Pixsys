@@ -17,6 +17,32 @@ const SingleProductView = ({ product, onBack }) => {
   const allTabs = ["overview"];
   if (hasSpecifications) allTabs.push("specifications");
   allTabs.push(...downloadTabs);
+  
+  const forceDownload = async (url, customFilename) => {
+    try {
+      const response = await fetch(url, { method: "GET" });
+      if (!response.ok) throw new Error("Failed to fetch file");
+
+      const blob = await response.blob();
+
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+
+      link.download =
+        customFilename || url.split("/").pop().split("?")[0] || "download";
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Forced download failed, falling back to new tab:", error);
+      window.open(url, "_blank");
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
@@ -102,14 +128,12 @@ const SingleProductView = ({ product, onBack }) => {
                       {item.name}
                     </h4>
                   </div>
-                  <a
-                    href={item.resource_url}
-                    target="_blank"
-                    rel="noreferrer"
+                  <button
+                    onClick={() => forceDownload(item.resource_url, item.name)}
                     className="flex items-center justify-center gap-2 bg-gray-50 group-hover:bg-[#da0e19] text-gray-600 group-hover:text-white px-6 py-2.5 rounded font-bold text-sm transition-all"
                   >
                     Download File <HiOutlineDownload className="text-lg" />
-                  </a>
+                  </button>
                 </div>
               ))}
             </div>
