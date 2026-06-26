@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password as django_check_password
 from django.contrib.auth.models import (
     AbstractBaseUser, PermissionsMixin, BaseUserManager
 )
@@ -47,3 +48,62 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+    class Meta:
+        verbose_name = "Shivvilon Solution Admin"
+
+
+
+class PixsysAdminModel(models.Model):
+    email = models.EmailField(unique=True , db_index=True)
+    # 128 chars is the standard length required to store Django's hashed passwords
+    password = models.CharField(max_length=128) 
+    first_name = models.CharField(max_length=50, blank=True)
+    last_name = models.CharField(max_length=50, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+
+    class Meta:
+        db_table = "Pixsys_Admin_Table"
+        verbose_name = "Pixsys Admin"
+
+    def save(self, *args, **kwargs):
+        # Prevent double-hashing: Only hash the password if it is plain text.
+        # Django hashes always start with the algorithm name (e.g., 'pbkdf2_sha256$')
+        if self.password and not self.password.startswith(('pbkdf2_', 'argon2', 'bcrypt')):
+            self.password = make_password(self.password)
+            
+        # Call the original save method to commit to the database
+        super().save(*args, **kwargs)
+    # Helper method to mimic Django's native password checking
+    def check_password(self, raw_password):
+        return django_check_password(raw_password, self.password)
+    
+
+class PixsysCustomerModel(models.Model):
+    email = models.EmailField(unique=True, db_index=True)
+    password = models.CharField(max_length=128)
+    phone_number = models.CharField(max_length=20, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+    
+    class Meta:
+        db_table = "Pixsys_Customer_Table"
+        verbose_name = "Pixsys Customer"
+    
+    def save(self, *args, **kwargs):
+        # Prevent double-hashing: Only hash the password if it is plain text.
+        # Django hashes always start with the algorithm name (e.g., 'pbkdf2_sha256$')
+        if self.password and not self.password.startswith(('pbkdf2_', 'argon2', 'bcrypt')):
+            self.password = make_password(self.password)
+            
+        # Call the original save method to commit to the database
+        super().save(*args, **kwargs)
+        
+    # Helper method to mimic Django's native password checking
+    def check_password(self, raw_password):
+        return django_check_password(raw_password, self.password)
