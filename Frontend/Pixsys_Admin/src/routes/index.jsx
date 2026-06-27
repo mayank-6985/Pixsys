@@ -9,6 +9,7 @@ import Solutions from "../Pages/Solutions";
 import Download from "../Pages/Download";
 import Login from "../Pages/Login";
 import SomethingWentWrong from "../Components/SomethingWentWrong";
+import ContactQuery from "../Pages/ConactQuery";
 
 import { ProtectedRoute, GuestRoute } from "../Components/AuthGuards";
 
@@ -50,6 +51,10 @@ const router = createBrowserRouter([
           {
             path: "/download",
             element: <Download />,
+          },
+          {
+            path: "/conactquery",
+            element: <ContactQuery />,
           },
         ],
       },
