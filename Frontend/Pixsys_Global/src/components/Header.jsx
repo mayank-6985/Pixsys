@@ -66,7 +66,7 @@ const Header = () => {
       <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
         <div className="flex-shrink-0 relative h-full flex items-center pr-6 md:pr-10">
           <div
-            className="absolute top-0 bottom-0 left-[-100vw] right-0 bg-zinc-50 shadow-[4px_0_15px_rgba(0,0,0,0.15)] rounded-br-[40px] pointer-events-none border-b border-r border-zinc-200"
+            className="absolute top-0 bottom-1 left-[-100vw] right-0 bg-zinc-50 shadow-[4px_0_15px_rgba(0,0,0,0.15)] rounded-br-[40px] pointer-events-none border-b border-r border-zinc-200"
             aria-hidden="true"
           ></div>
 
@@ -545,7 +545,7 @@ const Header = () => {
       </div>
 
       <div
-        className="lg:hidden absolute bottom-0 left-0 h-1 w-full bg-[#da0e19] z-50 origin-left transition-transform duration-200 ease-out"
+        className="lg:hidden absolute bottom-0 left-0 h-1 w-full bg-white z-50 origin-left transition-transform duration-200 ease-out"
         style={{ transform: `scaleX(${scrollProgress / 100})` }}
       ></div>
     </header>

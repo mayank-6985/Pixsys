@@ -15,7 +15,7 @@ export const authService = {
   },
 
   login: async (credentials) => {
-    const response = await api.post(`auth/token/`, credentials);
+    const response = await api.post(`auth/admin/login/`, credentials);
 
     const accessToken = response.data.access || response.data.accessToken;
     const refreshToken = response.data.refresh || response.data.refreshToken;
