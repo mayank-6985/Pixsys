@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { FiPlus, FiEdit2, FiTrash2, FiSave, FiX } from "react-icons/fi";
 import { AiFillProduct } from "react-icons/ai";
+import { Loader2, X } from "lucide-react";
 import {
   useAdminProductsData,
   useCategoryMutations,
@@ -351,12 +352,12 @@ const Products = () => {
       !productDetail
     ) {
       return (
-        <div className="min-h-screen bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 w-full font-sans flex items-center justify-center">
-          <div className="text-center p-8 bg-white border border-zinc-200 rounded-xl shadow-sm">
-            <p className="text-zinc-500 text-sm uppercase tracking-widest">
-              Loading product details...
-            </p>
-          </div>
+        <div className="py-20 flex flex-col justify-center items-center text-gray-400">
+          <Loader2 className="animate-spin w-8 h-8 mb-4" />
+          <span className="text-sm font-medium">
+            {" "}
+            Loading product details...
+          </span>
         </div>
       );
     }
@@ -380,7 +381,7 @@ const Products = () => {
 
           <div className="p-8 bg-white">
             <form onSubmit={handleSubmit} className="space-y-6">
-                    {formType === "categories" && (
+              {formType === "categories" && (
                 <>
                   <div>
                     <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
@@ -408,16 +409,23 @@ const Products = () => {
                       className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
                     />
                   </div>
-                  
+
                   <div>
-                    <S3Uploader 
+                    <S3Uploader
                       label="Category Image *"
                       accept="image/jpeg, image/png, image/webp"
                       folder="categories"
                       currentFileUrl={formData.category_img}
-                      onUploadSuccess={(url) => setFormData((prev) => ({ ...prev, category_img: url }))}
+                      onUploadSuccess={(url) =>
+                        setFormData((prev) => ({ ...prev, category_img: url }))
+                      }
                     />
-                    <input type="hidden" name="category_img" required value={formData.category_img || ""} />
+                    <input
+                      type="hidden"
+                      name="category_img"
+                      required
+                      value={formData.category_img || ""}
+                    />
                   </div>
                 </>
               )}
@@ -451,14 +459,21 @@ const Products = () => {
                     />
                   </div>
                   <div>
-                    <S3Uploader 
+                    <S3Uploader
                       label="Subcategory Image *"
                       accept="image/jpeg, image/png, image/webp"
                       folder="subcategories"
                       currentFileUrl={formData.category_img}
-                      onUploadSuccess={(url) => setFormData((prev) => ({ ...prev, category_img: url }))}
+                      onUploadSuccess={(url) =>
+                        setFormData((prev) => ({ ...prev, category_img: url }))
+                      }
                     />
-                    <input type="hidden" name="category_img" required value={formData.category_img || ""} />
+                    <input
+                      type="hidden"
+                      name="category_img"
+                      required
+                      value={formData.category_img || ""}
+                    />
                   </div>
                 </>
               )}
@@ -524,14 +539,21 @@ const Products = () => {
                   </div>
 
                   <div>
-                    <S3Uploader 
+                    <S3Uploader
                       label="Product Image *"
                       accept="image/jpeg, image/png, image/webp"
                       folder="products"
                       currentFileUrl={formData.product_img}
-                      onUploadSuccess={(url) => setFormData((prev) => ({ ...prev, product_img: url }))}
+                      onUploadSuccess={(url) =>
+                        setFormData((prev) => ({ ...prev, product_img: url }))
+                      }
                     />
-                    <input type="hidden" name="product_img" required value={formData.product_img || ""} />
+                    <input
+                      type="hidden"
+                      name="product_img"
+                      required
+                      value={formData.product_img || ""}
+                    />
                   </div>
 
                   <div className="pt-4 border-t border-zinc-200">
@@ -640,14 +662,24 @@ const Products = () => {
                             />
                           </div>
                           <div className="md:col-span-2">
-                            <S3Uploader 
-                              label={`Upload ${dl.resource_type.replace('_', ' ')} File *`}
-                              accept={dl.resource_type.includes("SOFTWARE") ? ".exe,.zip,.rar,.msi" : ".pdf,image/*"}
+                            <S3Uploader
+                              label={`Upload ${dl.resource_type.replace("_", " ")} File *`}
+                              accept={
+                                dl.resource_type.includes("SOFTWARE")
+                                  ? ".exe,.zip,.rar,.msi"
+                                  : ".pdf,image/*"
+                              }
                               folder={`products/${dl.resource_type.toLowerCase()}`}
-                              currentFileUrl={dl.resource_url} 
-                              onUploadSuccess={(url) => handleDownloadChange(index, "resource_url", url)}
+                              currentFileUrl={dl.resource_url}
+                              onUploadSuccess={(url) =>
+                                handleDownloadChange(index, "resource_url", url)
+                              }
                             />
-                            <input type="hidden" required value={dl.resource_url || ""} />
+                            <input
+                              type="hidden"
+                              required
+                              value={dl.resource_url || ""}
+                            />
                           </div>
                         </div>
                       </div>
@@ -757,8 +789,9 @@ const Products = () => {
 
         <div className="overflow-x-auto w-full">
           {isLoading || (selCat && isDetailsLoading) ? (
-            <div className="text-center py-20 text-zinc-500 font-mono text-xs uppercase tracking-widest">
-              Loading Data...
+            <div className="py-20 flex flex-col justify-center items-center text-gray-400">
+              <Loader2 className="animate-spin w-8 h-8 mb-4" />
+              <span className="text-sm font-medium">Loading Data</span>
             </div>
           ) : (
             <table className="w-full text-left border-collapse">

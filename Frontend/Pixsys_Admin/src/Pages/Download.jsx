@@ -7,6 +7,7 @@ import {
   FiX,
   FiDownload,
 } from "react-icons/fi";
+import { X, Loader2 } from "lucide-react";
 import {
   useAllDownloads,
   useUpdateDownload,
@@ -450,8 +451,9 @@ const Download = () => {
 
         <div className="overflow-x-auto w-full">
           {isDownloadsLoading || (selCat && isDetailsLoading) ? (
-            <div className="text-center py-20 text-zinc-500 font-mono text-xs uppercase tracking-widest">
-              Loading Data...
+            <div className="py-20 flex flex-col justify-center items-center text-gray-400">
+              <Loader2 className="animate-spin w-8 h-8 mb-4" />
+              <span className="text-sm font-medium">Loading Downloads...</span>
             </div>
           ) : (
             <table className="w-full text-left border-collapse">

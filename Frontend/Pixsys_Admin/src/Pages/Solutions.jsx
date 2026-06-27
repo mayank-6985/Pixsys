@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { FiPlus, FiEdit2, FiTrash2, FiSave, FiX } from "react-icons/fi";
+import { Loader2, X } from "lucide-react";
 import {
   useAdminSolutionsData,
   useCategoryMutations,
@@ -318,8 +319,9 @@ const Solutions = () => {
 
         <div className="overflow-x-auto w-full">
           {isLoading ? (
-            <div className="text-center py-12 text-zinc-500 font-mono text-xs uppercase tracking-widest">
-              Loading records...
+            <div className="py-20 flex flex-col justify-center items-center text-gray-400">
+              <Loader2 className="animate-spin w-8 h-8 mb-4" />
+              <span className="text-sm font-medium">Loading Records...</span>
             </div>
           ) : activeTab === "categories" ? (
             <table className="w-full text-left border-collapse min-w-[600px]">

@@ -8,6 +8,7 @@ import {
   FiImage,
   FiType,
 } from "react-icons/fi";
+import { Loader2, X } from "lucide-react";
 import { useAdminNews, useNewsMutations } from "../hooks/useNews";
 import { fetchNewsById } from "../Services/news";
 import S3Uploader from "../Components/S3Uploader";
@@ -147,8 +148,9 @@ const News = () => {
 
           <div className="overflow-x-auto w-full">
             {isListLoading ? (
-              <div className="text-center py-20 text-zinc-500 font-mono text-xs uppercase tracking-widest">
-                Loading records...
+              <div className="py-20 flex flex-col justify-center items-center text-gray-400">
+                <Loader2 className="animate-spin w-8 h-8 mb-4" />
+                <span className="text-sm font-medium">Loading News...</span>
               </div>
             ) : (
               <table className="w-full text-left border-collapse min-w-[800px]">
@@ -229,8 +231,9 @@ const News = () => {
         </div>
 
         {isFetchingDetail ? (
-          <div className="p-20 text-center text-zinc-500 font-mono text-xs uppercase tracking-widest">
-            Loading article details...
+          <div className="py-20 flex flex-col justify-center items-center text-gray-400">
+            <Loader2 className="animate-spin w-8 h-8 mb-4" />
+            <span className="text-sm font-medium">Loading News</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-8 bg-white">
