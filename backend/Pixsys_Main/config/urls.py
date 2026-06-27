@@ -44,4 +44,5 @@ urlpatterns = [
     path('v1/api/search/' ,include('apps.Search.urls')),
     path('v1/api/utils/', include('apps.Utils.urls')),
     path('v1/api/customer/', include('apps.Customers.urls')),
+    path('v1/api/analytics/', include('apps.Tracking.urls')),
 ]
