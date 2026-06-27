@@ -5,6 +5,8 @@ import { FiEye } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useProducts, useCategoryDetails } from "../hooks/useProducts";
 import { useAllDownloads } from "../hooks/useDownload";
+import { authService } from "../Services/authService";
+import { useNavigate } from "react-router-dom";
 
 const Downloads = () => {
   const { data: mainCategories, isLoading: isCatLoading } = useProducts();
@@ -14,6 +16,8 @@ const Downloads = () => {
   const [selectedSub, setSelectedSub] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
   const [selectedProd, setSelectedProd] = useState("");
+
+  const navigate = useNavigate();
 
   const { data: categoryDetails } = useCategoryDetails(selectedCat);
 
@@ -35,6 +39,15 @@ const Downloads = () => {
   const handleTagChange = (e) => {
     setSelectedTag(e.target.value);
     setSelectedProd("");
+  };
+
+  const handleSecureAction = (e, callback) => {
+    if (!authService.getAccessToken()) {
+      e.preventDefault();
+      navigate("/login", { state: { returnTo: window.location.pathname } });
+      return;
+    }
+    if (callback) callback();
   };
 
   const catOptions = mainCategories || [];
@@ -399,14 +412,16 @@ const Downloads = () => {
                                   href={doc.resource_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
+                                  onClick={(e) => handleSecureAction(e)}
                                 >
                                   <FiEye size={14} />
                                   <span>View</span>
                                 </a>
-
                                 <button
-                                  onClick={() =>
-                                    forceDownload(doc.resource_url, doc.name)
+                                  onClick={(e) =>
+                                    handleSecureAction(e, () =>
+                                      forceDownload(doc.resource_url, doc.name),
+                                    )
                                   }
                                   className="flex-1 md:flex-none inline-flex justify-center items-center gap-2 px-4 py-2.5 md:py-2 bg-white border border-gray-200 text-gray-700 rounded text-xs md:text-sm font-bold group-hover:border-[#da0e19] group-hover:text-[#da0e19] shadow-sm hover:shadow transition-all"
                                 >
