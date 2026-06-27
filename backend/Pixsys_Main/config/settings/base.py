@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'apps.Contact',
     'apps.Search',
     'apps.Customers',
+    'apps.Tracking',
 ]
 
 # Use custom user model with email as username
@@ -236,3 +237,6 @@ if {'bearerAuth': []} not in SPECTACULAR_SETTINGS['SECURITY']:
     SPECTACULAR_SETTINGS['SECURITY'].append({'bearerAuth': []})
 
 
+# GeoIP Configuration
+# Create a folder named 'geoip' in your project root and place GeoLite2-City.mmdb inside it
+GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')
