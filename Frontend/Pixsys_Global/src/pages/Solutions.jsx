@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { FaHome, FaPlay } from "react-icons/fa";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { FiX } from "react-icons/fi";
@@ -6,6 +6,92 @@ import { useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useSolutions } from "../hooks/useSolutions";
 import ReactPlayer from "react-player";
+
+const SolutionCard = ({ solution, onClick }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const videoRef = useRef(null);
+
+  const isYouTube =
+    solution?.videoUrl?.includes("youtube.com") ||
+    solution?.videoUrl?.includes("youtu.be");
+
+  const ytId = isYouTube
+    ? solution.videoUrl.split("v=")[1]?.split("&")[0] ||
+      solution.videoUrl.split("youtu.be/")[1]?.split("?")[0]
+    : null;
+
+  useEffect(() => {
+    if (!isYouTube && videoRef.current) {
+      if (isHovered) {
+        videoRef.current
+          .play()
+          .catch((e) => console.log("Autoplay blocked", e));
+      } else {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+      }
+    }
+  }, [isHovered, isYouTube]);
+
+  return (
+    <div
+      className="group cursor-pointer flex flex-col"
+      onClick={() => onClick(solution)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="relative h-[220px] rounded-xl overflow-hidden shadow-lg mb-4 bg-black">
+        {isHovered && isYouTube ? (
+          <iframe
+            src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1`}
+            className="w-full h-[300px] -mt-10 pointer-events-none object-cover"
+            frameBorder="0"
+            allow="autoplay; encrypted-media"
+          ></iframe>
+        ) : (
+          <>
+            {!isYouTube && (
+              <video
+                ref={videoRef}
+                src={solution.videoUrl}
+                muted
+                loop
+                playsInline
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+                  isHovered ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            )}
+
+            <div
+              className={`absolute inset-0 w-full h-full transition-opacity duration-300 ${
+                isHovered ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              <img
+                src={solution.thumbnail}
+                alt={solution.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-black/30"></div>
+              <div className="absolute top-4 left-4 text-white text-xs font-bold tracking-wider z-10">
+                {solution.title}
+              </div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                <div className="w-14 h-14 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:bg-white/40 transition-colors">
+                  <FaPlay className="text-white text-lg ml-1" />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+      <h3 className="text-[1.05rem] font-bold leading-snug px-1 text-gray-800 group-hover:text-[#da0e19] transition-colors">
+        {solution.title}
+      </h3>
+    </div>
+  );
+};
 
 const Solutions = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -65,10 +151,12 @@ const Solutions = () => {
     setCurrentPage(1);
     setSearchParams({ category: category });
   };
+
   const closeModal = () => {
     setIsVideoReady(false);
     setSelectedVideo(null);
   };
+
   const totalPages = Math.ceil(filteredSolutions.length / itemsPerPage);
 
   if (isLoading) {
@@ -150,33 +238,11 @@ const Solutions = () => {
         ) : currentSolutions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
             {currentSolutions.map((solution) => (
-              <div
+              <SolutionCard
                 key={solution.solutions_id}
-                className="group cursor-pointer flex flex-col"
-                onClick={() => setSelectedVideo(solution)}
-              >
-                <div className="relative h-[220px] rounded-xl overflow-hidden shadow-lg mb-4">
-                  <img
-                    src={solution.thumbnail}
-                    alt={solution.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-black/30"></div>
-                  <div className="absolute top-4 left-4 text-white text-xs font-bold tracking-wider z-10">
-                    {solution.title}
-                  </div>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                    <div className="w-14 h-14 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:bg-white/40 transition-colors">
-                      <FaPlay className="text-white text-lg ml-1" />
-                    </div>
-                  </div>
-                </div>
-                <h3
-                  className={`text-[1.05rem] font-bold leading-snug px-1 text-gray-800 group-hover:text-[#da0e19] transition-colors`}
-                >
-                  {solution.title}
-                </h3>
-              </div>
+                solution={solution}
+                onClick={setSelectedVideo}
+              />
             ))}
           </div>
         ) : (
@@ -219,7 +285,7 @@ const Solutions = () => {
         </div>
       )}
 
-      {/* VIDEO MODAL */}
+      {/* VIDEO MODAL  */}
       {selectedVideo && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-10">
           <div

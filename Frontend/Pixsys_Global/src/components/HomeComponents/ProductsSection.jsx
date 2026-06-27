@@ -1,11 +1,11 @@
 import React, { useOptimistic } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowUpRight } from "react-icons/fi";
-import { useProducts } from "../../hooks/useProducts";
+import { useCategories } from "../../hooks/useProducts";
 import ScrollReveal from "../ScrollReveal";
 
 const ProductsSection = () => {
-  const { data: productsData = [] } = useProducts();
+  const { data: productsData = [] } = useCategories();
   return (
     <section className="relative w-full py-32 bg-[#f4f4f5] overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-zinc-300 to-transparent"></div>
@@ -35,7 +35,7 @@ const ProductsSection = () => {
               direction="up"
             >
               <Link
-                to={`\/products?category=${product.category_name}`}
+                to={`\/products?category=${product.category_id}`}
                 className="group block h-full bg-white relative transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] min-h-[500px]"
                 style={{
                   clipPath:
@@ -56,7 +56,7 @@ const ProductsSection = () => {
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent to-zinc-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="absolute w-64 h-64 bg-[#da0e19]/5 rounded-full blur-3xl scale-0 group-hover:scale-100 transition-transform duration-700 ease-out"></div>
                   <img
-                    src={product.img}
+                    src={product.category_img}
                     alt={product.category_name}
                     className="w-full h-full object-contain filter drop-shadow-xl grayscale group-hover:grayscale-0 group-hover:scale-110 group-hover:-translate-y-2 transition-all duration-700 ease-[cubic-bezier(0.21,1.02,0.73,1)] relative z-10"
                   />
@@ -67,7 +67,7 @@ const ProductsSection = () => {
                     {product.category_name}
                   </h3>
                   <p className="text-sm font-medium text-zinc-500 leading-relaxed line-clamp-1">
-                    {product.description}
+                    {product.tagline}
                   </p>
                 </div>
                 <div className="absolute -bottom-[2px] -right-[2px] w-[50px] h-[50px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30 pointer-events-none">

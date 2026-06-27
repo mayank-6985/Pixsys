@@ -1,71 +1,94 @@
 import React, { useState, useEffect } from "react";
 import { FaHome } from "react-icons/fa";
 import { useSearchParams } from "react-router-dom";
-
-import { useProducts } from "../hooks/useProducts";
-import { productsBulkData } from "../data/ProductsData";
+import SingleProductView from "../components/ProductsComponents/SingleProductView";
 
 import ProductHero from "../components/ProductsComponents/ProductHero";
 import MainCategoryGrid from "../components/ProductsComponents/MainCategoryGrid";
 import DetailedProductView from "../components/ProductsComponents/DetailedProductView";
+import {
+  useCategoryDetails,
+  useCategories,
+  useProductDetails,
+} from "../hooks/useProducts";
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const urlSeries = searchParams.get("series");
-  const urlCategory = searchParams.get("category");
-  const { data: productsData = [], isLoading } = useProducts();
 
-  const [activeCategory, setActiveCategory] = useState(null);
+  const categoryId = searchParams.get("category");
+  const subcatId = searchParams.get("sub");
+  const tagId = searchParams.get("series");
+  const productId = searchParams.get("productId");
+
+  const { data: mainCategories } = useCategories();
+  const { data: categoryDetails } = useCategoryDetails(categoryId);
+  const { data: singleProduct } = useProductDetails(productId);
+
   const [activeSection, setActiveSection] = useState(null);
-  const [activeSeries, setActiveSeries] = useState(null);
+  const [activeSeriesId, setActiveSeriesId] = useState(null);
 
   useEffect(() => {
-    if (!productsData || productsData.length === 0) return;
+    if (!categoryId) {
+      setActiveSection(null);
+      setActiveSeriesId(null);
+      return;
+    }
 
-    if (urlSeries) {
-      for (const cat of productsData) {
-        if (!cat.subcategories) continue;
-        for (const sub of cat.subcategories) {
-          if (!sub.tags) continue;
-          if (sub.tags.some((tag) => tag.name === urlSeries)) {
-            setActiveCategory(cat);
-            setActiveSection(sub);
-            setActiveSeries(urlSeries);
-            return;
-          }
+    if (categoryDetails && categoryDetails.length > 0) {
+      let currentSubcat = categoryDetails.find(
+        (s) => s.subcategory_id === Number(subcatId),
+      );
+      if (!currentSubcat) {
+        currentSubcat = categoryDetails[0];
+      }
+      setActiveSection(currentSubcat);
+
+      if (currentSubcat.tags && currentSubcat.tags.length > 0) {
+        const isValidTag = currentSubcat.tags.some(
+          (t) => t.tag_id === Number(tagId),
+        );
+
+        if (isValidTag) {
+          setActiveSeriesId(Number(tagId));
+        } else {
+          const firstTagId = currentSubcat.tags[0].tag_id;
+          setActiveSeriesId(firstTagId);
+          setSearchParams({
+            category: categoryId,
+            sub: currentSubcat.subcategory_id,
+            series: firstTagId,
+          });
+        }
+      } else {
+        setActiveSeriesId(null);
+        if (tagId || !subcatId) {
+          setSearchParams({
+            category: categoryId,
+            sub: currentSubcat.subcategory_id,
+          });
         }
       }
-    } else if (urlCategory) {
-      const cat =
-        productsData.find((c) => c.category_name === urlCategory) ||
-        productsData[0];
-
-      if (cat) {
-        setActiveCategory(cat);
-        const firstSub = cat.subcategories?.[0];
-        setActiveSection(firstSub || null);
-        setActiveSeries(firstSub?.tags?.[0]?.name || null);
-      }
-    } else {
-      setActiveCategory(null);
-      setActiveSection(null);
-      setActiveSeries(null);
     }
-  }, [urlSeries, urlCategory, productsData]);
+  }, [categoryId, subcatId, tagId, categoryDetails, setSearchParams]);
 
   const handleBackToMain = () => setSearchParams({});
 
-  const displayedProducts = productsBulkData.filter(
-    (p) => p.series === activeSeries,
-  );
+  const displayedProducts = activeSeriesId
+    ? activeSection?.tags?.find((tag) => tag.tag_id === activeSeriesId)
+        ?.products || []
+    : [];
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading Products...
-      </div>
-    );
-  }
+  const currentCategoryName = mainCategories?.find(
+    (c) => c.category_id === Number(categoryId),
+  )?.category_name;
+
+  const handleBackToGrid = () => {
+    setSearchParams({
+      category: categoryId,
+      sub: subcatId,
+      series: activeSeriesId,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-[#fafafa] relative overflow-hidden pb-20">
@@ -83,33 +106,49 @@ const Products = () => {
           >
             Products
           </span>
-          {activeCategory && (
+          {categoryId && currentCategoryName && (
             <>
               <span className="text-gray-400">&gt;</span>
-              <span className="text-gray-800">
-                {activeCategory.category_name}
-              </span>
+              <span className="text-gray-800">{currentCategoryName}</span>
             </>
           )}
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {!activeCategory ? (
+        {!categoryId ? (
           <MainCategoryGrid
-            categories={productsData}
-            onSelectCategory={(categoryName) =>
-              setSearchParams({ category: categoryName })
-            }
+            categories={mainCategories || []}
+            onSelectCategory={(id) => setSearchParams({ category: id })}
+          />
+        ) : productId ? (
+          <SingleProductView
+            product={singleProduct}
+            onBack={handleBackToGrid}
           />
         ) : (
           <DetailedProductView
-            activeCategory={activeCategory}
+            activeCategory={categoryDetails}
             activeSection={activeSection}
-            activeSeries={activeSeries}
+            activeSeries={activeSeriesId}
             displayedProducts={displayedProducts}
-            onSelectSeries={(seriesName) =>
-              setSearchParams({ series: seriesName })
+            onSelectSubcategory={(id) =>
+              setSearchParams({ category: categoryId, sub: id })
+            }
+            onSelectSeries={(id) =>
+              setSearchParams({
+                category: categoryId,
+                sub: activeSection.subcategory_id,
+                series: id,
+              })
+            }
+            onSelectProduct={(id) =>
+              setSearchParams({
+                category: categoryId,
+                sub: activeSection.subcategory_id,
+                series: activeSeriesId,
+                productId: id,
+              })
             }
             onBack={handleBackToMain}
           />

@@ -1,31 +1,21 @@
 import React, { useState, useEffect } from "react";
+import { useHome } from "../../hooks/useHome";
 
-const defaultSlides = [
-  {
-    id: 1,
-    image: "/PX.jpeg",
-  },
-  {
-    id: 2,
-    image: "/VFD.jpeg",
-  },
-  {
-    id: 3,
-    image: "/PXR7.jpeg",
-  },
-  {
-    id: 4,
-    image: "VFD.jpeg",
-  },
-];
-
-const ImageSlider = ({ slides = defaultSlides }) => {
+const ImageSlider = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
+  const { data: imageData, isLoading } = useHome();
 
+  const validImageArray = Array.isArray(imageData)
+    ? imageData
+    : imageData?.slideImages || [];
+
+  const slides = validImageArray.map((url, index) => ({
+    id: index,
+    image: url,
+  }));
   useEffect(() => {
     if (!slides || slides.length === 0 || isDragging) return;
 
@@ -34,10 +24,38 @@ const ImageSlider = ({ slides = defaultSlides }) => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [slides, isDragging, currentIndex]);
+  }, [slides.length, isDragging, currentIndex]);
 
-  if (!slides || slides.length === 0) return null;
-
+  if (isLoading || slides.length === 0) {
+    return (
+      <div className="w-full h-[50vh] md:h-[60vh] lg:h-[75vh] bg-zinc-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <svg
+            className="animate-spin h-8 w-8 text-[#da0e19]"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <span className="text-zinc-500 text-xs font-bold uppercase tracking-widest">
+            Loading Slider...
+          </span>
+        </div>
+      </div>
+    );
+  }
   const handleDragStart = (e) => {
     setIsDragging(true);
     setStartX(e.type.includes("mouse") ? e.pageX : e.touches[0].clientX);

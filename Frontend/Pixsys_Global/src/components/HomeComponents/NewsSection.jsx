@@ -96,7 +96,7 @@ const NewsSection = () => {
                 <img
                   src={latestNews[0]?.thumbnail}
                   alt={latestNews[0]?.heading || "Latest News Main"}
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-[800ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
+                  className="w-full h-full object-fit transform group-hover:scale-105 transition-transform duration-[800ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
                 />
               </Link>
             </ScrollReveal>
@@ -116,7 +116,7 @@ const NewsSection = () => {
                   <img
                     src={latestNews[1]?.thumbnail}
                     alt={latestNews[1]?.heading || "Latest News Side"}
-                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-[800ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
+                    className="w-full h-full object-fir transform group-hover:scale-105 transition-transform duration-[800ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
                   />
                 </Link>
               </ScrollReveal>
@@ -136,7 +136,7 @@ const NewsSection = () => {
                   <img
                     src={latestNews[2]?.thumbnail}
                     alt={latestNews[2]?.heading || "Latest News Side"}
-                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-[800ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
+                    className="w-full h-full object-fit transform group-hover:scale-105 transition-transform duration-[800ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
                   />
                 </Link>
               </ScrollReveal>

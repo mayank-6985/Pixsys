@@ -2,6 +2,7 @@ import React from "react";
 import { FaDownload, FaHome, FaNewspaper, FaTimes } from "react-icons/fa";
 import { AiFillProduct, AiOutlineSolution } from "react-icons/ai";
 import { Link, useLocation } from "react-router-dom";
+import { Contact, Contact2Icon, icons } from "lucide-react";
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
@@ -12,6 +13,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { name: "Solutions", url: "/solutions", icon: <AiOutlineSolution /> },
     { name: "News", url: "/news", icon: <FaNewspaper /> },
     { name: "Downloads", url: "/download", icon: <FaDownload /> },
+    { name: "ConactQuery", url: "/conactQuery", icon: <Contact /> },
   ];
 
   const isActive = (url) => {

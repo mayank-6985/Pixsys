@@ -8,9 +8,11 @@ import {
 } from "react-icons/fa";
 
 import { useSolutions } from "../hooks/useSolutions";
+import { useProducts } from "../hooks/useProducts";
 
 const Footer = () => {
   const { data: solutionsData = [] } = useSolutions();
+  const { data: productsData = [] } = useProducts();
 
   const solutionsCategories = useMemo(() => {
     if (!Array.isArray(solutionsData)) return [];
@@ -39,31 +41,16 @@ const Footer = () => {
                 <h3 className="text-white font-bold text-lg mb-6">Products</h3>
               </Link>
               <ul className="space-y-4 text-sm text-gray-400">
-                <li>
-                  <Link to="#" className="hover:text-white transition-colors">
-                    Control Technology
-                  </Link>
-                </li>
-                <li>
-                  <Link to="#" className="hover:text-white transition-colors">
-                    HMI
-                  </Link>
-                </li>
-                <li>
-                  <Link to="#" className="hover:text-white transition-colors">
-                    Servo Drive
-                  </Link>
-                </li>
-                <li>
-                  <Link to="#" className="hover:text-white transition-colors">
-                    Servo Motor
-                  </Link>
-                </li>
-                <li>
-                  <Link to="#" className="hover:text-white transition-colors">
-                    VFDs
-                  </Link>
-                </li>
+                {productsData.map((category, idx) => (
+                  <li>
+                    <Link
+                      to={`/products?category=${category.category_id}`}
+                      className="hover:text-white transition-colors"
+                    >
+                      {category.category_name}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 

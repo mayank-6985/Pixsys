@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchAllProductsData,
   fetchCategoryDetails,
+  fetchProductDetails,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -28,6 +29,17 @@ export const useCategoryDetails = (categoryId) => {
     queryKey: ["categoryDetails", categoryId],
     queryFn: () => fetchCategoryDetails(categoryId),
     enabled: !!categoryId,
+  });
+};
+
+export const useProductDetail = (productId) => {
+  return useQuery({
+    queryKey: ["productDetail", productId],
+    queryFn: () => fetchProductDetails(productId),
+    enabled: !!productId,
+    staleTime: 0,
+    keepPreviousData: false,
+    refetchOnMount: "always",
   });
 };
 
@@ -102,15 +114,24 @@ export const useProductMutations = () => {
   return {
     createProd: useMutation({
       mutationFn: createProduct,
-      onSuccess: invalidate,
+      onSuccess: () => {
+        invalidate();
+        queryClient.invalidateQueries({ queryKey: ["productDetail"] });
+      },
     }),
     updateProd: useMutation({
       mutationFn: updateProduct,
-      onSuccess: invalidate,
+      onSuccess: () => {
+        invalidate();
+        queryClient.invalidateQueries({ queryKey: ["productDetail"] });
+      },
     }),
     deleteProd: useMutation({
       mutationFn: deleteProduct,
-      onSuccess: invalidate,
+      onSuccess: () => {
+        invalidate();
+        queryClient.invalidateQueries({ queryKey: ["productDetail"] });
+      },
     }),
   };
 };

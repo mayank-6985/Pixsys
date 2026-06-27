@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { BiMenu, BiSearch } from "react-icons/bi";
 import { FaXmark } from "react-icons/fa6";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MdKeyboardArrowRight, MdKeyboardArrowDown } from "react-icons/md";
 import { useSolutions } from "../hooks/useSolutions";
 import { useProducts } from "../hooks/useProducts";
@@ -9,7 +9,9 @@ import { useProducts } from "../hooks/useProducts";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchText, setSearchText] = useState("");
   const location = useLocation();
+  const navigate = useNavigate();
   const [scrollProgress, setScrollProgress] = useState(0);
   const [expandedMenus, setExpandedMenus] = useState({});
   const circleRef = useRef(null);
@@ -64,7 +66,7 @@ const Header = () => {
       <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
         <div className="flex-shrink-0 relative h-full flex items-center pr-6 md:pr-10">
           <div
-            className="absolute top-0 bottom-0 left-[-100vw] right-0 bg-zinc-50 shadow-[4px_0_15px_rgba(0,0,0,0.15)] rounded-br-[40px] pointer-events-none border-b border-r border-zinc-200"
+            className="absolute top-0 bottom-1 left-[-100vw] right-0 bg-zinc-50 shadow-[4px_0_15px_rgba(0,0,0,0.15)] rounded-br-[40px] pointer-events-none border-b border-r border-zinc-200"
             aria-hidden="true"
           ></div>
 
@@ -117,7 +119,7 @@ const Header = () => {
                       className="border-l border-zinc-200 pl-6 first:border-0 first:pl-0"
                     >
                       <Link
-                        to={`/products?category=${category.category_name}`}
+                        to={`/products?category=${category.category_id}`}
                         onClick={() => setIsMenuOpen(false)}
                         className="inline-block text-xl font-mono font-bold text-zinc-950 hover:text-[#da0e19] uppercase tracking-widest mb-6 transition-colors"
                       >
@@ -134,7 +136,7 @@ const Header = () => {
                           }
                         >
                           <Link
-                            to={`/products?series=${subcategory.tags?.[0]?.name || ""}`}
+                            to={`/products?category=${category.category_id}&sub=${subcategory.subcategory_id}`}
                             onClick={() => setIsMenuOpen(false)}
                             className="inline-block text-zinc-900 hover:text-[#da0e19] font-bold uppercase text-sm mb-3 transition-colors"
                           >
@@ -145,7 +147,7 @@ const Header = () => {
                             {subcategory.tags?.map((tag, lIdx) => (
                               <li key={tag.tag_id || lIdx}>
                                 <Link
-                                  to={`/products?series=${tag.name}`}
+                                  to={`/products?category=${category.category_id}&sub=${subcategory.subcategory_id}&series=${tag.tag_id}`}
                                   className="group/link flex items-center gap-2 text-sm text-zinc-500 hover:text-[#da0e19] transition-colors font-medium capitalize w-fit"
                                   onClick={() => setIsMenuOpen(false)}
                                 >
@@ -325,11 +327,33 @@ const Header = () => {
                 <input
                   className="outline-none font-light w-full pr-4 bg-transparent"
                   type="text"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const trimmed = searchText.trim();
+                      if (trimmed) {
+                        navigate(
+                          `/search?keyword=${encodeURIComponent(trimmed)}`,
+                        );
+                        setIsSearchOpen(false);
+                      }
+                    }
+                  }}
                   placeholder="Search Keyword..."
                   autoFocus={isSearchOpen}
                 />
 
-                <button className="text-gray-400 hover:text-[#da0e19] transition-colors flex-shrink-0 cursor-pointer">
+                <button
+                  onClick={() => {
+                    const trimmed = searchText.trim();
+                    if (!trimmed) return;
+                    navigate(`/search?keyword=${encodeURIComponent(trimmed)}`);
+                    setIsSearchOpen(false);
+                  }}
+                  className="text-gray-400 hover:text-[#da0e19] transition-colors flex-shrink-0 cursor-pointer"
+                >
                   <BiSearch size={24} />
                 </button>
               </div>
@@ -414,7 +438,7 @@ const Header = () => {
                                 {subcategory.tags?.map((tag, lIdx) => (
                                   <Link
                                     key={tag.tag_id || lIdx}
-                                    to={`/products?series=${tag.name}`}
+                                    to={`/products?category=${category.category_id}&sub=${subcategory.subcategory_id}&series=${tag.tag_id}`}
                                     className="flex items-center gap-3 py-2.5 pl-14 pr-6 text-sm text-zinc-500 hover:text-[#da0e19] capitalize font-medium"
                                     onClick={() => setIsMenuOpen(false)}
                                   >
@@ -521,7 +545,7 @@ const Header = () => {
       </div>
 
       <div
-        className="lg:hidden absolute bottom-0 left-0 h-1 w-full bg-[#da0e19] z-50 origin-left transition-transform duration-200 ease-out"
+        className="lg:hidden absolute bottom-0 left-0 h-1 w-full bg-white z-50 origin-left transition-transform duration-200 ease-out"
         style={{ transform: `scaleX(${scrollProgress / 100})` }}
       ></div>
     </header>
