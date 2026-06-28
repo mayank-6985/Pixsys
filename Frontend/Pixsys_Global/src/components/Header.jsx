@@ -363,141 +363,180 @@ const Header = () => {
       </div>
 
       <div
-        className={`lg:hidden absolute w-full left-0 bg-white shadow-2xl overflow-y-auto transition-all duration-[500ms] ease-in-out  ${
+        className={`lg:hidden absolute w-full left-0 bg-white shadow-2xl overflow-y-auto font-sans transition-all duration-[400ms] ease-in-out ${
           isMenuOpen ? "max-h-[85vh] opacity-100 pb-10" : "max-h-0 opacity-0"
         }`}
       >
         <div className="flex flex-col w-full">
           <div className="w-full border-b border-zinc-200">
             <div
-              className="flex justify-between items-center py-5 px-6 cursor-pointer hover:bg-zinc-50"
+              className="flex justify-between items-center py-5 px-6 cursor-pointer hover:bg-zinc-50 transition-colors"
               onClick={() => toggleSubMenu("products")}
             >
               <span
-                className={`font-bold text-sm uppercase tracking-wider ${isActive("/products") ? "text-[#da0e19]" : "text-zinc-900"}`}
+                className={`text-xl font-extrabold ${
+                  isActive("/products") ? "text-[#da0e19]" : "text-zinc-900"
+                }`}
               >
                 Products
               </span>
-
-              <span className="text-zinc-400">
-                {expandedMenus["products"] ? (
-                  <FaXmark />
-                ) : (
-                  <MdKeyboardArrowDown className="text-xl" />
-                )}
+              <span
+                className={`text-zinc-400 transition-transform duration-300 ${expandedMenus["products"] ? "rotate-180" : "rotate-0"}`}
+              >
+                <MdKeyboardArrowDown className="text-2xl" />
               </span>
             </div>
 
-            {expandedMenus["products"] && (
-              <div className="w-full bg-[#f8f9fa] border-t border-zinc-200">
-                {productsData.map((category, cIdx) => (
-                  <div key={category.category_id || cIdx} className="w-full">
-                    <div
-                      className="flex justify-between items-center py-4 px-6 border-b border-zinc-200 cursor-pointer"
-                      onClick={() => toggleSubMenu(category.category_name)}
-                    >
-                      <span
-                        className={`text-xs font-mono font-bold uppercase tracking-widest ${expandedMenus[category.category_name] ? "text-[#da0e19]" : "text-zinc-500"}`}
+            <div
+              className={`grid transition-all duration-300 ease-in-out ${
+                expandedMenus["products"]
+                  ? "grid-rows-[1fr] opacity-100"
+                  : "grid-rows-[0fr] opacity-0"
+              }`}
+            >
+              <div className="overflow-hidden">
+                <div className="w-full bg-[#f8f9fa] border-t border-zinc-200">
+                  {productsData.map((category, cIdx) => (
+                    <div key={category.category_id || cIdx} className="w-full">
+                      <div
+                        className="flex justify-between items-center py-4 px-6 border-b border-zinc-200 cursor-pointer hover:bg-zinc-100 transition-colors"
+                        onClick={() => toggleSubMenu(category.category_name)}
                       >
-                        {category.category_name}
-                      </span>
+                        <span
+                          className={`text-lg font-bold ${
+                            expandedMenus[category.category_name]
+                              ? "text-[#da0e19]"
+                              : "text-zinc-700"
+                          }`}
+                        >
+                          {category.category_name}
+                        </span>
+                        <span
+                          className={`text-zinc-400 transition-transform duration-300 ${expandedMenus[category.category_name] ? "rotate-90" : "rotate-0"}`}
+                        >
+                          <MdKeyboardArrowRight className="text-xl" />
+                        </span>
+                      </div>
 
-                      {expandedMenus[category.category_name] ? (
-                        <MdKeyboardArrowDown className="text-zinc-400" />
-                      ) : (
-                        <MdKeyboardArrowRight className="text-zinc-400" />
-                      )}
-                    </div>
-
-                    {expandedMenus[category.category_name] && (
-                      <div className="w-full bg-white">
-                        {category.subcategories?.map((subcategory, sIdx) => (
-                          <div
-                            key={subcategory.subcategory_id || sIdx}
-                            className="w-full"
-                          >
-                            <div
-                              className="flex justify-between items-center py-3 pl-10 pr-6 border-b border-zinc-100 cursor-pointer bg-zinc-50"
-                              onClick={() => toggleSubMenu(subcategory.name)}
-                            >
-                              <span
-                                className={`text-sm font-bold uppercase ${expandedMenus[subcategory.name] ? "text-zinc-900" : "text-zinc-600"}`}
-                              >
-                                {subcategory.name}
-                              </span>
-
-                              {expandedMenus[subcategory.name] ? (
-                                <MdKeyboardArrowDown className="text-zinc-400" />
-                              ) : (
-                                <MdKeyboardArrowRight className="text-zinc-400" />
-                              )}
-                            </div>
-
-                            {expandedMenus[subcategory.name] && (
-                              <div className="w-full bg-white py-2">
-                                {subcategory.tags?.map((tag, lIdx) => (
-                                  <Link
-                                    key={tag.tag_id || lIdx}
-                                    to={`/products?category=${category.category_id}&sub=${subcategory.subcategory_id}&series=${tag.tag_id}`}
-                                    className="flex items-center gap-3 py-2.5 pl-14 pr-6 text-sm text-zinc-500 hover:text-[#da0e19] capitalize font-medium"
-                                    onClick={() => setIsMenuOpen(false)}
+                      <div
+                        className={`grid transition-all duration-300 ease-in-out ${
+                          expandedMenus[category.category_name]
+                            ? "grid-rows-[1fr] opacity-100"
+                            : "grid-rows-[0fr] opacity-0"
+                        }`}
+                      >
+                        <div className="overflow-hidden">
+                          <div className="w-full bg-white">
+                            {category.subcategories?.map(
+                              (subcategory, sIdx) => (
+                                <div
+                                  key={subcategory.subcategory_id || sIdx}
+                                  className="w-full"
+                                >
+                                  <div
+                                    className="flex justify-between items-center py-3 pl-10 pr-6 border-b border-zinc-100 cursor-pointer bg-zinc-50 hover:bg-zinc-100 transition-colors"
+                                    onClick={() =>
+                                      toggleSubMenu(subcategory.name)
+                                    }
                                   >
-                                    <div className="w-1 h-1 bg-zinc-300"></div>
-                                    {tag.name}
-                                  </Link>
-                                ))}
-                              </div>
+                                    <span
+                                      className={`text-base font-semibold ${
+                                        expandedMenus[subcategory.name]
+                                          ? "text-zinc-900"
+                                          : "text-zinc-700"
+                                      }`}
+                                    >
+                                      {subcategory.name}
+                                    </span>
+                                    <span
+                                      className={`text-zinc-400 transition-transform duration-300 ${expandedMenus[subcategory.name] ? "rotate-90" : "rotate-0"}`}
+                                    >
+                                      <MdKeyboardArrowRight className="text-lg" />
+                                    </span>
+                                  </div>
+
+                                  <div
+                                    className={`grid transition-all duration-300 ease-in-out ${
+                                      expandedMenus[subcategory.name]
+                                        ? "grid-rows-[1fr] opacity-100"
+                                        : "grid-rows-[0fr] opacity-0"
+                                    }`}
+                                  >
+                                    <div className="overflow-hidden">
+                                      <div className="w-full bg-white py-2">
+                                        {subcategory.tags?.map((tag, lIdx) => (
+                                          <Link
+                                            key={tag.tag_id || lIdx}
+                                            to={`/products?category=${category.category_id}&sub=${subcategory.subcategory_id}&series=${tag.tag_id}`}
+                                            className="flex items-center gap-3 py-2.5 pl-14 pr-6 text-sm font-normal text-zinc-500 hover:text-[#da0e19] hover:bg-zinc-50 transition-colors capitalize"
+                                            onClick={() => setIsMenuOpen(false)}
+                                          >
+                                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-300"></div>
+                                            {tag.name}
+                                          </Link>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ),
                             )}
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
+            </div>
           </div>
 
           <div className="w-full border-b border-zinc-200">
             <div
-              className="flex justify-between items-center py-5 px-6 cursor-pointer hover:bg-zinc-50"
+              className="flex justify-between items-center py-5 px-6 cursor-pointer hover:bg-zinc-50 transition-colors"
               onClick={() => toggleSubMenu("solutions")}
             >
               <span
-                className={`font-bold text-sm uppercase tracking-wider ${isActive("/solutions") ? "text-[#da0e19]" : "text-zinc-900"}`}
+                className={`text-xl font-extrabold ${
+                  isActive("/solutions") ? "text-[#da0e19]" : "text-zinc-900"
+                }`}
               >
                 Solutions
               </span>
-
-              <span className="text-zinc-400">
-                {expandedMenus["solutions"] ? (
-                  <FaXmark />
-                ) : (
-                  <MdKeyboardArrowDown className="text-xl" />
-                )}
+              <span
+                className={`text-zinc-400 transition-transform duration-300 ${expandedMenus["solutions"] ? "rotate-180" : "rotate-0"}`}
+              >
+                <MdKeyboardArrowDown className="text-2xl" />
               </span>
             </div>
 
-            {expandedMenus["solutions"] && (
-              <div className="w-full bg-[#f8f9fa] border-t border-zinc-200">
-                {derivedCategories
-                  .filter((category) => category !== "All")
-                  .map((category) => (
-                    <Link
-                      key={category}
-                      to={`/solutions?category=${category}`}
-                      className="flex justify-between items-center py-4 pl-10 pr-6 border-b border-zinc-200 cursor-pointer transition-colors hover:bg-white"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <span className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500 hover:text-[#da0e19] transition-colors">
-                        {category}
-                      </span>
-
-                      <MdKeyboardArrowRight className="text-zinc-300" />
-                    </Link>
-                  ))}
+            <div
+              className={`grid transition-all duration-300 ease-in-out ${
+                expandedMenus["solutions"]
+                  ? "grid-rows-[1fr] opacity-100"
+                  : "grid-rows-[0fr] opacity-0"
+              }`}
+            >
+              <div className="overflow-hidden">
+                <div className="w-full bg-[#f8f9fa] border-t border-zinc-200">
+                  {derivedCategories
+                    .filter((category) => category !== "All")
+                    .map((category) => (
+                      <Link
+                        key={category}
+                        to={`/solutions?category=${category}`}
+                        className="flex justify-between items-center py-4 pl-10 pr-6 border-b border-zinc-200 cursor-pointer hover:bg-white transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <span className="text-base font-semibold text-zinc-700 hover:text-[#da0e19] transition-colors">
+                          {category}
+                        </span>
+                        <MdKeyboardArrowRight className="text-zinc-300 text-xl" />
+                      </Link>
+                    ))}
+                </div>
               </div>
-            )}
+            </div>
           </div>
 
           <Link
@@ -506,12 +545,13 @@ const Header = () => {
             onClick={() => setIsMenuOpen(false)}
           >
             <span
-              className={`font-bold text-sm uppercase tracking-wider ${isActive("/about") ? "text-[#da0e19]" : "text-zinc-900"}`}
+              className={`text-xl font-extrabold ${
+                isActive("/about") ? "text-[#da0e19]" : "text-zinc-900"
+              }`}
             >
               About Us
             </span>
-
-            <MdKeyboardArrowRight className="text-zinc-400 text-xl" />
+            <MdKeyboardArrowRight className="text-zinc-400 text-2xl" />
           </Link>
 
           <Link
@@ -520,12 +560,13 @@ const Header = () => {
             onClick={() => setIsMenuOpen(false)}
           >
             <span
-              className={`font-bold text-sm uppercase tracking-wider ${isActive("/news") ? "text-[#da0e19]" : "text-zinc-900"}`}
+              className={`text-xl font-extrabold ${
+                isActive("/news") ? "text-[#da0e19]" : "text-zinc-900"
+              }`}
             >
               News
             </span>
-
-            <MdKeyboardArrowRight className="text-zinc-400 text-xl" />
+            <MdKeyboardArrowRight className="text-zinc-400 text-2xl" />
           </Link>
 
           <Link
@@ -534,12 +575,13 @@ const Header = () => {
             onClick={() => setIsMenuOpen(false)}
           >
             <span
-              className={`font-bold text-sm uppercase tracking-wider ${isActive("/download") ? "text-[#da0e19]" : "text-zinc-900"}`}
+              className={`text-xl font-extrabold ${
+                isActive("/download") ? "text-[#da0e19]" : "text-zinc-900"
+              }`}
             >
               Download
             </span>
-
-            <MdKeyboardArrowRight className="text-zinc-400 text-xl" />
+            <MdKeyboardArrowRight className="text-zinc-400 text-2xl" />
           </Link>
         </div>
       </div>

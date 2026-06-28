@@ -149,7 +149,6 @@ const Login = () => {
               onClick={() => {
                 setIsSignup(!isSignup);
                 setSignupSuccess(false);
-                setError(null);
               }}
               className="text-sm font-medium text-[#da0e19] hover:text-red-800 transition-colors"
             >

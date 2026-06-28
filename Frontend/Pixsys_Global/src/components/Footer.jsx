@@ -42,7 +42,7 @@ const Footer = () => {
               </Link>
               <ul className="space-y-4 text-sm text-gray-400">
                 {productsData.map((category, idx) => (
-                  <li>
+                  <li key={category.category_id}>
                     <Link
                       to={`/products?category=${category.category_id}`}
                       className="hover:text-white transition-colors"
