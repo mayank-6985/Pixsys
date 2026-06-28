@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { FiPlus, FiEdit2, FiTrash2, FiSave, FiX } from "react-icons/fi";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   useAdminSolutionsData,
   useCategoryMutations,
@@ -53,8 +53,12 @@ const Solutions = () => {
     setEditingId(null);
     if (activeTab === "categories") {
       setCatFormData(emptyCategory);
+      createCat.reset();
+      updateCat.reset();
     } else {
       setSolFormData(emptySolution);
+      createSol.reset();
+      updateSol.reset();
     }
     setView("form");
   };
@@ -65,6 +69,7 @@ const Solutions = () => {
       category_name: cat.category_name,
       thumbnail: cat.thumbnail,
     });
+    updateCat.reset();
     setView("form");
   };
 
@@ -76,18 +81,31 @@ const Solutions = () => {
       thumbnail: sol.thumbnail,
       videoUrl: sol.videoUrl,
     });
+    updateSol.reset();
     setView("form");
   };
 
   const handleDeleteCat = (id) => {
     if (window.confirm("Delete this category AND all its solutions?")) {
-      deleteCat.mutate(id);
+      deleteCat.mutate(id, {
+        onError: () => {
+          alert(
+            "Something went wrong while trying to delete this category. Please try again.",
+          );
+        },
+      });
     }
   };
 
   const handleDeleteSol = (id) => {
     if (window.confirm("Delete this solution?")) {
-      deleteSol.mutate(id);
+      deleteSol.mutate(id, {
+        onError: () => {
+          alert(
+            "Something went wrong while trying to delete this solution. Please try again.",
+          );
+        },
+      });
     }
   };
 
@@ -127,6 +145,12 @@ const Solutions = () => {
     }
   };
 
+  const isCatSaving = createCat.isPending || updateCat.isPending;
+  const catError = createCat.isError || updateCat.isError;
+
+  const isSolSaving = createSol.isPending || updateSol.isPending;
+  const solError = createSol.isError || updateSol.isError;
+
   if (view === "form") {
     return (
       <div className="min-h-screen bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 w-full font-sans">
@@ -147,6 +171,13 @@ const Solutions = () => {
 
           {activeTab === "categories" ? (
             <form onSubmit={handleCatSubmit} className="p-6 sm:p-8">
+              {catError && (
+                <div className="mb-6 p-4 bg-red-50 border-l-4 border-[#da0e19] text-[#da0e19] text-sm font-medium rounded-r-md">
+                  Something went wrong while processing your request. Please try
+                  again.
+                </div>
+              )}
+
               <div className="space-y-6 mb-8">
                 <div>
                   <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
@@ -158,7 +189,8 @@ const Solutions = () => {
                     required
                     value={catFormData.category_name}
                     onChange={handleCatChange}
-                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 rounded-md focus:ring-1 focus:ring-[#da0e19] focus:border-[#da0e19] outline-none transition-all text-sm"
+                    disabled={isCatSaving}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 rounded-md focus:ring-1 focus:ring-[#da0e19] focus:border-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                   />
                 </div>
                 <div>
@@ -183,22 +215,38 @@ const Solutions = () => {
                 <button
                   type="button"
                   onClick={() => setView("list")}
-                  className="px-6 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs rounded-md hover:bg-zinc-50 transition-colors"
+                  disabled={isCatSaving}
+                  className="px-6 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs rounded-md hover:bg-zinc-50 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={createCat.isPending || updateCat.isPending}
-                  className="flex items-center gap-2 px-8 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs rounded-md transition-colors disabled:opacity-70"
+                  disabled={isCatSaving}
+                  className="flex items-center justify-center min-w-[160px] gap-2 px-8 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs rounded-md transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <FiSave size={16} />{" "}
-                  {editingId ? "Save Changes" : "Create Category"}
+                  {isCatSaving ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <FiSave size={16} />
+                  )}
+                  {isCatSaving
+                    ? "Saving..."
+                    : editingId
+                      ? "Save Changes"
+                      : "Create Category"}
                 </button>
               </div>
             </form>
           ) : (
             <form onSubmit={handleSolSubmit} className="p-6 sm:p-8">
+              {solError && (
+                <div className="mb-6 p-4 bg-red-50 border-l-4 border-[#da0e19] text-[#da0e19] text-sm font-medium rounded-r-md">
+                  Something went wrong while processing your request. Please try
+                  again.
+                </div>
+              )}
+
               <div className="space-y-6 mb-8">
                 <div>
                   <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
@@ -209,7 +257,8 @@ const Solutions = () => {
                     required
                     value={solFormData.category_id}
                     onChange={handleSolChange}
-                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 rounded-md focus:ring-1 focus:ring-[#da0e19] focus:border-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700"
+                    disabled={isSolSaving}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 rounded-md focus:ring-1 focus:ring-[#da0e19] focus:border-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700 disabled:opacity-60"
                   >
                     <option value="" disabled>
                       Select a Category...
@@ -232,7 +281,8 @@ const Solutions = () => {
                     maxLength={100}
                     value={solFormData.title}
                     onChange={handleSolChange}
-                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 rounded-md focus:ring-1 focus:ring-[#da0e19] focus:border-[#da0e19] outline-none transition-all text-sm"
+                    disabled={isSolSaving}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 rounded-md focus:ring-1 focus:ring-[#da0e19] focus:border-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                   />
                 </div>
                 <div>
@@ -262,7 +312,8 @@ const Solutions = () => {
                     required
                     value={solFormData.videoUrl}
                     onChange={handleSolChange}
-                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 rounded-md focus:ring-1 focus:ring-[#da0e19] focus:border-[#da0e19] outline-none transition-all text-sm"
+                    disabled={isSolSaving}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 rounded-md focus:ring-1 focus:ring-[#da0e19] focus:border-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                   />
                 </div>
               </div>
@@ -270,17 +321,26 @@ const Solutions = () => {
                 <button
                   type="button"
                   onClick={() => setView("list")}
-                  className="px-6 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs rounded-md hover:bg-zinc-50 transition-colors"
+                  disabled={isSolSaving}
+                  className="px-6 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs rounded-md hover:bg-zinc-50 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={createSol.isPending || updateSol.isPending}
-                  className="flex items-center gap-2 px-8 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs rounded-md transition-colors disabled:opacity-70"
+                  disabled={isSolSaving}
+                  className="flex items-center justify-center min-w-[160px] gap-2 px-8 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs rounded-md transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <FiSave size={16} />{" "}
-                  {editingId ? "Save Changes" : "Create Solution"}
+                  {isSolSaving ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <FiSave size={16} />
+                  )}
+                  {isSolSaving
+                    ? "Saving..."
+                    : editingId
+                      ? "Save Changes"
+                      : "Create Solution"}
                 </button>
               </div>
             </form>
@@ -358,7 +418,7 @@ const Solutions = () => {
                       <button
                         onClick={() => handleDeleteCat(item.category_id)}
                         disabled={deleteCat.isPending}
-                        className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50"
+                        className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         <FiTrash2 size={16} />
                       </button>
@@ -404,7 +464,7 @@ const Solutions = () => {
                       <button
                         onClick={() => handleDeleteSol(item.solutions_id)}
                         disabled={deleteSol.isPending}
-                        className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50"
+                        className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         <FiTrash2 size={16} />
                       </button>

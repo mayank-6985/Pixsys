@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useHomes } from "../hooks/useHomes";
 import { apiService } from "../Services/uploadService";
-import { FiTrash2 } from "react-icons/fi"; 
+import { FiTrash2 } from "react-icons/fi";
+import { Loader2 } from "lucide-react";
 
 const Home = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -9,7 +10,7 @@ const Home = () => {
 
   const [sliderImages, setSliderImages] = useState([]);
   const [isLoadingImages, setIsLoadingImages] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false); 
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fileInputRef = useRef(null);
   const { executeUpload, isUploading, progress, error, resetState } =
@@ -21,7 +22,9 @@ const Home = () => {
         const data = await apiService.getSliderImages();
         setSliderImages(data || []);
       } catch (err) {
-        console.error("Failed to fetch initial slider images", err);
+        alert(
+          "Something went wrong while loading the slider images. Please try again.",
+        );
       } finally {
         setIsLoadingImages(false);
       }
@@ -49,8 +52,7 @@ const Home = () => {
         setSliderImages(newUpdatedArray);
         cancelSelection();
       });
-    } catch (err) {
-    }
+    } catch (err) {}
   };
 
   const cancelSelection = () => {
@@ -77,13 +79,12 @@ const Home = () => {
     setIsDeleting(true);
     try {
       const updatedImages = sliderImages.filter((_, i) => i !== indexToRemove);
-
       await apiService.updateSliderInDB(updatedImages);
-
       setSliderImages(updatedImages);
     } catch (err) {
-      console.error("Failed to delete image:", err);
-      alert("An error occurred while deleting the image.");
+      alert(
+        "Something went wrong while trying to delete this item. Please try again.",
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -121,14 +122,16 @@ const Home = () => {
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
                 e.preventDefault();
-                handleFileSelect(e.dataTransfer.files[0]);
+                if (!isUploading) handleFileSelect(e.dataTransfer.files[0]);
               }}
-              onClick={() => !selectedFile && fileInputRef.current?.click()}
+              onClick={() =>
+                !selectedFile && !isUploading && fileInputRef.current?.click()
+              }
               className={`border-2 border-dashed p-8 text-center transition-all ${
                 selectedFile
                   ? "border-red-200 bg-red-50/50"
                   : "border-zinc-300 hover:border-[#da0e19] cursor-pointer bg-zinc-50"
-              }`}
+              } ${isUploading ? "opacity-60 cursor-not-allowed pointer-events-none" : ""}`}
             >
               <input
                 type="file"
@@ -136,6 +139,7 @@ const Home = () => {
                 onChange={(e) => handleFileSelect(e.target.files[0])}
                 accept="image/jpeg, image/png, image/webp"
                 className="hidden"
+                disabled={isUploading}
               />
 
               {!selectedFile ? (
@@ -172,8 +176,9 @@ const Home = () => {
             </div>
 
             {error && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-100 text-[#da0e19] text-sm font-medium">
-                {error}
+              <div className="mt-4 p-4 bg-red-50 border-l-4 border-[#da0e19] text-[#da0e19] text-sm font-medium rounded-r-md">
+                Something went wrong while processing your request. Please try
+                again.
               </div>
             )}
 
@@ -192,19 +197,24 @@ const Home = () => {
               </div>
             )}
 
-            {selectedFile && !isUploading && (
+            {selectedFile && (
               <div className="mt-6 flex gap-3 border-t border-zinc-100 pt-6">
                 <button
                   onClick={cancelSelection}
-                  className="flex-1 px-4 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs hover:bg-zinc-50 transition-colors"
+                  disabled={isUploading}
+                  className="flex-1 px-4 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs hover:bg-zinc-50 transition-colors disabled:opacity-50"
                 >
                   Clear
                 </button>
                 <button
                   onClick={onUploadClick}
-                  className="flex-1 px-4 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs transition-colors"
+                  disabled={isUploading}
+                  className="flex flex-1 items-center justify-center gap-2 px-4 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  Upload & Save
+                  {isUploading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : null}
+                  {isUploading ? "Uploading..." : "Upload & Save"}
                 </button>
               </div>
             )}
@@ -247,8 +257,8 @@ const Home = () => {
                           onClick={() => handleDeleteImage(index)}
                           disabled={isDeleting || sliderImages.length <= 1}
                           className={`p-3 rounded-full flex items-center justify-center transition-colors ${
-                            sliderImages.length <= 1
-                              ? "bg-zinc-300 text-zinc-500 cursor-not-allowed"
+                            isDeleting || sliderImages.length <= 1
+                              ? "bg-zinc-300 text-zinc-500 cursor-not-allowed opacity-60"
                               : "bg-white text-[#da0e19] hover:bg-[#da0e19] hover:text-white"
                           }`}
                           title={

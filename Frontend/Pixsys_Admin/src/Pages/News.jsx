@@ -28,13 +28,23 @@ const News = () => {
   const { data: newsList = [], isLoading: isListLoading } = useAdminNews();
   const { createMutation, updateMutation, deleteMutation } = useNewsMutations();
 
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const hasError = createMutation.isError || updateMutation.isError;
+
+  const resetMutations = () => {
+    createMutation.reset();
+    updateMutation.reset();
+  };
+
   const handleOpenCreate = () => {
+    resetMutations();
     setFormData(initialFormState);
     setEditingId(null);
     setView("form");
   };
 
   const handleOpenEdit = async (id) => {
+    resetMutations();
     setIsFetchingDetail(true);
     setView("form");
     setEditingId(id);
@@ -50,7 +60,9 @@ const News = () => {
           : initialFormState.content,
       });
     } catch (error) {
-      alert("Failed to fetch news details.");
+      alert(
+        "Something went wrong while fetching news details. Please try again.",
+      );
       setView("list");
     } finally {
       setIsFetchingDetail(false);
@@ -58,14 +70,17 @@ const News = () => {
   };
 
   const handleDelete = async (id) => {
+    const errorMsg =
+      "Something went wrong while trying to delete this item. Please try again.";
     if (window.confirm("Are you sure you want to delete this news article?")) {
-      deleteMutation.mutate(id);
+      deleteMutation.mutate(id, { onError: () => alert(errorMsg) });
     }
   };
 
   const handleBasicChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
+
   const handleContentChange = (index, field, value) => {
     setFormData((prev) => {
       const newContent = prev.content.map((block, i) => {
@@ -130,6 +145,7 @@ const News = () => {
       createMutation.mutate(payload, { onSuccess: () => setView("list") });
     }
   };
+
   if (view === "list") {
     return (
       <div className="min-h-screen bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 w-full font-sans flex flex-col gap-6">
@@ -188,7 +204,7 @@ const News = () => {
                         <button
                           onClick={() => handleDelete(item.news_id)}
                           disabled={deleteMutation.isPending}
-                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50"
+                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Delete"
                         >
                           <FiTrash2 size={16} />
@@ -237,6 +253,13 @@ const News = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-8 bg-white">
+            {hasError && (
+              <div className="mb-6 p-4 bg-red-50 border-l-4 border-[#da0e19] text-[#da0e19] text-sm font-medium rounded-r-md">
+                Something went wrong while processing your request. Please try
+                again.
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
               <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
@@ -249,7 +272,8 @@ const News = () => {
                   maxLength={255}
                   value={formData.heading}
                   onChange={handleBasicChange}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                  disabled={isSaving}
+                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                   placeholder="Enter article title"
                 />
               </div>
@@ -263,7 +287,8 @@ const News = () => {
                   required
                   value={formData.date}
                   onChange={handleBasicChange}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                  disabled={isSaving}
+                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                 />
               </div>
               <div>
@@ -301,7 +326,8 @@ const News = () => {
                       <button
                         type="button"
                         onClick={() => removeContentBlock(index)}
-                        className="absolute top-4 right-4 text-zinc-400 hover:text-[#da0e19] transition-colors"
+                        disabled={isSaving}
+                        className="absolute top-4 right-4 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50"
                         title="Remove Block"
                       >
                         <FiTrash2 size={18} />
@@ -317,7 +343,8 @@ const News = () => {
                           onChange={(e) =>
                             handleContentChange(index, "type", e.target.value)
                           }
-                          className="w-full px-3 py-2.5 border border-zinc-300 focus:border-[#da0e19] outline-none bg-white transition-all text-sm font-bold uppercase tracking-widest text-zinc-700"
+                          disabled={isSaving}
+                          className="w-full px-3 py-2.5 border border-zinc-300 focus:border-[#da0e19] outline-none bg-white transition-all text-sm font-bold uppercase tracking-widest text-zinc-700 disabled:opacity-60"
                         >
                           <option value="text">Paragraph Text</option>
                           <option value="image">Media Image</option>
@@ -339,8 +366,9 @@ const News = () => {
                                   e.target.value,
                                 )
                               }
+                              disabled={isSaving}
                               rows="4"
-                              className="w-full px-4 py-3 bg-white border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none resize-y transition-all text-sm"
+                              className="w-full px-4 py-3 bg-white border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none resize-y transition-all text-sm disabled:opacity-60"
                               placeholder="Write your paragraph here..."
                             ></textarea>
                           </div>
@@ -379,7 +407,8 @@ const News = () => {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-4 py-3 bg-white border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                                disabled={isSaving}
+                                className="w-full px-4 py-3 bg-white border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                                 placeholder="Enter image caption"
                               />
                             </div>
@@ -394,7 +423,8 @@ const News = () => {
               <button
                 type="button"
                 onClick={addContentBlock}
-                className="mt-6 flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 text-xs font-bold text-[#da0e19] uppercase tracking-widest bg-red-50 hover:bg-red-100 transition-colors border border-red-100"
+                disabled={isSaving}
+                className="mt-6 flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 text-xs font-bold text-[#da0e19] uppercase tracking-widest bg-red-50 hover:bg-red-100 transition-colors border border-red-100 disabled:opacity-50"
               >
                 <FiPlus size={16} /> Add Content Block
               </button>
@@ -404,17 +434,28 @@ const News = () => {
               <button
                 type="button"
                 onClick={() => setView("list")}
-                className="px-6 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs hover:bg-zinc-50 transition-colors"
+                disabled={isSaving}
+                className="px-6 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs hover:bg-zinc-50 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={createMutation.isPending || updateMutation.isPending}
-                className="flex items-center gap-2 px-8 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
+                disabled={isSaving}
+                className="flex items-center justify-center min-w-[160px] gap-2 px-8 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
               >
-                <FiSave size={16} />{" "}
-                {editingId ? "Save Changes" : "Publish News"}
+                {isSaving ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <FiSave size={16} />
+                )}
+                {isSaving
+                  ? editingId
+                    ? "Updating..."
+                    : "Saving..."
+                  : editingId
+                    ? "Save Changes"
+                    : "Publish News"}
               </button>
             </div>
           </form>
