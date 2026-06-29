@@ -3,6 +3,7 @@ import { FaDownload, FaHome, FaNewspaper, FaTimes } from "react-icons/fa";
 import { AiFillProduct, AiOutlineSolution } from "react-icons/ai";
 import { Link, useLocation } from "react-router-dom";
 import { Contact, Contact2Icon, icons } from "lucide-react";
+import VisitorMap from "../Pages/VisitorMap";
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
@@ -14,6 +15,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { name: "News", url: "/news", icon: <FaNewspaper /> },
     { name: "Downloads", url: "/download", icon: <FaDownload /> },
     { name: "ConactQuery", url: "/conactQuery", icon: <Contact /> },
+    { name: "VisitorMap", url: "/visitor-map", icon: <FaHome /> },
   ];
 
   const isActive = (url) => {

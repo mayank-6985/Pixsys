@@ -10,6 +10,7 @@ import Download from "../Pages/Download";
 import Login from "../Pages/Login";
 import SomethingWentWrong from "../Components/SomethingWentWrong";
 import ContactQuery from "../Pages/ConactQuery";
+import VisitorMap from "../Pages/VisitorMap";
 
 import { ProtectedRoute, GuestRoute } from "../Components/AuthGuards";
 
@@ -55,6 +56,10 @@ const router = createBrowserRouter([
           {
             path: "/conactquery",
             element: <ContactQuery />,
+          },
+          {
+            path: "/visitor-map",
+            element: <VisitorMap />,
           },
         ],
       },
