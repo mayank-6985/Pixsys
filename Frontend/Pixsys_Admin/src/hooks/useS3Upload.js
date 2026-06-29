@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { apiService } from "../services/uploadService"; 
+import { apiService } from "../services/uploadService";
 
 export const useS3Upload = (folderName = "misc") => {
   const [isUploading, setIsUploading] = useState(false);
@@ -8,7 +8,7 @@ export const useS3Upload = (folderName = "misc") => {
 
   const uploadFile = async (file) => {
     if (!file) return null;
-    
+
     setIsUploading(true);
     setProgress(0);
     setError(null);
@@ -20,7 +20,7 @@ export const useS3Upload = (folderName = "misc") => {
       const presignedData = await apiService.getPresignedUrl(
         safeFile.name,
         safeFile.type,
-        folderName
+        folderName,
       );
 
       const uploadUrl = presignedData.upload_url;
@@ -34,12 +34,11 @@ export const useS3Upload = (folderName = "misc") => {
 
       setIsUploading(false);
       setProgress(100);
-      
-      return finalFileUrl; 
-      
+
+      return finalFileUrl;
     } catch (err) {
       console.error("S3 Upload failed:", err);
-      setError(err.response?.data?.message || "Failed to upload file to S3.");
+      setError(err.response?.data?.message || "Failed to upload file.");
       setIsUploading(false);
       throw err;
     }

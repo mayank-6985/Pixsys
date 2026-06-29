@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { FiSearch, FiArrowRight } from "react-icons/fi";
+import { FiSearch, FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import api from "../../api";
 import SingleProductView from "./SingleProductView";
 
-const ProductHero = () => {
+const ProductHero = ({ onSearchActive }) => {
   const [searchInput, setSearchInput] = useState("");
-  const [activeKeyword, setActiveKeyword] = useState(""); 
+  const [activeKeyword, setActiveKeyword] = useState("");
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  useEffect(() => {
+    if (onSearchActive) {
+      onSearchActive(!!activeKeyword);
+    }
+  }, [activeKeyword, onSearchActive]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -36,7 +42,7 @@ const ProductHero = () => {
     };
 
     fetchProducts();
-  }, [activeKeyword])
+  }, [activeKeyword]);
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setActiveKeyword(searchInput.trim());
@@ -46,6 +52,12 @@ const ProductHero = () => {
   const handleTrendingClick = (keyword) => {
     setSearchInput(keyword);
     setActiveKeyword(keyword);
+    setSelectedProduct(null);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setActiveKeyword("");
     setSelectedProduct(null);
   };
 
@@ -83,6 +95,17 @@ const ProductHero = () => {
       </section>
       {activeKeyword && (
         <div className="max-w-[1200px] mx-auto px-6 pt-12 animate-in fade-in duration-500 slide-in-from-bottom-4">
+          {!selectedProduct && (
+            <div className="mb-6">
+              <button
+                onClick={handleClearSearch}
+                className="flex items-center text-sm font-semibold text-gray-500 hover:text-[#da0e19] transition-colors mb-6"
+              >
+                <FiArrowLeft className="mr-2 text-lg" />
+                Back to All Products
+              </button>
+            </div>
+          )}
           {selectedProduct ? (
             <SingleProductView
               product={selectedProduct}
@@ -112,9 +135,7 @@ const ProductHero = () => {
                       >
                         <div className="h-32 w-full mb-6 flex items-center justify-center">
                           <img
-                            src={
-                              product.product_img 
-                            }
+                            src={product.product_img}
                             alt={product.name}
                             className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 mix-blend-multiply"
                           />

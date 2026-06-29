@@ -82,7 +82,7 @@ const ImageSlider = () => {
 
   return (
     <div className="relative w-full h-[50vh] md:h-[60vh] lg:h-[75vh] overflow-hidden bg-zinc-900 group select-none">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px] z-10 pointer-events-none"></div>
+      <div className="absolute inset-0 pointer-events-none"></div>
 
       <div
         className={`flex w-full h-full cursor-grab active:cursor-grabbing ${

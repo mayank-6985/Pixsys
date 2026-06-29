@@ -96,6 +96,37 @@ const Products = () => {
   const { createTag, updateTag, deleteTag } = useTagMutations();
   const { createProd, updateProd, deleteProd } = useProductMutations();
 
+  const isSaving =
+    createCat.isPending ||
+    updateCat.isPending ||
+    createSubCat.isPending ||
+    updateSubCat.isPending ||
+    createTag.isPending ||
+    updateTag.isPending ||
+    createProd.isPending ||
+    updateProd.isPending;
+
+  const hasError =
+    createCat.isError ||
+    updateCat.isError ||
+    createSubCat.isError ||
+    updateSubCat.isError ||
+    createTag.isError ||
+    updateTag.isError ||
+    createProd.isError ||
+    updateProd.isError;
+
+  const resetAllMutations = () => {
+    createCat.reset();
+    updateCat.reset();
+    createSubCat.reset();
+    updateSubCat.reset();
+    createTag.reset();
+    updateTag.reset();
+    createProd.reset();
+    updateProd.reset();
+  };
+
   const categories = useMemo(() => {
     if (Array.isArray(rawData)) return rawData;
     if (rawData?.data && Array.isArray(rawData.data)) return rawData.data;
@@ -143,6 +174,7 @@ const Products = () => {
     setEditingId(null);
     setProductEditId(null);
     setFormType(activeLevel);
+    resetAllMutations();
 
     if (activeLevel === "categories") {
       setFormData(emptyCategory);
@@ -158,6 +190,7 @@ const Products = () => {
 
   const handleOpenEdit = (item, type) => {
     setFormType(type);
+    resetAllMutations();
 
     if (type === "categories") {
       setEditingId(item.category_id);
@@ -189,11 +222,14 @@ const Products = () => {
   };
 
   const handleDelete = (id, type) => {
+    const errorMsg =
+      "Something went wrong while trying to delete this item. Please try again.";
+
     if (
       type === "categories" &&
       window.confirm("Delete this category and all its contents?")
     ) {
-      deleteCat.mutate(id);
+      deleteCat.mutate(id, { onError: () => alert(errorMsg) });
       if (String(selCat) === String(id)) {
         setSelCat("");
         setSelSub("");
@@ -203,16 +239,16 @@ const Products = () => {
       type === "subcategories" &&
       window.confirm("Delete this subcategory?")
     ) {
-      deleteSubCat.mutate(id);
+      deleteSubCat.mutate(id, { onError: () => alert(errorMsg) });
       if (String(selSub) === String(id)) {
         setSelSub("");
         setSelTag("");
       }
     } else if (type === "tags" && window.confirm("Delete this tag?")) {
-      deleteTag.mutate(id);
+      deleteTag.mutate(id, { onError: () => alert(errorMsg) });
       if (String(selTag) === String(id)) setSelTag("");
     } else if (type === "products" && window.confirm("Delete this product?")) {
-      deleteProd.mutate(id);
+      deleteProd.mutate(id, { onError: () => alert(errorMsg) });
     }
   };
 
@@ -381,6 +417,13 @@ const Products = () => {
 
           <div className="p-8 bg-white">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {hasError && (
+                <div className="mb-6 p-4 bg-red-50 border-l-4 border-[#da0e19] text-[#da0e19] text-sm font-medium rounded-r-md">
+                  Something went wrong while processing your request. Please try
+                  again.
+                </div>
+              )}
+
               {formType === "categories" && (
                 <>
                   <div>
@@ -393,7 +436,8 @@ const Products = () => {
                       required
                       value={formData.category_name || ""}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                      disabled={isSaving}
+                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                     />
                   </div>
                   <div>
@@ -406,7 +450,8 @@ const Products = () => {
                       required
                       value={formData.tagline || ""}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                      disabled={isSaving}
+                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                     />
                   </div>
 
@@ -442,7 +487,8 @@ const Products = () => {
                       required
                       value={formData.name || ""}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                      disabled={isSaving}
+                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                     />
                   </div>
                   <div>
@@ -455,7 +501,8 @@ const Products = () => {
                       rows="4"
                       value={formData.description || ""}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm resize-none"
+                      disabled={isSaving}
+                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm resize-none disabled:opacity-60"
                     />
                   </div>
                   <div>
@@ -490,7 +537,8 @@ const Products = () => {
                       required
                       value={formData.name || ""}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                      disabled={isSaving}
+                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                     />
                   </div>
                 </>
@@ -508,7 +556,8 @@ const Products = () => {
                       required
                       value={formData.name || ""}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                      disabled={isSaving}
+                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                     />
                   </div>
                   <div>
@@ -521,7 +570,8 @@ const Products = () => {
                       required
                       value={formData.tagline || ""}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                      disabled={isSaving}
+                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                     />
                   </div>
                   <div>
@@ -534,7 +584,8 @@ const Products = () => {
                       rows="4"
                       value={formData.description || ""}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm resize-none"
+                      disabled={isSaving}
+                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm resize-none disabled:opacity-60"
                     />
                   </div>
 
@@ -564,7 +615,8 @@ const Products = () => {
                       <button
                         type="button"
                         onClick={addSpec}
-                        className="text-xs font-bold text-[#da0e19] uppercase tracking-widest flex items-center gap-1 hover:underline"
+                        disabled={isSaving}
+                        className="text-xs font-bold text-[#da0e19] uppercase tracking-widest flex items-center gap-1 hover:underline disabled:opacity-50 disabled:no-underline"
                       >
                         <FiPlus /> Add Spec
                       </button>
@@ -579,12 +631,14 @@ const Products = () => {
                           onChange={(e) =>
                             handleSpecChange(index, e.target.value)
                           }
-                          className="flex-1 px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] outline-none transition-all text-sm"
+                          disabled={isSaving}
+                          className="flex-1 px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                         />
                         <button
                           type="button"
                           onClick={() => removeSpec(index)}
-                          className="px-4 bg-zinc-200 text-zinc-600 hover:bg-red-100 hover:text-red-600 transition-colors"
+                          disabled={isSaving}
+                          className="px-4 bg-zinc-200 text-zinc-600 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50"
                         >
                           <FiTrash2 />
                         </button>
@@ -600,7 +654,8 @@ const Products = () => {
                       <button
                         type="button"
                         onClick={addDownload}
-                        className="text-xs font-bold text-[#da0e19] uppercase tracking-widest flex items-center gap-1 hover:underline"
+                        disabled={isSaving}
+                        className="text-xs font-bold text-[#da0e19] uppercase tracking-widest flex items-center gap-1 hover:underline disabled:opacity-50 disabled:no-underline"
                       >
                         <FiPlus /> Add Download
                       </button>
@@ -613,7 +668,8 @@ const Products = () => {
                         <button
                           type="button"
                           onClick={() => removeDownload(index)}
-                          className="absolute top-2 right-2 text-zinc-400 hover:text-red-600 transition-colors"
+                          disabled={isSaving}
+                          className="absolute top-2 right-2 text-zinc-400 hover:text-red-600 transition-colors disabled:opacity-50"
                         >
                           <FiX size={18} />
                         </button>
@@ -633,7 +689,8 @@ const Products = () => {
                                   e.target.value,
                                 )
                               }
-                              className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm"
+                              disabled={isSaving}
+                              className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm disabled:opacity-60"
                             >
                               <option value="SOFTWARE">SOFTWARE</option>
                               <option value="SOFTWARE_MANUAL">
@@ -658,7 +715,8 @@ const Products = () => {
                                   e.target.value,
                                 )
                               }
-                              className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm"
+                              disabled={isSaving}
+                              className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm disabled:opacity-60"
                             />
                           </div>
                           <div className="md:col-span-2">
@@ -695,15 +753,28 @@ const Products = () => {
                     setView("list");
                     setProductEditId(null);
                   }}
-                  className="px-6 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs hover:bg-zinc-50 transition-colors"
+                  disabled={isSaving}
+                  className="px-6 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs hover:bg-zinc-50 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-8 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs transition-colors"
+                  disabled={isSaving}
+                  className="flex items-center justify-center min-w-[140px] gap-2 px-8 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <FiSave size={16} /> {editingId ? "Update" : "Save"}
+                  {isSaving ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <FiSave size={16} />
+                  )}
+                  {isSaving
+                    ? editingId
+                      ? "Updating..."
+                      : "Saving..."
+                    : editingId
+                      ? "Update"
+                      : "Save"}
                 </button>
               </div>
             </form>
@@ -838,7 +909,8 @@ const Products = () => {
                           onClick={() =>
                             handleDelete(item.category_id, "categories")
                           }
-                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors"
+                          disabled={deleteCat.isPending}
+                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <FiTrash2 size={16} />
                         </button>
@@ -872,7 +944,8 @@ const Products = () => {
                           onClick={() =>
                             handleDelete(item.subcategory_id, "subcategories")
                           }
-                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors"
+                          disabled={deleteSubCat.isPending}
+                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <FiTrash2 size={16} />
                         </button>
@@ -901,7 +974,8 @@ const Products = () => {
                         </button>
                         <button
                           onClick={() => handleDelete(item.tag_id, "tags")}
-                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors"
+                          disabled={deleteTag.isPending}
+                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <FiTrash2 size={16} />
                         </button>
@@ -935,7 +1009,8 @@ const Products = () => {
                           onClick={() =>
                             handleDelete(item.product_id, "products")
                           }
-                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors"
+                          disabled={deleteProd.isPending}
+                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <FiTrash2 size={16} />
                         </button>

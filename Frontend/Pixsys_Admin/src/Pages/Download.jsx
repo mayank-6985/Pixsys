@@ -7,7 +7,7 @@ import {
   FiX,
   FiDownload,
 } from "react-icons/fi";
-import { X, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   useAllDownloads,
   useUpdateDownload,
@@ -33,6 +33,14 @@ const Download = () => {
   const updateMutation = useUpdateDownload();
   const deleteMutation = useDeleteDownload();
   const createMutation = useCreateDownload();
+
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const hasError = createMutation.isError || updateMutation.isError;
+
+  const resetMutations = () => {
+    createMutation.reset();
+    updateMutation.reset();
+  };
 
   const [view, setView] = useState("list");
   const [editingId, setEditingId] = useState(null);
@@ -101,6 +109,7 @@ const Download = () => {
   }, [allDownloads, selCat, selSub, selTag, selProd]);
 
   const handleOpenCreate = () => {
+    resetMutations();
     setEditingId(null);
     setFormData({
       ...emptyDownload,
@@ -113,6 +122,7 @@ const Download = () => {
   };
 
   const handleOpenEdit = (d) => {
+    resetMutations();
     setEditingId(d.download_id);
     setSelCat(d.category_id ?? "");
     setSelSub(d.subcategory_id ?? "");
@@ -147,9 +157,7 @@ const Download = () => {
         await createMutation.mutateAsync({ ...formData });
       }
       setView("list");
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) {}
   };
 
   const handleDelete = async (id) => {
@@ -157,7 +165,9 @@ const Download = () => {
       try {
         await deleteMutation.mutateAsync(id);
       } catch (err) {
-        console.error(err);
+        alert(
+          "Something went wrong while trying to delete this item. Please try again.",
+        );
       }
     }
   };
@@ -180,6 +190,13 @@ const Download = () => {
 
           <div className="p-8 bg-white">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {hasError && (
+                <div className="mb-6 p-4 bg-red-50 border-l-4 border-[#da0e19] text-[#da0e19] text-sm font-medium rounded-r-md">
+                  Something went wrong while processing your request. Please try
+                  again.
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
@@ -191,7 +208,8 @@ const Download = () => {
                     required
                     value={formData.name || ""}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm"
+                    disabled={isSaving}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
                   />
                 </div>
                 <div>
@@ -202,7 +220,8 @@ const Download = () => {
                     name="resource_type"
                     value={formData.resource_type || "SOFTWARE"}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700"
+                    disabled={isSaving}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700 disabled:opacity-60"
                   >
                     <option value="SOFTWARE">SOFTWARE</option>
                     <option value="SOFTWARE_MANUAL">SOFTWARE_MANUAL</option>
@@ -234,9 +253,8 @@ const Download = () => {
                   value={formData.resource_url || ""}
                 />
               </div>
-
               <div className="pt-4 border-t border-zinc-200">
-                {/* <h3 className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-4">
+                <h3 className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-4">
                   Product Linkage *
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -331,22 +349,35 @@ const Download = () => {
                       </option>
                     ))}
                   </select>
-                </div> */}
+                </div>
               </div>
 
               <div className="flex justify-end pt-6 border-t border-zinc-200 gap-4">
                 <button
                   type="button"
                   onClick={() => setView("list")}
-                  className="px-6 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs hover:bg-zinc-50 transition-colors"
+                  disabled={isSaving}
+                  className="px-6 py-3 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-xs hover:bg-zinc-50 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-8 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs transition-colors"
+                  disabled={isSaving}
+                  className="flex items-center justify-center min-w-[160px] gap-2 px-8 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
                 >
-                  <FiSave size={16} /> {editingId ? "Update" : "Save"}
+                  {isSaving ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <FiSave size={16} />
+                  )}
+                  {isSaving
+                    ? editingId
+                      ? "Updating..."
+                      : "Saving..."
+                    : editingId
+                      ? "Update"
+                      : "Save"}
                 </button>
               </div>
             </form>
@@ -501,7 +532,7 @@ const Download = () => {
                           {d.resource_url}
                         </a>
                       </td>
-                      <td className="py-4 px-6 flex justify-end gap-2">
+                      <td className="py-4 px-6 flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => handleOpenEdit(d)}
                           className="p-2 text-zinc-400 hover:text-zinc-900 transition-colors"
@@ -510,7 +541,8 @@ const Download = () => {
                         </button>
                         <button
                           onClick={() => handleDelete(d.download_id)}
-                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors"
+                          disabled={deleteMutation.isPending}
+                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <FiTrash2 size={16} />
                         </button>
