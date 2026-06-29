@@ -253,6 +253,104 @@ const Download = () => {
                   value={formData.resource_url || ""}
                 />
               </div>
+              <div className="pt-4 border-t border-zinc-200">
+                <h3 className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-4">
+                  Product Linkage *
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <select
+                    value={selCat}
+                    onChange={(e) => {
+                      setSelCat(e.target.value);
+                      setSelSub("");
+                      setSelTag("");
+                      setSelProd("");
+                      setFormData((s) => ({
+                        ...s,
+                        category_id: e.target.value,
+                        subcategory_id: "",
+                        tag_id: "",
+                        product_id: "",
+                      }));
+                    }}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700"
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((c) => (
+                      <option key={c.category_id} value={c.category_id}>
+                        {c.category_name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={selSub}
+                    onChange={(e) => {
+                      setSelSub(e.target.value);
+                      setSelTag("");
+                      setSelProd("");
+                      setFormData((s) => ({
+                        ...s,
+                        subcategory_id: e.target.value,
+                        tag_id: "",
+                        product_id: "",
+                      }));
+                    }}
+                    disabled={!selCat}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700 disabled:opacity-50 disabled:bg-zinc-100"
+                  >
+                    <option value="">Select Subcategory</option>
+                    {subOptions.map((s) => (
+                      <option key={s.subcategory_id} value={s.subcategory_id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={selTag}
+                    onChange={(e) => {
+                      setSelTag(e.target.value);
+                      setSelProd("");
+                      setFormData((s) => ({
+                        ...s,
+                        tag_id: e.target.value,
+                        product_id: "",
+                      }));
+                    }}
+                    disabled={!selSub}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700 disabled:opacity-50 disabled:bg-zinc-100"
+                  >
+                    <option value="">Select Tag</option>
+                    {tagOptions.map((t) => (
+                      <option key={t.tag_id} value={t.tag_id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={selProd}
+                    required
+                    onChange={(e) => {
+                      setSelProd(e.target.value);
+                      setFormData((s) => ({
+                        ...s,
+                        product_id: e.target.value,
+                      }));
+                    }}
+                    disabled={!selTag}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700 disabled:opacity-50 disabled:bg-zinc-100"
+                  >
+                    <option value="">Select Product</option>
+                    {prodOptions.map((p) => (
+                      <option key={p.product_id} value={p.product_id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
               <div className="flex justify-end pt-6 border-t border-zinc-200 gap-4">
                 <button
