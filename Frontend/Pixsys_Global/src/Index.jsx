@@ -2,8 +2,6 @@ import React from "react";
 import {
   createBrowserRouter,
   RouterProvider,
-  Outlet,
-  Links,
   isRouteErrorResponse,
   useRouteError,
 } from "react-router-dom";
@@ -16,8 +14,10 @@ import About from "./pages/About";
 import News from "./pages/News";
 import Download from "./pages/Download";
 import NewsDetail from "./pages/NewsDetail";
+import Search from "./pages/Search";
+import Login from "./pages/Login"
 
-const rootErrorBoundary = () => {
+const RootErrorBoundary = () => {
   const error = useRouteError();
   if (isRouteErrorResponse(error) && error.status === 404) {
     return <PageNotFound />;
@@ -36,7 +36,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />,
-    errorElement: <rootErrorBoundaryx />,
+    errorElement: <RootErrorBoundary />,
     children: [
       { index: true, element: <Home /> },
       { path: "/products", element: <Products /> },
@@ -45,9 +45,15 @@ const router = createBrowserRouter([
       { path: "/news", element: <News /> },
       { path: "/news/:id", element: <NewsDetail /> },
       { path: "/download", element: <Download /> },
+      { path: "/search", element: <Search /> },
       { path: "*", element: <PageNotFound /> },
     ],
   },
+  {
+    path: "/login",
+    element: <Login />,
+    errorElement: <RootErrorBoundary />,
+  }
 ]);
 
 export default function AppRouter() {

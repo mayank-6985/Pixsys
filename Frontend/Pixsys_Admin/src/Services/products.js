@@ -70,6 +70,11 @@ export const updateProduct = async (data) => {
   return response.data;
 };
 
+export const fetchProductDetails = async (product_id) => {
+  const response = await api.get(`products/products/${product_id}`);
+  return response.data;
+};
+
 export const deleteProduct = async (product_id) => {
   const response = await api.delete("products/products/", {
     params: { product_id },

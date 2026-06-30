@@ -5,27 +5,37 @@ const DetailedProductView = ({
   activeSection,
   activeSeries,
   displayedProducts,
+  onSelectSubcategory,
   onSelectSeries,
+  onSelectProduct,
   onBack,
 }) => {
   if (!activeCategory || !activeSection) return null;
+
+  const isProductNew = (dateString) => {
+    if (!dateString) return false;
+    const productDate = new Date(dateString);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return productDate > thirtyDaysAgo;
+  };
 
   return (
     <div>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-gray-200">
         <div className="flex gap-8 overflow-x-auto w-full md:w-auto">
-          {activeCategory.subcategories?.map((sec, idx) => (
+          {activeCategory.map((sec) => (
             <button
-              key={idx}
-              onClick={() => onSelectSeries(sec.tags?.[0]?.name)}
+              key={sec.subcategory_id}
+              onClick={() => onSelectSubcategory(sec.subcategory_id)}
               className={`pb-4 text-base font-semibold transition-colors relative ${
-                activeSection.name === sec.name
+                activeSection.subcategory_id === sec.subcategory_id
                   ? "text-[#da0e19]"
                   : "text-gray-500 hover:text-gray-900"
               }`}
             >
               {sec.name}
-              {activeSection.name === sec.name && (
+              {activeSection.subcategory_id === sec.subcategory_id && (
                 <div className="absolute bottom-0 left-0 w-full h-[3px] bg-[#da0e19]"></div>
               )}
             </button>
@@ -42,64 +52,67 @@ const DetailedProductView = ({
       <div className="bg-gray-100 rounded-xl overflow-hidden flex flex-col md:flex-row min-h-[250px] mb-8">
         <div className="p-8 md:p-12 flex-1 flex flex-col justify-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            {activeSection.name}
+            {activeSection?.name}
           </h2>
           <p className="text-gray-600 leading-relaxed max-w-2xl">
-            {activeSection.description}
+            {activeSection?.description}
           </p>
         </div>
-        <div className="w-full md:w-5/12 hidden md:block">
+        <div className="w-full md:w-5/12 hidden md:block h-80 overflow-hidden">
           <img
-            src={activeSection.bannerImg}
-            alt={activeSection.name}
-            className="w-full h-full object-cover"
+            src={activeSection?.category_img}
+            alt={activeSection?.name}
+            className="w-full h-full object-fit"
           />
         </div>
       </div>
+
       {/* PILLS */}
       <div className="flex flex-wrap gap-3 mb-10">
-        {activeSection.tags?.map((link, idx) => (
+        {activeSection.tags?.map((tag) => (
           <button
-            key={idx}
-            onClick={() => onSelectSeries(link.name)}
+            key={tag.tag_id}
+            onClick={() => onSelectSeries(tag.tag_id)}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-colors shadow-sm ${
-              activeSeries === link.name
+              activeSeries === tag.tag_id
                 ? "bg-[#da0e19] text-white"
                 : "bg-white text-gray-600 border border-gray-200 hover:bg-red-50 hover:text-[#da0e19] hover:border-red-200"
             }`}
           >
-            {link.name}
+            {tag.name}
           </button>
         ))}
       </div>
+
       {/* PRODUCTS GRID */}
       {displayedProducts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {displayedProducts.map((product) => (
             <div
               key={product.product_id}
+              onClick={() => onSelectProduct(product.product_id)}
               className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-xl transition-shadow relative overflow-hidden group cursor-pointer"
             >
-              {product.isNew && (
+              {isProductNew(product.created_at) && (
                 <div className="absolute top-4 -right-8 w-32 bg-[#da0e19] text-white text-xs font-bold py-1 text-center rotate-45 shadow-sm">
                   NEW
                 </div>
               )}
               <div className="w-full h-48 mb-6 bg-gray-50 rounded flex items-center justify-center p-4">
                 <img
-                  src={product.image_url}
-                  alt={product.product_name}
+                  src={product.product_img}
+                  alt={product.name}
                   className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">
-                {product.product_name}
+                {product.name}
               </h3>
               <p className="text-sm text-gray-500 mb-6 line-clamp-2">
                 {product.description}
               </p>
               <div className="flex items-center text-sm font-semibold text-gray-400 group-hover:text-[#da0e19] transition-colors">
-                Learn More
+                Learn More{" "}
                 <HiOutlineArrowRight className="ml-1 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>

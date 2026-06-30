@@ -1,17 +1,134 @@
 import React, { useState } from "react";
 import { FiSend, FiArrowRight } from "react-icons/fi";
 import ScrollReveal from "../components/ScrollReveal";
-const About = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    number: "",
-    email: "",
-    poul: "",
-    industry: "",
-    product: "",
-    description: "",
-  });
+import api from "../api";
 
+const countries = [
+  { name: "Afghanistan", code: "AF", dialCode: "+93" },
+  { name: "Aland Islands", code: "AX", dialCode: "+358" },
+  { name: "Albania", code: "AL", dialCode: "+355" },
+  { name: "Algeria", code: "DZ", dialCode: "+213" },
+  { name: "American Samoa", code: "AS", dialCode: "+1684" },
+  { name: "Andorra", code: "AD", dialCode: "+376" },
+  { name: "Angola", code: "AO", dialCode: "+244" },
+  { name: "Anguilla", code: "AI", dialCode: "+1264" },
+  { name: "Antarctica", code: "AQ", dialCode: "+672" },
+  { name: "Antigua and Barbuda", code: "AG", dialCode: "+1268" },
+  { name: "Argentina", code: "AR", dialCode: "+54" },
+  { name: "Armenia", code: "AM", dialCode: "+374" },
+  { name: "Aruba", code: "AW", dialCode: "+297" },
+  { name: "Australia", code: "AU", dialCode: "+61" },
+  { name: "Austria", code: "AT", dialCode: "+43" },
+  { name: "Azerbaijan", code: "AZ", dialCode: "+994" },
+  { name: "Bahamas", code: "BS", dialCode: "+1242" },
+  { name: "Bahrain", code: "BH", dialCode: "+973" },
+  { name: "Bangladesh", code: "BD", dialCode: "+880" },
+  { name: "Barbados", code: "BB", dialCode: "+1246" },
+  { name: "Belarus", code: "BY", dialCode: "+375" },
+  { name: "Belgium", code: "BE", dialCode: "+32" },
+  { name: "Belize", code: "BZ", dialCode: "+501" },
+  { name: "Benin", code: "BJ", dialCode: "+229" },
+  { name: "Bermuda", code: "BM", dialCode: "+1441" },
+  { name: "Bhutan", code: "BT", dialCode: "+975" },
+  { name: "Bolivia", code: "BO", dialCode: "+591" },
+  { name: "Bosnia and Herzegovina", code: "BA", dialCode: "+387" },
+  { name: "Botswana", code: "BW", dialCode: "+267" },
+  { name: "Brazil", code: "BR", dialCode: "+55" },
+  { name: "British Indian Ocean Territory", code: "IO", dialCode: "+246" },
+  { name: "Brunei Darussalam", code: "BN", dialCode: "+673" },
+  { name: "Bulgaria", code: "BG", dialCode: "+359" },
+  { name: "Burkina Faso", code: "BF", dialCode: "+226" },
+  { name: "Burundi", code: "BI", dialCode: "+257" },
+  { name: "Cambodia", code: "KH", dialCode: "+855" },
+  { name: "Cameroon", code: "CM", dialCode: "+237" },
+  { name: "Canada", code: "CA", dialCode: "+1" },
+  { name: "Cape Verde", code: "CV", dialCode: "+238" },
+  { name: "Cayman Islands", code: "KY", dialCode: "+1345" },
+  { name: "Central African Republic", code: "CF", dialCode: "+236" },
+  { name: "Chad", code: "TD", dialCode: "+235" },
+  { name: "Chile", code: "CL", dialCode: "+56" },
+  { name: "China", code: "CN", dialCode: "+86" },
+  { name: "Christmas Island", code: "CX", dialCode: "+61" },
+  { name: "Cocos (Keeling) Islands", code: "CC", dialCode: "+61" },
+  { name: "Colombia", code: "CO", dialCode: "+57" },
+  { name: "Comoros", code: "KM", dialCode: "+269" },
+  { name: "Congo", code: "CG", dialCode: "+242" },
+  { name: "Costa Rica", code: "CR", dialCode: "+506" },
+  { name: "Cote D'Ivoire", code: "CI", dialCode: "+225" },
+  { name: "Croatia", code: "HR", dialCode: "+385" },
+  { name: "Cuba", code: "CU", dialCode: "+53" },
+  { name: "Cyprus", code: "CY", dialCode: "+357" },
+  { name: "Czech Republic", code: "CZ", dialCode: "+420" },
+  { name: "Denmark", code: "DK", dialCode: "+45" },
+  { name: "Djibouti", code: "DJ", dialCode: "+253" },
+  { name: "Dominica", code: "DM", dialCode: "+1767" },
+  { name: "Dominican Republic", code: "DO", dialCode: "+1809" },
+  { name: "Ecuador", code: "EC", dialCode: "+593" },
+  { name: "Egypt", code: "EG", dialCode: "+20" },
+  { name: "El Salvador", code: "SV", dialCode: "+503" },
+  { name: "Equatorial Guinea", code: "GQ", dialCode: "+240" },
+  { name: "Eritrea", code: "ER", dialCode: "+291" },
+  { name: "Estonia", code: "EE", dialCode: "+372" },
+  { name: "Ethiopia", code: "ET", dialCode: "+251" },
+  { name: "Falkland Islands (Malvinas)", code: "FK", dialCode: "+500" },
+  { name: "Faroe Islands", code: "FO", dialCode: "+298" },
+  { name: "Fiji", code: "FJ", dialCode: "+679" },
+  { name: "Finland", code: "FI", dialCode: "+358" },
+  { name: "France", code: "FR", dialCode: "+33" },
+  { name: "French Guiana", code: "GF", dialCode: "+594" },
+  { name: "French Polynesia", code: "PF", dialCode: "+689" },
+  { name: "Gabon", code: "GA", dialCode: "+241" },
+  { name: "Gambia", code: "GM", dialCode: "+220" },
+  { name: "Georgia", code: "GE", dialCode: "+995" },
+  { name: "Germany", code: "DE", dialCode: "+49" },
+  { name: "Ghana", code: "GH", dialCode: "+233" },
+  { name: "Gibraltar", code: "GI", dialCode: "+350" },
+  { name: "Greece", code: "GR", dialCode: "+30" },
+  { name: "Greenland", code: "GL", dialCode: "+299" },
+  { name: "Grenada", code: "GD", dialCode: "+1473" },
+  { name: "Guadeloupe", code: "GP", dialCode: "+590" },
+  { name: "Guam", code: "GU", dialCode: "+1671" },
+  { name: "Guatemala", code: "GT", dialCode: "+502" },
+  { name: "Guernsey", code: "GG", dialCode: "+44" },
+  { name: "Guinea", code: "GN", dialCode: "+224" },
+  { name: "Guinea-Bissau", code: "GW", dialCode: "+245" },
+  { name: "Guyana", code: "GY", dialCode: "+592" },
+  { name: "Haiti", code: "HT", dialCode: "+509" },
+  { name: "Honduras", code: "HN", dialCode: "+504" },
+  { name: "Hong Kong", code: "HK", dialCode: "+852" },
+  { name: "Hungary", code: "HU", dialCode: "+36" },
+  { name: "Iceland", code: "IS", dialCode: "+354" },
+  { name: "India", code: "IN", dialCode: "+91" },
+  { name: "Indonesia", code: "ID", dialCode: "+62" },
+  { name: "Iran", code: "IR", dialCode: "+98" },
+  { name: "Iraq", code: "IQ", dialCode: "+964" },
+  { name: "Ireland", code: "IE", dialCode: "+353" },
+  { name: "Isle of Man", code: "IM", dialCode: "+44" },
+  { name: "Israel", code: "IL", dialCode: "+972" },
+  { name: "Italy", code: "IT", dialCode: "+39" },
+  { name: "Jamaica", code: "JM", dialCode: "+1876" },
+  { name: "Japan", code: "JP", dialCode: "+81" },
+  { name: "Jersey", code: "JE", dialCode: "+44" },
+  { name: "Jordan", code: "JO", dialCode: "+962" },
+  { name: "Kazakhstan", code: "KZ", dialCode: "+7" },
+  { name: "Kenya", code: "KE", dialCode: "+254" },
+  { name: "Kiribati", code: "KI", dialCode: "+686" },
+  { name: "Kuwait", code: "KW", dialCode: "+965" },
+  { name: "Kyrgyzstan", code: "KG", dialCode: "+996" },
+];
+const initialState = {
+  full_name: "",
+  phone_number: "",
+  email_address: "",
+  poul: "",
+  industry: "",
+  product_of_interest: "",
+  description: "",
+};
+
+const About = () => {
+  const [formData, setFormData] = useState(initialState);
+  const [countryCode, setCountryCode] = useState("+91");
   const [status, setStatus] = useState("idle");
 
   const handleChange = (e) => {
@@ -23,33 +140,17 @@ const About = () => {
     e.preventDefault();
     setStatus("loading");
 
+    const payload = {
+      ...formData,
+      phone_number: `${countryCode} ${formData.phone_number}`,
+    };
+
     try {
-      const response = await fetch("aboutus/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to submit form.");
-      }
-
+      await api.post("contactus/inquiries/", payload);
       setStatus("success");
-      setFormData({
-        name: "",
-        number: "",
-        email: "",
-        poul: "",
-        industry: "",
-        product: "",
-        description: "",
-      });
-
+      setFormData(initialState);
       setTimeout(() => setStatus("idle"), 5000);
     } catch (error) {
-      console.error("Submission Error:", error);
       setStatus("error");
     }
   };
@@ -85,7 +186,8 @@ const About = () => {
             )}
             {status === "error" && (
               <div className="mb-8 p-4 bg-red-50 border border-red-200 text-[#da0e19] rounded-sm text-sm font-medium">
-                Something went wrong. Please try submitting the form again.
+                Something went wrong while submitting your request. Please try
+                again.
               </div>
             )}
 
@@ -96,12 +198,13 @@ const About = () => {
                 </label>
                 <input
                   type="text"
-                  name="name"
+                  name="full_name"
                   required
-                  value={formData.name}
+                  value={formData.full_name}
                   onChange={handleChange}
+                  disabled={status === "loading"}
                   placeholder="John Doe"
-                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400"
+                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400 disabled:opacity-60"
                 />
               </div>
 
@@ -109,15 +212,30 @@ const About = () => {
                 <label className="text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
                   Phone Number *
                 </label>
-                <input
-                  type="tel"
-                  name="number"
-                  required
-                  value={formData.number}
-                  onChange={handleChange}
-                  placeholder="+91 98765 43210"
-                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400"
-                />
+                <div className="flex">
+                  <select
+                    value={countryCode}
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    disabled={status === "loading"}
+                    className="bg-zinc-100 border border-zinc-300 border-r-0 text-zinc-900 px-3 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-l-sm disabled:opacity-60 cursor-pointer focus:z-10"
+                  >
+                    {countries.map((country) => (
+                      <option value={`${country.dialCode}${country.code}`}>
+                        {`${country.dialCode}${country.code}`}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="tel"
+                    name="phone_number"
+                    required
+                    value={formData.phone_number}
+                    onChange={handleChange}
+                    disabled={status === "loading"}
+                    placeholder="98765 43210"
+                    className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-r-sm placeholder:text-zinc-400 disabled:opacity-60"
+                  />
+                </div>
               </div>
 
               <div className="flex flex-col">
@@ -126,12 +244,13 @@ const About = () => {
                 </label>
                 <input
                   type="email"
-                  name="email"
+                  name="email_address"
                   required
-                  value={formData.email}
+                  value={formData.email_address}
                   onChange={handleChange}
+                  disabled={status === "loading"}
                   placeholder="john@company.com"
-                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400"
+                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400 disabled:opacity-60"
                 />
               </div>
 
@@ -144,8 +263,9 @@ const About = () => {
                   name="poul"
                   value={formData.poul}
                   onChange={handleChange}
+                  disabled={status === "loading"}
                   placeholder="Enter Poul details"
-                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400"
+                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400 disabled:opacity-60"
                 />
               </div>
 
@@ -158,8 +278,9 @@ const About = () => {
                   name="industry"
                   value={formData.industry}
                   onChange={handleChange}
+                  disabled={status === "loading"}
                   placeholder="e.g. Manufacturing, Solar"
-                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400"
+                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400 disabled:opacity-60"
                 />
               </div>
 
@@ -169,11 +290,12 @@ const About = () => {
                 </label>
                 <input
                   type="text"
-                  name="product"
-                  value={formData.product}
+                  name="product_of_interest"
+                  value={formData.product_of_interest}
                   onChange={handleChange}
+                  disabled={status === "loading"}
                   placeholder="e.g. Servo Drives, PLC"
-                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400"
+                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400 disabled:opacity-60"
                 />
               </div>
 
@@ -187,8 +309,9 @@ const About = () => {
                   rows="5"
                   value={formData.description}
                   onChange={handleChange}
+                  disabled={status === "loading"}
                   placeholder="How can we help you?"
-                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400 resize-y"
+                  className="w-full bg-white border border-zinc-300 text-zinc-900 px-4 py-3 outline-none focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] transition-all rounded-sm placeholder:text-zinc-400 resize-y disabled:opacity-60"
                 ></textarea>
               </div>
             </div>
