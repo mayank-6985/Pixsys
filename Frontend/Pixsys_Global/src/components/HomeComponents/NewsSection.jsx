@@ -22,7 +22,7 @@ const NewsSection = () => {
                 <h2 className="text-sm font-bold text-[#da0e19] uppercase tracking-[0.2em] mb-4">
                   Corporate Newsroom
                 </h2>
-                <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-zinc-900 uppercase tracking-tight leading-[1.1]">
+                <h3 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight leading-[1.1] eading-[1.1] text-transparent bg-clip-text bg-gradient-to-r from-zinc-900 to-zinc-500">
                   Latest Updates
                 </h3>
               </div>
