@@ -1,11 +1,12 @@
 import React, { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   FaFacebookF,
   FaInstagram,
   FaLinkedinIn,
   FaYoutube,
 } from "react-icons/fa";
+import { useEffect } from "react";
 
 import { useSolutions } from "../hooks/useSolutions";
 import { useProducts } from "../hooks/useProducts";
@@ -13,6 +14,12 @@ import { useProducts } from "../hooks/useProducts";
 const Footer = () => {
   const { data: solutionsData = [] } = useSolutions();
   const { data: productsData = [] } = useProducts();
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+  }, [location.search]);
 
   const solutionsCategories = useMemo(() => {
     if (!Array.isArray(solutionsData)) return [];

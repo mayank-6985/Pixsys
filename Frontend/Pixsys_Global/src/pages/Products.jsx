@@ -20,7 +20,7 @@ const Products = () => {
   const tagId = searchParams.get("series");
   const productId = searchParams.get("productId");
 
-  const { data: mainCategories } = useCategories();
+  const { data: mainCategories, isLoading, error } = useCategories();
   const { data: categoryDetails } = useCategoryDetails(categoryId);
   const { data: singleProduct } = useProductDetails(productId);
 
@@ -123,6 +123,8 @@ const Products = () => {
               <MainCategoryGrid
                 categories={mainCategories || []}
                 onSelectCategory={(id) => setSearchParams({ category: id })}
+                isLoading={isLoading}
+                error={error}
               />
             ) : productId ? (
               <SingleProductView
