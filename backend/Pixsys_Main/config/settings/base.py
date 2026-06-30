@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'apps.Download', 
     'apps.Contact',
     'apps.Search',
+    'apps.Customers',
+    'apps.Tracking',
 ]
 
 # Use custom user model with email as username
@@ -177,10 +179,12 @@ LOGGING = {
 
 # REST Framework settings
 REST_FRAMEWORK = {
-    # Use header-based JWT authentication (Authorization: Bearer <token>)
-    'DEFAULT_AUTHENTICATION_CLASSES': [
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        # DRF checks these in order top-to-bottom.
+        'apps.Auth.authentication.AdminJWTAuthentication',
+        'apps.Auth.authentication.CustomerJWTAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
+    ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     # This ensures no permissions are required globally
     'DEFAULT_PERMISSION_CLASSES': [
@@ -192,8 +196,8 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=100),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=200),
 }
 
 JWT_AUTH_COOKIE_NAME = 'access_token'
@@ -233,4 +237,6 @@ if {'bearerAuth': []} not in SPECTACULAR_SETTINGS['SECURITY']:
     SPECTACULAR_SETTINGS['SECURITY'].append({'bearerAuth': []})
 
 
-
+# GeoIP Configuration
+# Create a folder named 'geoip' in your project root and place GeoLite2-City.mmdb inside it
+GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')

@@ -37,9 +37,12 @@ urlpatterns = [
     path('v1/api/solutions/' , include("apps.Solutions.urls")),
     path('v1/api/products/' , include("apps.Products.urls")),
     path('v1/api/home/' , include("apps.Home.urls")),
-    # Auth endpoints (token in cookies)
+    # Auth endpoints (token in body)
     path('v1/api/auth/', include('apps.Auth.urls')),
     path('v1/api/downloads/' , include("apps.Download.urls")),
     path('v1/api/contactus/' , include("apps.Contact.urls")),
     path('v1/api/search/' ,include('apps.Search.urls')),
+    path('v1/api/utils/', include('apps.Utils.urls')),
+    path('v1/api/customer/', include('apps.Customers.urls')),
+    path('v1/api/analytics/', include('apps.Tracking.urls')),
 ]

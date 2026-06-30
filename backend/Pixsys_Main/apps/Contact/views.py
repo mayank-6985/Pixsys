@@ -4,6 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers
+from apps.Auth.decorators import public_endpoint
+from apps.Auth.permissions import IsWebSiteAdmin
+from rest_framework.permissions import AllowAny
 
 from .serializers import ContactSubmissionSerializer
 from .Services.inquiry_services import InquiryService
@@ -18,6 +21,15 @@ class ContactSubmissionView(APIView):
     - GET  : Fetches all contact form submissions (for admin/dashboard use).
     - POST : Creates a new contact form submission.
     """
+    # Route permissions natively through DRF's lifecycle
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            # Only WebSiteAdmins can create/update the slider
+            return [IsWebSiteAdmin()]
+                
+        # Define who can view the slider (GET). 
+        # Example: Allow anyone to view it.
+        return [AllowAny()]
 
     @extend_schema(
         summary="Fetch Contact Submissions",
@@ -66,6 +78,7 @@ class ContactSubmissionView(APIView):
             )
         }
     )
+    @public_endpoint
     def post(self, request):
         serializer = ContactSubmissionSerializer(data=request.data)
         

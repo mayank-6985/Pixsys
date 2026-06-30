@@ -1,0 +1,69 @@
+from rest_framework import serializers
+from django.contrib.auth.hashers import make_password
+from .models import PixsysAdminModel, PixsysCustomerModel
+
+# ==========================================
+# SIGNUP SERIALIZERS
+# ==========================================
+
+class CustomerSignupSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = PixsysCustomerModel
+        fields = ['id', 'email', 'password', 'phone_number']
+
+    def validate_email(self, value):
+        if PixsysCustomerModel.objects.filter(email=value).exists():
+            raise serializers.ValidationError("A PixsysCustomerModel account with this email already exists.")
+        return value
+
+    def create(self, validated_data):
+        # Explicitly hash the password before saving it to the custom model
+        validated_data['password'] = make_password(validated_data['password'])
+        return super().create(validated_data)
+
+
+# ==========================================
+# LOGIN (TOKEN OBTAIN) SERIALIZERS
+# ==========================================
+
+class BaseEmailTokenObtainSerializer(serializers.Serializer):
+    """
+    A base serializer to keep the login logic DRY. 
+    Both admin and customer logins require an email and password.
+    """
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+
+class AdminLoginSerializer(BaseEmailTokenObtainSerializer):
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')        
+        
+        # Query the custom PixsysAdminModel model directly
+        user = PixsysAdminModel.objects.filter(email=email).first()
+        
+        # Use the check_password helper method we added to the model
+        if user is None or not user.check_password(password):
+            raise serializers.ValidationError('No active admin account found with the given credentials.')
+            
+        attrs['user'] = user
+        return attrs
+
+
+class CustomerLoginSerializer(BaseEmailTokenObtainSerializer):
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')        
+        
+        # Query the custom PixsysCustomerModel model directly
+        user = PixsysCustomerModel.objects.filter(email=email).first()
+        
+        # Use the check_password helper method we added to the model
+        if user is None or not user.check_password(password):
+            raise serializers.ValidationError('No active customer account found with the given credentials.')
+            
+        attrs['user'] = user
+        return attrs

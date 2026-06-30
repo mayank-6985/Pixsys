@@ -9,6 +9,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import serializers
+from apps.Auth.decorators import public_endpoint
+from apps.Auth.permissions import IsWebSiteAdmin
+from rest_framework.permissions import AllowAny
 
 news_service = NewsService()
 
@@ -18,6 +21,7 @@ class NewsListAPIView(APIView):
     Endpoint: GET /news/
     Fetches all news records without their deep content block.
     """
+    @public_endpoint
     def get(self, request):
         try:
             news_list = news_service.get_all_news()
@@ -35,6 +39,7 @@ class NewsDetailAPIView(APIView):
     Endpoint: GET /news/<int:news_id>/
     Fetches a single news record complete with its content.
     """
+    @public_endpoint
     def get(self, request, news_id):
         try:
             news = news_service.get_news_with_content(news_id=news_id)
@@ -56,7 +61,17 @@ class NewsUpdateAPIView(APIView):
     - PUT:    Update an existing news record
     - DELETE: Remove a news record
     """
+    # Route permissions natively through DRF's lifecycle
+    def get_permissions(self):
+        if self.request.method == 'POST' or self.request.method == 'PUT' or self.request.method == 'DELETE':
+            # Only WebSiteAdmins can create/update the slider
+            return [IsWebSiteAdmin()]
+                
+        # Define who can view the slider (GET). 
+        # Example: Allow anyone to view it.
+        return [AllowAny()]
 
+    
     @extend_schema(
         summary="Create fresh news",
         description="Adds a new news entry. Expects the object data fields directly at the root of the JSON body.",
@@ -76,6 +91,11 @@ class NewsUpdateAPIView(APIView):
         """
         Handles: Adding new news.
         """
+        # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
+
         serializer = NewsSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -113,6 +133,11 @@ class NewsUpdateAPIView(APIView):
         """
         Handles: Updating old news.
         """
+        # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
+
         news_id = request.data.get('news_id')
         if not news_id:
             return Response("news_id required!", status=status.HTTP_400_BAD_REQUEST)
@@ -160,6 +185,11 @@ class NewsUpdateAPIView(APIView):
         """
         Handles: Deleting the news.
         """
+        # Require authentication for POST requests only
+        # from rest_framework.permissions import IsAuthenticated
+        # self.permission_classes = [IsAuthenticated]
+        # self.check_permissions(request)
+        
         news_id = request.query_params.get("news_id")
         if not news_id:
             return Response({"error": "Missing required field: 'news_id'."}, status=status.HTTP_400_BAD_REQUEST)

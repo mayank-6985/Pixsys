@@ -228,5 +228,7 @@ class DownloadSearchServices(ISearchService):
             # If a new/unexpected resource_type exists in the DB, this safely adds it.
             if resource_type:
                 response_data[resource_type] = downloads
-                
-        return response_data
+             
+        return {
+            "downloads":[response_data]
+        }
