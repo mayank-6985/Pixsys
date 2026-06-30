@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FiSearch, FiArrowRight, FiArrowLeft } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import api from "../../api";
 import SingleProductView from "./SingleProductView";
 
@@ -13,12 +13,22 @@ const ProductHero = ({ onSearchActive }) => {
 
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+  const location = useLocation();
+
   useEffect(() => {
     if (onSearchActive) {
       onSearchActive(!!activeKeyword);
     }
   }, [activeKeyword, onSearchActive]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has("category") || params.has("sub") || params.has("series")) {
+      setSearchInput("");
+      setActiveKeyword("");
+      setSelectedProduct(null);
+    }
+  }, [location.search]);
   useEffect(() => {
     const fetchProducts = async () => {
       if (!activeKeyword) {
