@@ -1,6 +1,6 @@
 import React, { useOptimistic } from "react";
 import { Link } from "react-router-dom";
-import { FiArrowUpRight } from "react-icons/fi";
+import { FiArrowUpRight, FiArrowRight } from "react-icons/fi";
 import { Loader2 } from "lucide-react";
 import { useCategories } from "../../hooks/useProducts";
 import ScrollReveal from "../ScrollReveal";
@@ -26,6 +26,15 @@ const ProductsSection = () => {
                 </span>
               </h2>
             </div>
+            <Link
+              to="/products"
+              className="group inline-flex items-center gap-4 pb-2 border-b-2 border-zinc-300 hover:border-[#da0e19] transition-colors duration-300"
+            >
+              <span className="text-sm font-bold text-zinc-900 uppercase tracking-widest group-hover:text-[#da0e19] transition-colors">
+                All Products
+              </span>
+              <FiArrowRight className="text-xl text-zinc-900 group-hover:text-[#da0e19] group-hover:translate-x-2 transition-all duration-300" />
+            </Link>
           </div>
         </ScrollReveal>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

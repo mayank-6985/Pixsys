@@ -25,9 +25,24 @@ const VisitorMap = () => {
 
   useEffect(() => {
     if (!mapInstanceRef.current && mapRef.current) {
-      mapInstanceRef.current = L.map(mapRef.current).setView([20.0, 0.0], 2);
+      mapInstanceRef.current = L.map(mapRef.current, {
+        maxBounds: [
+          [-90, -180],
+          [90, 180],
+        ],
+        maxBoundsViscosity: 1.0,
+        minZoom: 1.5,
+      }).setView([20.0, 0.0], 2);
+
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+        {
+          noWrap: true,
+          bounds: [
+            [-90, -180],
+            [90, 180],
+          ],
+        },
       ).addTo(mapInstanceRef.current);
     }
 
@@ -65,14 +80,15 @@ const VisitorMap = () => {
 
       return match ? match.count : 0;
     };
+
     geoJsonLayerRef.current = L.geoJSON(geoData, {
       style: (feature) => {
         const count = getFeatureData(feature);
         return {
           fillColor: getColor(count),
-          weight: 1,
-          opacity: 1,
-          color: "#cbd5e1",
+          weight: 0,
+          opacity: 0,
+          color: "transparent",
           fillOpacity: count > 0 ? 0.9 : 0.4,
         };
       },
@@ -83,53 +99,29 @@ const VisitorMap = () => {
         const regionName =
           p.ST_NM || p.st_nm || p.NAME_1 || p.name || p.NAME || "Unknown";
 
+        const handleClick = () => {
+          if (viewMode === "world" && regionName.toLowerCase() === "india") {
+            setViewMode("india");
+          }
+        };
+
         if (count > 0) {
           layer.bindTooltip(
             `<div style="text-align: center; font-family: inherit;">
-        <div style="font-size: 11px; font-weight: bold; color: #1a1a1a;">${regionName}</div>
-        <div style="font-size: 13px; color: #b91c1c; font-weight: bold;">Visitors: ${count}</div>
-      </div>`,
+              <div style="font-size: 11px; font-weight: bold; color: #1a1a1a;">${regionName}</div>
+              <div style="font-size: 13px; color: #b91c1c; font-weight: bold;">Visitors: ${count}</div>
+            </div>`,
             {
               permanent: false,
               sticky: true,
               className: "custom-map-label",
             },
           );
-
-          layer.on({
-            mouseover: (e) => {
-              const targetLayer = e.target;
-              targetLayer.setStyle({
-                weight: 2,
-                color: "#1a1a1a",
-                fillOpacity: 1,
-              });
-              targetLayer.bringToFront();
-            },
-            mouseout: (e) => {
-              geoJsonLayerRef.current.resetStyle(e.target);
-            },
-            click: () => {
-              if (
-                viewMode === "world" &&
-                regionName.toLowerCase() === "india"
-              ) {
-                setViewMode("india");
-              }
-            },
-          });
-        } else {
-          layer.on({
-            click: () => {
-              if (
-                viewMode === "world" &&
-                regionName.toLowerCase() === "india"
-              ) {
-                setViewMode("india");
-              }
-            },
-          });
         }
+
+        layer.on({
+          click: handleClick,
+        });
       },
     }).addTo(mapInstanceRef.current);
 
@@ -139,6 +131,7 @@ const VisitorMap = () => {
       });
     }
   }, [data, geoData, viewMode]);
+
   return (
     <div className="bg-white flex flex-col font-sans mb-6 border border-[#e5e7eb]">
       <style>{`
@@ -149,9 +142,22 @@ const VisitorMap = () => {
           border-radius: 6px;
           padding: 6px 10px;
         }
-        /* Keep the little pointer arrow on the hover tooltip */
         .leaflet-tooltip.custom-map-label::before {
           border-top-color: rgba(255, 255, 255, 0.98);
+        }
+        
+        /* FIX: Remove focus outlines and boxes on click */
+        .leaflet-container:focus,
+        .leaflet-container:active,
+        path.leaflet-interactive:focus,
+        path.leaflet-interactive:active {
+          outline: none !important;
+          border: none !important;
+        }
+        /* Removes the default mobile tap highlight box */
+        .leaflet-interactive {
+          -webkit-tap-highlight-color: transparent;
+          outline: none !important;
         }
       `}</style>
 
