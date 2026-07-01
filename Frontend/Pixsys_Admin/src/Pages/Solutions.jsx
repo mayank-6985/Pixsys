@@ -387,20 +387,20 @@ const Solutions = () => {
             <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
                 <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-xs font-bold tracking-widest uppercase">
-                  <th className="py-4 px-6 w-24">ID</th>
+                  <th className="py-4 px-6 w-24">Sr.</th>
                   <th className="py-4 px-6">Category Name</th>
                   <th className="py-4 px-6 w-32 text-center">Solutions</th>
                   <th className="py-4 px-6 text-right w-32">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {categoriesList.map((item) => (
+                {categoriesList.map((item, index) => (
                   <tr
                     key={item.category_id}
                     className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors group"
                   >
                     <td className="py-4 px-6 text-zinc-400 font-mono text-xs">
-                      #{String(item.category_id).padStart(4, "0")}
+                      {index + 1}
                     </td>
                     <td className="py-4 px-6 text-zinc-900 font-bold">
                       {item.category_name}

@@ -490,7 +490,7 @@ const Download = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-xs font-bold tracking-widest uppercase">
-                  <th className="py-4 px-6 w-24">ID</th>
+                  <th className="py-4 px-6 w-24">Sr.</th>
                   <th className="py-4 px-6">Name</th>
                   <th className="py-4 px-6">Type</th>
                   <th className="py-4 px-6">Resource URL</th>
@@ -508,13 +508,13 @@ const Download = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredDownloads.map((d) => (
+                  filteredDownloads.map((d, index) => (
                     <tr
                       key={d.download_id}
                       className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors group"
                     >
                       <td className="py-4 px-6 text-zinc-400 font-mono text-xs">
-                        #{String(d.download_id).padStart(4, "0")}
+                        {index + 1}
                       </td>
                       <td className="py-4 px-6 text-zinc-900 font-bold">
                         {d.name}

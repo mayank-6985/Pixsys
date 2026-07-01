@@ -868,7 +868,7 @@ const Products = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-xs font-bold tracking-widest uppercase">
-                  <th className="py-4 px-6 w-24">ID</th>
+                  <th className="py-4 px-6 w-24">Sr.</th>
                   <th className="py-4 px-6">Name</th>
                   {activeLevel === "categories" && (
                     <th className="py-4 px-6">Tagline</th>
@@ -884,13 +884,13 @@ const Products = () => {
               </thead>
               <tbody>
                 {activeLevel === "categories" &&
-                  categories.map((item) => (
+                  categories.map((item, index) => (
                     <tr
                       key={item.category_id}
                       className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors group"
                     >
                       <td className="py-4 px-6 text-zinc-400 font-mono text-xs">
-                        #{String(item.category_id).padStart(4, "0")}
+                        {index + 1}
                       </td>
                       <td className="py-4 px-6 text-zinc-900 font-bold">
                         {item.category_name}
