@@ -83,6 +83,13 @@ const Products = () => {
 
   const [formData, setFormData] = useState({});
 
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    id: null,
+    type: "",
+  });
+  const [actionError, setActionError] = useState("");
+
   const { data: rawData = [], isLoading } = useAdminProductsData();
   const { data: productDetail, isLoading: isProductDetailLoading } =
     useProductDetail(productEditId);
@@ -105,6 +112,12 @@ const Products = () => {
     updateTag.isPending ||
     createProd.isPending ||
     updateProd.isPending;
+
+  const isDeleting =
+    deleteCat.isPending ||
+    deleteSubCat.isPending ||
+    deleteTag.isPending ||
+    deleteProd.isPending;
 
   const hasError =
     createCat.isError ||
@@ -175,6 +188,7 @@ const Products = () => {
     setProductEditId(null);
     setFormType(activeLevel);
     resetAllMutations();
+    setActionError("");
 
     if (activeLevel === "categories") {
       setFormData(emptyCategory);
@@ -191,6 +205,7 @@ const Products = () => {
   const handleOpenEdit = (item, type) => {
     setFormType(type);
     resetAllMutations();
+    setActionError("");
 
     if (type === "categories") {
       setEditingId(item.category_id);
@@ -221,34 +236,74 @@ const Products = () => {
     setView("form");
   };
 
-  const handleDelete = (id, type) => {
-    const errorMsg =
-      "Something went wrong while trying to delete this item. Please try again.";
+  const handleDeleteClick = (id, type) => {
+    setActionError("");
+    setDeleteModal({ isOpen: true, id, type });
+  };
 
-    if (
-      type === "categories" &&
-      window.confirm("Delete this category and all its contents?")
-    ) {
-      deleteCat.mutate(id, { onError: () => alert(errorMsg) });
-      if (String(selCat) === String(id)) {
+  const executeDelete = () => {
+    const { id, type } = deleteModal;
+
+    const getErrorMsg = (err, itemType, childType) => {
+      const backendMsg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message;
+      if (
+        backendMsg &&
+        typeof backendMsg === "string" &&
+        backendMsg.length < 100
+      ) {
+        return backendMsg;
+      }
+      return `Cannot delete this ${itemType}. Please delete all associated ${childType} inside it first.`;
+    };
+
+    const handleSuccess = () => {
+      setDeleteModal({ isOpen: false, id: null, type: "" });
+      if (type === "categories" && String(selCat) === String(id)) {
         setSelCat("");
         setSelSub("");
         setSelTag("");
-      }
-    } else if (
-      type === "subcategories" &&
-      window.confirm("Delete this subcategory?")
-    ) {
-      deleteSubCat.mutate(id, { onError: () => alert(errorMsg) });
-      if (String(selSub) === String(id)) {
+      } else if (type === "subcategories" && String(selSub) === String(id)) {
         setSelSub("");
         setSelTag("");
+      } else if (type === "tags" && String(selTag) === String(id)) {
+        setSelTag("");
       }
-    } else if (type === "tags" && window.confirm("Delete this tag?")) {
-      deleteTag.mutate(id, { onError: () => alert(errorMsg) });
-      if (String(selTag) === String(id)) setSelTag("");
-    } else if (type === "products" && window.confirm("Delete this product?")) {
-      deleteProd.mutate(id, { onError: () => alert(errorMsg) });
+    };
+
+    const handleError = (msg) => {
+      setDeleteModal({ isOpen: false, id: null, type: "" });
+      setActionError(msg);
+    };
+
+    if (type === "categories") {
+      deleteCat.mutate(id, {
+        onSuccess: handleSuccess,
+        onError: (err) =>
+          handleError(getErrorMsg(err, "category", "subcategories")),
+      });
+    } else if (type === "subcategories") {
+      deleteSubCat.mutate(id, {
+        onSuccess: handleSuccess,
+        onError: (err) =>
+          handleError(getErrorMsg(err, "subcategory", "tags or products")),
+      });
+    } else if (type === "tags") {
+      deleteTag.mutate(id, {
+        onSuccess: handleSuccess,
+        onError: (err) => handleError(getErrorMsg(err, "tag", "products")),
+      });
+    } else if (type === "products") {
+      deleteProd.mutate(id, {
+        onSuccess: handleSuccess,
+        onError: (err) =>
+          handleError(
+            err?.response?.data?.message ||
+              "Something went wrong while trying to delete this product. Please try again.",
+          ),
+      });
     }
   };
 
@@ -789,7 +844,7 @@ const Products = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 w-full font-sans flex flex-col gap-6">
+    <div className="min-h-screen bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 w-full font-sans flex flex-col gap-6 relative">
       <div className="bg-white border border-zinc-200 shadow-sm p-6 flex flex-col gap-6">
         <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
           <AiFillProduct className="text-[#da0e19] text-xl" />
@@ -805,6 +860,7 @@ const Products = () => {
               setSelCat(e.target.value);
               setSelSub("");
               setSelTag("");
+              setActionError("");
             }}
             className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700"
           >
@@ -821,6 +877,7 @@ const Products = () => {
             onChange={(e) => {
               setSelSub(e.target.value);
               setSelTag("");
+              setActionError("");
             }}
             disabled={!selCat}
             className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700 disabled:opacity-50 disabled:bg-zinc-100"
@@ -835,7 +892,10 @@ const Products = () => {
 
           <select
             value={selTag}
-            onChange={(e) => setSelTag(e.target.value)}
+            onChange={(e) => {
+              setSelTag(e.target.value);
+              setActionError("");
+            }}
             disabled={!selSub}
             className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700 disabled:opacity-50 disabled:bg-zinc-100"
           >
@@ -849,7 +909,7 @@ const Products = () => {
         </div>
       </div>
 
-      <div className="bg-white border border-zinc-200 shadow-sm flex flex-col overflow-hidden">
+      <div className="bg-white border border-zinc-200 shadow-sm flex flex-col overflow-hidden relative">
         <div className="px-6 py-4 flex justify-between items-center border-b border-zinc-200 bg-zinc-900">
           <h3 className="text-sm font-bold text-white uppercase tracking-widest">
             {activeLevel} Records
@@ -862,6 +922,21 @@ const Products = () => {
           </button>
         </div>
 
+        {/* Custom Error Banner for Deletion Failures */}
+        {actionError && (
+          <div className="m-6 mb-0 p-4 bg-red-50 border-l-4 border-[#da0e19] flex justify-between items-start">
+            <span className="text-[#da0e19] text-sm font-medium">
+              {actionError}
+            </span>
+            <button
+              onClick={() => setActionError("")}
+              className="text-red-500 hover:text-red-700 ml-4 transition-colors"
+            >
+              <FiX size={18} />
+            </button>
+          </div>
+        )}
+
         <div className="overflow-x-auto w-full">
           {isLoading || (selCat && isDetailsLoading) ? (
             <div className="py-20 flex flex-col justify-center items-center text-gray-400">
@@ -869,7 +944,7 @@ const Products = () => {
               <span className="text-sm font-medium">Loading Data</span>
             </div>
           ) : (
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse mt-2">
               <thead>
                 <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-xs font-bold tracking-widest uppercase">
                   <th className="py-4 px-6 w-24">Sr.</th>
@@ -911,7 +986,7 @@ const Products = () => {
                         </button>
                         <button
                           onClick={() =>
-                            handleDelete(item.category_id, "categories")
+                            handleDeleteClick(item.category_id, "categories")
                           }
                           disabled={deleteCat.isPending}
                           className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -946,7 +1021,10 @@ const Products = () => {
                         </button>
                         <button
                           onClick={() =>
-                            handleDelete(item.subcategory_id, "subcategories")
+                            handleDeleteClick(
+                              item.subcategory_id,
+                              "subcategories",
+                            )
                           }
                           disabled={deleteSubCat.isPending}
                           className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -977,7 +1055,7 @@ const Products = () => {
                           <FiEdit2 size={16} />
                         </button>
                         <button
-                          onClick={() => handleDelete(item.tag_id, "tags")}
+                          onClick={() => handleDeleteClick(item.tag_id, "tags")}
                           disabled={deleteTag.isPending}
                           className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -1011,7 +1089,7 @@ const Products = () => {
                         </button>
                         <button
                           onClick={() =>
-                            handleDelete(item.product_id, "products")
+                            handleDeleteClick(item.product_id, "products")
                           }
                           disabled={deleteProd.isPending}
                           className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1042,6 +1120,56 @@ const Products = () => {
           )}
         </div>
       </div>
+
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-sm  shadow-2xl flex flex-col overflow-hidden">
+            <div className="px-6 py-4 bg-zinc-900 flex justify-between items-center">
+              <h3 className="text-white text-sm font-bold uppercase tracking-widest">
+                Confirm Delete
+              </h3>
+              <button
+                onClick={() =>
+                  setDeleteModal({ isOpen: false, id: null, type: "" })
+                }
+                disabled={isDeleting}
+                className="text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+              >
+                <FiX size={18} />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-zinc-700 font-medium mb-8">
+                Are you sure you want to delete this{" "}
+                {deleteModal.type.slice(0, -1)}?
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() =>
+                    setDeleteModal({ isOpen: false, id: null, type: "" })
+                  }
+                  disabled={isDeleting}
+                  className="px-4 py-2 border border-zinc-300 text-zinc-700 font-bold uppercase tracking-widest text-[10px] hover:bg-zinc-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={executeDelete}
+                  disabled={isDeleting}
+                  className="flex items-center justify-center gap-2 px-4 py-2 min-w-[100px] bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-[10px] transition-colors disabled:opacity-70"
+                >
+                  {isDeleting ? (
+                    <Loader2 size={12} className="animate-spin" />
+                  ) : (
+                    <FiTrash2 size={12} />
+                  )}
+                  {isDeleting ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
