@@ -610,7 +610,7 @@ const Products = () => {
                   <div className="pt-4 border-t border-zinc-200">
                     <div className="flex justify-between items-center mb-4">
                       <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest">
-                        Specifications
+                        Specification Images
                       </label>
                       <button
                         type="button"
@@ -618,27 +618,31 @@ const Products = () => {
                         disabled={isSaving}
                         className="text-xs font-bold text-[#da0e19] uppercase tracking-widest flex items-center gap-1 hover:underline disabled:opacity-50 disabled:no-underline"
                       >
-                        <FiPlus /> Add Spec
+                        <FiPlus /> Add Spec Image
                       </button>
                     </div>
                     {formData.specifications?.map((spec, index) => (
-                      <div key={index} className="flex gap-2 mb-3">
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. 24V DC Power"
-                          value={spec}
-                          onChange={(e) =>
-                            handleSpecChange(index, e.target.value)
-                          }
-                          disabled={isSaving}
-                          className="flex-1 px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
-                        />
+                      <div
+                        key={index}
+                        className="flex gap-4 items-start mb-4 p-4 bg-zinc-50 border border-zinc-200 relative"
+                      >
+                        <div className="flex-1">
+                          <S3Uploader
+                            label={`Specification Image ${index + 1} *`}
+                            accept="image/jpeg, image/png, image/webp"
+                            folder="products/specifications"
+                            currentFileUrl={spec}
+                            onUploadSuccess={(url) =>
+                              handleSpecChange(index, url)
+                            }
+                          />
+                          <input type="hidden" required value={spec || ""} />
+                        </div>
                         <button
                           type="button"
                           onClick={() => removeSpec(index)}
                           disabled={isSaving}
-                          className="px-4 bg-zinc-200 text-zinc-600 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50"
+                          className="mt-6 p-3 bg-zinc-200 text-zinc-600 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50 flex items-center justify-center rounded-md"
                         >
                           <FiTrash2 />
                         </button>
