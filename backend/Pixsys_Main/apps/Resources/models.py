@@ -11,8 +11,8 @@ class ResourceModel(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     thumbnail = models.URLField(help_text="Thumbnail URL for the resource")
-    file = models.URLField(help_text="File/Document URL")
-
+    resource_url = models.URLField(help_text="File/Document URL")
+    
     class Meta:
         db_table = "Product_Resource_Table"
         indexes = [

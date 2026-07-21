@@ -13,7 +13,7 @@ class ResourceService:
                 name=data.get('name'),
                 description=data.get('description', ""),
                 thumbnail=data.get('thumbnail'),
-                file=data.get('file'),
+                resource_url=data.get('resource_url'),
                 operation=data.get('operation', default_operation)
             )
             for data in resources_data
@@ -45,7 +45,7 @@ class ResourceService:
             name=resource_data.get('name'),
             description=resource_data.get('description'),
             thumbnail=resource_data.get('thumbnail'),
-            file=resource_data.get('file'),
+            resource_url=resource_data.get('resource_url'),
             product_id=resource_data.get('product_id'),
             subcategory_id=resource_data.get('subcategory_id'),
             category_id=resource_data.get('category_id'),
@@ -62,7 +62,7 @@ class ResourceService:
             name=resource_data.get('name'),
             description=resource_data.get('description'),
             thumbnail=resource_data.get('thumbnail'),
-            file=resource_data.get('file'),
+            resource_url=resource_data.get('resource_url'),
             operation='update'
         )
         

@@ -73,14 +73,14 @@ class ResourceCreateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     description = serializers.CharField(allow_blank=True, required=False)
     thumbnail = serializers.URLField()
-    file = serializers.URLField()
+    resource_url = serializers.URLField()
 
 class ResourceUpdateSerializer(serializers.Serializer):
     resource_id = serializers.BigIntegerField(required=True)
     name = serializers.CharField(max_length=255, required=False)
     description = serializers.CharField(allow_blank=True, required=False)
     thumbnail = serializers.URLField(required=False)
-    file = serializers.URLField(required=False)
+    resource_url = serializers.URLField(required=False)
     
     
 class ProductCreateSerializer(serializers.Serializer):

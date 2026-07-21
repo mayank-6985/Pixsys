@@ -8,7 +8,7 @@ class IndividualResourceCreateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     description = serializers.CharField(allow_blank=True, required=False)
     thumbnail = serializers.URLField()
-    file = serializers.URLField()
+    resource_url = serializers.URLField()
 
 
 class IndividualResourceUpdateSerializer(serializers.Serializer):
@@ -16,7 +16,7 @@ class IndividualResourceUpdateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     description = serializers.CharField(allow_blank=True, required=False)
     thumbnail = serializers.URLField()
-    file = serializers.URLField()
+    resource_url = serializers.URLField()
     
 
 class IndividualResourceDeleteSerializer(serializers.Serializer):

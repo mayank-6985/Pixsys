@@ -7,7 +7,7 @@ class ResourceObject:
         name: Optional[str] = None,
         description: Optional[str] = "",
         thumbnail: Optional[str] = None,
-        file: Optional[str] = None,
+        resource_url: Optional[str] = None,
         resource_id: Optional[int] = None,
         product_id: Optional[int] = None,
         tag_id: Optional[int] = None,
@@ -25,7 +25,7 @@ class ResourceObject:
         self.name = name
         self.description = description
         self.thumbnail = thumbnail
-        self.file = file
+        self.resource_url = resource_url
         self.operation = operation
 
     def validate(self) -> None:
@@ -34,9 +34,9 @@ class ResourceObject:
                 raise ValueError("Resource name cannot be empty.")
             try:
                 UtilsService.is_valid_url_string(self.thumbnail)
-                UtilsService.is_valid_url_string(self.file)
+                UtilsService.is_valid_url_string(self.resource_url)
             except ValueError:
-                raise ValueError("Valid URLs are required for both thumbnail and file.")
+                raise ValueError("Valid URLs are required for both thumbnail and resource_url.")
         
         if self.operation == 'create':
             missing_fields = []

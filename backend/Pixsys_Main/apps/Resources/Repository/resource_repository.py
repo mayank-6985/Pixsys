@@ -32,7 +32,7 @@ class ResourceRepository:
                 name=res.name,
                 description=res.description,
                 thumbnail=res.thumbnail,
-                file=res.file
+                resource_url=res.resource_url
             )
             for res in resources if res.operation == 'create'
         ]
@@ -51,7 +51,7 @@ class ResourceRepository:
                     name=res.name,
                     description=res.description,
                     thumbnail=res.thumbnail,
-                    file=res.file
+                    resource_url=res.resource_url
                 )
             elif res.operation == 'delete':
                 ResourceModel.objects.filter(resource_id=res.resource_id).delete()
@@ -67,7 +67,7 @@ class ResourceRepository:
             name=resource.name,
             description=resource.description,
             thumbnail=resource.thumbnail,
-            file=resource.file,
+            resource_url=resource.resource_url,
         )        
         resource.save()
         
@@ -86,10 +86,11 @@ class ResourceRepository:
                     "subcategory_id":1,
                     "resource_id":1,
                     "category_id":1,
+                    "resource_type":"RESOURCES",                    
                     "name":1,
                     "description":1,
                     "thumbnail":1,
-                    "file":1,
+                    "resource_url":1,
                 }
             }
         ]
@@ -118,10 +119,11 @@ class ResourceRepository:
                     "subcategory_id":1,
                     "category_id":1,
                     "resource_id":1,
-                    "name":1,
+                    "name":1,                    
                     "description":1,
+                    "resource_type":"RESOURCES",
                     "thumbnail":1,
-                    "file":1,
+                    "resource_url":1,
                 }
             }
         ]
@@ -130,7 +132,7 @@ class ResourceRepository:
         
         cursor = resource_table.aggregate(pipeline)
         
-        if cursor:
+        if cursor:             
             return list(cursor)
         else:
             []
