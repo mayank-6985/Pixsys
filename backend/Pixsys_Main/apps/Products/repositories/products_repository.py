@@ -53,6 +53,7 @@ class ProductRepository:
     @transaction.atomic
     def create_product(self, product: Product) -> bool:
         from ...Download.Services.product_download_service import ProductDownloadService
+        from ...Resources.Service.resource_service import ResourceService
         parent = self._get_tag_model(product.tag_id)
         product_qs = ProductModel(
             tag=parent,
@@ -71,9 +72,10 @@ class ProductRepository:
         category_id = parent.subcategory.category.category_id
         
         product.handle_list_of_download(product_id=product_id ,tag_id= tag_id , subcategory_id=subcategory_id ,category_id= category_id)   
-        [print(f"{prd.product_id}---{prd.tag_id}---{prd.subcategory_id}---{prd.category_id}") for prd in product.list_of_downloads]
+        product.handle_list_of_resources(product_id=product_id ,tag_id= tag_id , subcategory_id=subcategory_id ,category_id= category_id)   
+                
         ProductDownloadService().add_downloads_for_product(product.list_of_downloads)
-    
+        ResourceService().add_resources_for_product(product.list_of_resources)
         return True
 
     # ---------------------------------------------------------------
@@ -355,11 +357,15 @@ class ProductRepository:
             
     def get_product(self ,product:Product):
         from ...Download.Services.product_download_service import ProductDownloadService
+        from ...Resources.Service.resource_service import ResourceService
         from ..serializers import ProductSerializer
         product = self._get_product(product=product)              
         product_data = ProductSerializer(product).data
         download = ProductDownloadService().get_product_download_data(product_id=product.product_id)
         product_data['downloads'] = download
+        resources = ResourceService().get_resources_for_product(product_id=product.product_id)
+        product_data['downloads']['RESOURCES'] = resources
+        
         return product_data
     
     

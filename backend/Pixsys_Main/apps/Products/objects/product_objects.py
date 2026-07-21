@@ -152,11 +152,13 @@ class Tag:
 
 from typing import List
 from ...Download.Objects.download_factory import DownloadFactory
+from ...Resources.Objects.resource_object import ResourceObject
 class Product:
     def __init__(self, tag_id: int = None, product_id: int = None,
                  name: str = None, tagline: str = None,
                  description: str = None, product_img: str = None,
                  specifications:list=None,list_of_downloads:List[DownloadFactory]=None ,
+                 list_of_resources:List[ResourceObject]=None,
                  operation: Literal['create', 'update', None] = 'create'):
         self.tag_id = tag_id
         self.product_id = product_id
@@ -167,6 +169,7 @@ class Product:
         self.operation = operation
         self.specifications = specifications
         self.list_of_downloads = list_of_downloads
+        self.list_of_resources = list_of_resources
         self.validate()
 
     def validate_tag_id(self):
@@ -202,6 +205,15 @@ class Product:
                 download.tag_id = tag_id
                 download.category_id = category_id
                 download.subcategory_id = subcategory_id
+                
+    def handle_list_of_resources(self, product_id: int, tag_id: int, subcategory_id: int, category_id: int):
+        """Assign parent IDs to all pending resources before validation/save."""
+        for resource in self.list_of_resources:
+            resource.product_id = product_id
+            resource.tag_id = tag_id
+            resource.subcategory_id = subcategory_id
+            resource.category_id = category_id
+            resource.validate()
                                         
     def validate(self):
         if self.operation == 'create':

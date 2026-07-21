@@ -7,6 +7,7 @@ from ..Objects.download_factory import DownloadType, DownloadFactory
 from ...Products.repositories.products_repository import ProductRepository
 from django.db.models import Prefetch
 from itertools import groupby
+from ...Resources.Service.resource_service import ResourceService
 logger = logging.getLogger(__name__)
 
 class DownloadRepository:
@@ -59,6 +60,13 @@ class DownloadRepository:
         ]
 
         result = list(collection.aggregate(pipeline))
+        # download
+        download = result[0]
+        # resources 
+        resources = ResourceService().get_resources()
+        
+        download['RESOURCES'] = resources
+        
         return result[0] if result else {}
     
     def create_download(self , download_obj:DownloadFactory):              

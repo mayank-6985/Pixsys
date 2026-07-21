@@ -157,7 +157,8 @@ class GlobalSearchView(APIView):
                         ],
                         "SOFTWARE_MANUAL": [],
                         "CATALOG": [],
-                        "DIMENTION": []
+                        "DIMENTION": [],
+                        "RESOURCES":[]
                     }
                 },
                 response_only=True,

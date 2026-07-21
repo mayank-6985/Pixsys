@@ -4,6 +4,7 @@ from ...Products.models import ProductModel
 from ...News.models import NewsModel
 from ...Solutions.models import SolutionsModel
 from ...Download.models import DownloadModel
+from ...Resources.models import ResourceModel
 from .interface import ISearchService
 
 class MongoConnection:
@@ -166,6 +167,53 @@ class NewsSearchServices(ISearchService):
             "news": list(cursor)
         }
 
+class ResourceSearchServices(ISearchService):
+    def __init__(self, connection:MongoConnection=None):
+        self.connection = connection or MongoConnection()
+        self.db = self.connection.db
+        
+    def search(self ,keyword: str) -> dict:
+        """
+        Searches for resource entries by keyword in the heading using a MongoDB aggregation pipeline.
+        Returns a dictionary with a 'resource' list, excluding internal IDs.
+        """
+        # 1. Escape the keyword to prevent regex injection
+        safe_keyword = re.escape(keyword)
+        
+        # 2. Construct the Aggregation Pipeline
+        pipeline = [
+            {
+                # Step A: Filter by keyword (case-insensitive partial match on 'heading')
+                "$match": {
+                    "name": {"$regex": safe_keyword, "$options": "i"},
+                    "description": {"$regex": safe_keyword, "$options": "i"}
+                }
+            },
+            {
+                # Step B: Shape the data by excluding unwanted database IDs
+                # (Note: NewsModel doesn't have a 'description' field to exclude, 
+                # but if it did, you would add "description": 0 here)
+                "$project": {
+                    "_id": 0,  # Strip MongoDB's internal ObjectId
+                    "id": 0    # Strip Django's default AutoField ID (if present)
+                }
+            },            
+        ]
+        
+        # 3. Access the PyMongo database instance via Django's connection
+        # 'News_Table' is explicitly targeted based on your model's db_table Meta class         
+        collection = self.db[ResourceModel._meta.db_table]
+        
+        # 4. Execute the pipeline
+        cursor = collection.aggregate(pipeline)
+        
+        # 5. Format and return
+        if cursor:
+            return {
+            "RESOURCES": list(cursor)
+            }
+        else :
+            return {}
 class DownloadSearchServices(ISearchService):
     def __init__(self, connection:MongoConnection=None):
         self.connection = connection or MongoConnection()
@@ -228,7 +276,13 @@ class DownloadSearchServices(ISearchService):
             # If a new/unexpected resource_type exists in the DB, this safely adds it.
             if resource_type:
                 response_data[resource_type] = downloads
-             
+
+        resources = ResourceSearchServices().search(keyword=safe_keyword)
+        
+        if resources :
+            response_data['RESOURCES'] = resources['RESOURCES']
+        
         return {
             "downloads":[response_data]
         }
+

@@ -246,7 +246,7 @@ class SubCategoryListUpdateView(APIView):
     @extend_schema(
         summary="Create fresh SubCategory for Existing Category",
         description="Adds a new Sub Category entry. Expects the object data fields directly at the root of the JSON body.",
-        request=ProductCategoryCreateSerializer,
+        request=ProductSubCategoryCreateSerializer,
         responses={
             201: inline_serializer(
                 name="ProductSubCategoryCreateResponse",

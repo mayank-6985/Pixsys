@@ -10,6 +10,7 @@ class NewsContent:
     def validate(self):
         if not self.content:
             raise ValueError("Content cant be empty, Try again")
+        
 class News:
     def __init__(self, date:str , heading:str , thumbnail:str , news_content:NewsContent):
         self.date = date

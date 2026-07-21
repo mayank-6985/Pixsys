@@ -68,6 +68,21 @@ class downloadUpdateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=None)
     resource_url = serializers.URLField()
     
+
+class ResourceCreateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+    description = serializers.CharField(allow_blank=True, required=False)
+    thumbnail = serializers.URLField()
+    file = serializers.URLField()
+
+class ResourceUpdateSerializer(serializers.Serializer):
+    resource_id = serializers.BigIntegerField(required=True)
+    name = serializers.CharField(max_length=255, required=False)
+    description = serializers.CharField(allow_blank=True, required=False)
+    thumbnail = serializers.URLField(required=False)
+    file = serializers.URLField(required=False)
+    
+    
 class ProductCreateSerializer(serializers.Serializer):
     tag_id = serializers.BigIntegerField(required=True)    
     name = serializers.CharField(required=True)
@@ -79,6 +94,8 @@ class ProductCreateSerializer(serializers.Serializer):
         required=True  
     )
     downloads = downloadCreateSerializer(many=True)
+    # new resource field
+    resources = ResourceCreateSerializer(many=True, required=False)
     
 class ProductUpdateSerializer(serializers.Serializer):
     tag_id = serializers.BigIntegerField(required=True)
@@ -92,7 +109,7 @@ class ProductUpdateSerializer(serializers.Serializer):
         required=True  
     )
     downloads = downloadUpdateSerializer(many=True)
-
+    resources = ResourceUpdateSerializer(many=True, required=False)
 class ProductSerializer(serializers.ModelSerializer):
     
     # This automatically crosses the relationship and grabs the custom tag_id

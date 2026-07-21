@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'apps.Search',
     'apps.Customers',
     'apps.Tracking',
+    'apps.Resources',
 ]
 
 # Use custom user model with email as username

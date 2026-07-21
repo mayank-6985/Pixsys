@@ -45,7 +45,10 @@ class ProductService:
     
     def create_product(self , data):
         from ...Download.Services.product_download_service import ProductDownloadService
+        from ...Resources.Service.resource_service import ResourceService
         download_objs = ProductDownloadService().handle_list_of_downloads(data.get('downloads', []))
+        resource_objs = ResourceService().handle_list_of_resources(data.get('resources', []))
+        
         product = Product(
             tag_id=data['tag_id'],
             name=data['name'],
@@ -54,6 +57,7 @@ class ProductService:
             product_img=data['product_img'],
             specifications=data['specifications'],
             list_of_downloads=download_objs,
+            list_of_resources=resource_objs,
         )
         success = self.repo.create_product(product=product)
         return success
