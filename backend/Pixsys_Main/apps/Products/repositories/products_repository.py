@@ -364,8 +364,8 @@ class ProductRepository:
         download = ProductDownloadService().get_product_download_data(product_id=product.product_id)
         product_data['downloads'] = download
         resources = ResourceService().get_resources_for_product(product_id=product.product_id)
-        product_data['downloads']['RESOURCES'] = resources
-        
+        if resources:
+            product_data['downloads']['RESOURCES'] = resources            
         return product_data
     
     
