@@ -97,7 +97,7 @@ class GoogleSMTPEmailSender(IEmailSender):
             
         except Exception as e:
             # UNMASK THE ERROR: This forces the actual exception into Render's Dashboard Logs
-            logger.error(f"❌ CRITICAL SMTP ERROR ON RENDER: {type(e).__name__} - {e}", flush=True)
+            logger.error(f"❌ CRITICAL SMTP ERROR ON RENDER: {type(e).__name__} - {e}")
             return False
             
         finally:
