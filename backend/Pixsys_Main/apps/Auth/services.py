@@ -39,34 +39,35 @@ class GoogleSMTPEmailSender(IEmailSender):
             
             # 2. Determine credentials
             if smtp_config.email_host_user and smtp_config.email_host_password:
-                backend = EmailBackend(
-                    host='smtp.gmail.com',
-                    port=587,
-                    use_tls=True,
-                    username=smtp_config.email_host_user,
-                    password=smtp_config.email_host_password,
-                    fail_silently=False,
-                )
-                from_email = smtp_config.email_host_user
+                username = smtp_config.email_host_user
+                password = smtp_config.email_host_password
             else:
-                backend = EmailBackend(
-                    host=settings.EMAIL_HOST,
-                    port=settings.EMAIL_PORT,
-                    use_tls=settings.EMAIL_USE_TLS,
-                    username=settings.EMAIL_HOST_USER,
-                    password=settings.EMAIL_HOST_PASSWORD,
-                    fail_silently=False,
-                )
-                from_email = settings.EMAIL_HOST_USER
+                username = getattr(settings, 'EMAIL_HOST_USER', '')
+                password = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
 
-            # 3. Explicitly open connection
+            # Check if credentials exist before attempting socket connection
+            if not username or not password:
+                print("❌ SMTP Error: Username or Password is missing in both DB and settings.py", flush=True)
+                return False
+
+            # 3. Create backend with a strict 10s timeout
+            backend = EmailBackend(
+                host='smtp.gmail.com',
+                port=587,
+                use_tls=True,
+                username=username,
+                password=password,
+                fail_silently=False,
+                timeout=10,  # CRITICAL: Stops Render from hanging indefinitely
+            )
+
             backend.open()
 
             # 4. Build and send the message
             msg = EmailMultiAlternatives(
                 subject=subject,
                 body=text_body,
-                from_email=from_email,
+                from_email=username,
                 to=[to_email],
                 connection=backend
             )
@@ -75,16 +76,18 @@ class GoogleSMTPEmailSender(IEmailSender):
                 msg.attach_alternative(html_body, "text/html")
                 
             msg.send(fail_silently=False)
+            print(f"✅ OTP Email successfully sent to {to_email}", flush=True)
             return True
             
         except Exception as e:
-            # Optionally print/log error: print(f"SMTP Error: {e}")
+            # UNMASK THE ERROR: This forces the actual exception into Render's Dashboard Logs
+            print(f"❌ CRITICAL SMTP ERROR ON RENDER: {type(e).__name__} - {e}", flush=True)
             return False
+            
         finally:
-            # CRITICAL: Always close backend connection to free socket and RAM immediately
             if backend:
-                backend.close()
-                                         
+                backend.close()                                    
+
 class CustomerOTPEmailBuilder(IEmailBuilder):
     """Constructs an industry-standard responsive HTML template and text fallback."""
     
