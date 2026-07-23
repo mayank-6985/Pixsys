@@ -74,7 +74,7 @@ class GoogleSMTPEmailSender(IEmailSender):
                 username=username,
                 password=password,
                 fail_silently=False,
-                timeout=10,  # CRITICAL: Stops Render from hanging indefinitely
+                timeout=30,  # CRITICAL: Stops Render from hanging indefinitely
             )
 
             backend.open()
