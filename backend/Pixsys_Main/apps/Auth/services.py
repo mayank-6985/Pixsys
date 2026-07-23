@@ -9,6 +9,7 @@ from apps.Auth.models import PixsysCustomerModel, CustomerOTPModel
 from django.core.mail.backends.smtp import EmailBackend
 from apps.Auth.models import SystemSMTPConfig
 import threading
+from django.db import connection
 # --- Interfaces ---
 class IEmailSender(ABC):
     @abstractmethod
