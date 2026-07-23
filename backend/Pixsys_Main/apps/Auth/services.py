@@ -69,8 +69,9 @@ class GoogleSMTPEmailSender(IEmailSender):
             # 3. Create backend with a strict 10s timeout
             backend = EmailBackend(
                 host='smtp.gmail.com',
-                port=587,
-                use_tls=True,
+                port=465,
+                use_ssl=True,        # CRITICAL: Enabled Implicit SSL
+                use_tls=False,
                 username=username,
                 password=password,
                 fail_silently=False,
