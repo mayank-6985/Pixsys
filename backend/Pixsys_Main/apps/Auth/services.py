@@ -8,8 +8,7 @@ from apps.Auth.models import PixsysCustomerModel, CustomerOTPModel
 
 from django.core.mail.backends.smtp import EmailBackend
 from apps.Auth.models import SystemSMTPConfig
-import threading
-from django.db import connection
+
 # --- Interfaces ---
 class IEmailSender(ABC):
     @abstractmethod
@@ -31,17 +30,17 @@ class IOTPGenerator(ABC):
 # --- Concrete Implementations ---
 
 class GoogleSMTPEmailSender(IEmailSender):
-    """Handles sending multi-part emails via dynamic database SMTP configs."""
+    """Handles sending multi-part emails via dynamic database SMTP configs cleanly."""
     def send(self, to_email: str, subject: str, text_body: str, html_body: str = None) -> bool:
+        backend = None
         try:
             # 1. Fetch live DB configuration
             smtp_config = SystemSMTPConfig.load()
             
-            # 2. Determine which credentials to use
+            # 2. Determine credentials
             if smtp_config.email_host_user and smtp_config.email_host_password:
-                # Use DB Credentials via a dynamic connection
                 backend = EmailBackend(
-                    host='smtp.gmail.com', # Hardcoded for Google, or store in DB too
+                    host='smtp.gmail.com',
                     port=587,
                     use_tls=True,
                     username=smtp_config.email_host_user,
@@ -50,7 +49,6 @@ class GoogleSMTPEmailSender(IEmailSender):
                 )
                 from_email = smtp_config.email_host_user
             else:
-                # Fallback to settings.py
                 backend = EmailBackend(
                     host=settings.EMAIL_HOST,
                     port=settings.EMAIL_PORT,
@@ -61,13 +59,16 @@ class GoogleSMTPEmailSender(IEmailSender):
                 )
                 from_email = settings.EMAIL_HOST_USER
 
-            # 3. Build and send the message using the chosen connection
+            # 3. Explicitly open connection
+            backend.open()
+
+            # 4. Build and send the message
             msg = EmailMultiAlternatives(
                 subject=subject,
                 body=text_body,
                 from_email=from_email,
                 to=[to_email],
-                connection=backend # Crucial: pass the dynamic backend here
+                connection=backend
             )
             
             if html_body:
@@ -77,9 +78,13 @@ class GoogleSMTPEmailSender(IEmailSender):
             return True
             
         except Exception as e:
-            # In production, log this exception
-            return False   
-                
+            # Optionally print/log error: print(f"SMTP Error: {e}")
+            return False
+        finally:
+            # CRITICAL: Always close backend connection to free socket and RAM immediately
+            if backend:
+                backend.close()
+                                         
 class CustomerOTPEmailBuilder(IEmailBuilder):
     """Constructs an industry-standard responsive HTML template and text fallback."""
     
@@ -161,7 +166,7 @@ class OTPManager:
     def process_otp_for_customer(self, customer: PixsysCustomerModel) -> bool:
         otp_code = self.generator.generate()
         
-        # Save or update the OTP in the database synchronously
+        # Save or update the OTP in the database
         CustomerOTPModel.objects.update_or_create(
             customer=customer,
             defaults={
@@ -172,21 +177,10 @@ class OTPManager:
         
         email_content = self.builder.build_otp_email(otp_code)
         
-        # Define the background task
-        def send_email_task():
-            try:
-                self.sender.send(
-                    to_email=customer.email,
-                    subject=email_content['subject'],
-                    text_body=email_content['text_body'],
-                    html_body=email_content.get('html_body')
-                )
-            finally:
-                # CRITICAL: Close the database connection for this specific thread
-                connection.close()
-
-        # Execute email sending in a background thread
-        threading.Thread(target=send_email_task).start()
-        
-        # Return True immediately so the API responds without waiting for the SMTP server
-        return True
+        # Pass both text and html bodies to the sender
+        return self.sender.send(
+            to_email=customer.email,
+            subject=email_content['subject'],
+            text_body=email_content['text_body'],
+            html_body=email_content.get('html_body')
+        )
