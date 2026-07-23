@@ -160,7 +160,7 @@ class OTPManager:
     def process_otp_for_customer(self, customer: PixsysCustomerModel) -> bool:
         otp_code = self.generator.generate()
         
-        # Save or update the OTP in the database
+        # Save or update the OTP in the database synchronously
         CustomerOTPModel.objects.update_or_create(
             customer=customer,
             defaults={
@@ -171,10 +171,21 @@ class OTPManager:
         
         email_content = self.builder.build_otp_email(otp_code)
         
-        # Pass both text and html bodies to the sender
-        return self.sender.send(
-            to_email=customer.email,
-            subject=email_content['subject'],
-            text_body=email_content['text_body'],
-            html_body=email_content.get('html_body')
-        )
+        # Define the background task
+        def send_email_task():
+            try:
+                self.sender.send(
+                    to_email=customer.email,
+                    subject=email_content['subject'],
+                    text_body=email_content['text_body'],
+                    html_body=email_content.get('html_body')
+                )
+            finally:
+                # CRITICAL: Close the database connection for this specific thread
+                connection.close()
+
+        # Execute email sending in a background thread
+        threading.Thread(target=send_email_task).start()
+        
+        # Return True immediately so the API responds without waiting for the SMTP server
+        return True
