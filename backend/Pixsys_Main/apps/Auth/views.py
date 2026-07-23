@@ -1,7 +1,9 @@
+import logging
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
+from rest_framework.exceptions import APIException
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiExample
@@ -25,6 +27,9 @@ from .services import (
     CustomerOTPEmailBuilder,
     NumericOTPGenerator
 )
+
+# Initialize module logger
+logger = logging.getLogger(__name__)
 
 # Initialize OTP Manager
 otp_manager = OTPManager(
@@ -56,17 +61,26 @@ class CustomerSignupView(APIView):
         ]
     )
     def post(self, request):
-        serializer = CustomerSignupSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        customer = serializer.save()
-        
-        # Identity confirmed (unique email check passed), trigger OTP
-        otp_manager.process_otp_for_customer(customer)
-        
-        return Response(
-            {"detail": "Customer created successfully. OTP sent to email for verification."}, 
-            status=status.HTTP_201_CREATED
-        )
+        try:
+            serializer = CustomerSignupSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            customer = serializer.save()
+            
+            # Identity confirmed (unique email check passed), trigger OTP
+            otp_manager.process_otp_for_customer(customer)
+            
+            return Response(
+                {"detail": "Customer created successfully. OTP sent to email for verification."}, 
+                status=status.HTTP_201_CREATED
+            )
+        except APIException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in CustomerSignupView: {e}", exc_info=True)
+            return Response(
+                {"detail": "An unexpected error occurred during signup. Please try again later."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 # ==========================================
@@ -94,17 +108,26 @@ class WebSiteAdminLoginView(TokenObtainPairView):
         ]
     )
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        admin_user = serializer.validated_data['user']
+        try:
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            admin_user = serializer.validated_data['user']
 
-        refresh = RefreshToken.for_user(admin_user)
-        refresh['user_type'] = 'admin'
+            refresh = RefreshToken.for_user(admin_user)
+            refresh['user_type'] = 'admin'
 
-        return Response({
-            'access': str(refresh.access_token),
-            'refresh': str(refresh)
-        }, status=status.HTTP_200_OK)
+            return Response({
+                'access': str(refresh.access_token),
+                'refresh': str(refresh)
+            }, status=status.HTTP_200_OK)
+        except APIException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in WebSiteAdminLoginView: {e}", exc_info=True)
+            return Response(
+                {"detail": "An unexpected error occurred during admin login."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class CustomerLoginInitiateView(APIView):
@@ -124,17 +147,26 @@ class CustomerLoginInitiateView(APIView):
         ]
     )
     def post(self, request):
-        serializer = CustomerLoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        customer = serializer.validated_data['user']
-        
-        # Identity confirmed (password matched), trigger OTP
-        otp_manager.process_otp_for_customer(customer)
+        try:
+            serializer = CustomerLoginSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            customer = serializer.validated_data['user']
+            
+            # Identity confirmed (password matched), trigger OTP
+            otp_manager.process_otp_for_customer(customer)
 
-        return Response(
-            {"detail": "Credentials verified. OTP has been sent to your email."}, 
-            status=status.HTTP_200_OK
-        )
+            return Response(
+                {"detail": "Credentials verified. OTP has been sent to your email."}, 
+                status=status.HTTP_200_OK
+            )
+        except APIException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in CustomerLoginInitiateView: {e}", exc_info=True)
+            return Response(
+                {"detail": "An unexpected error occurred while initiating login."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class CustomerVerifyOTPView(APIView):
@@ -154,25 +186,34 @@ class CustomerVerifyOTPView(APIView):
         ]
     )
     def post(self, request):
-        serializer = CustomerVerifyOTPSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        customer = serializer.validated_data['customer']
-        otp_record = serializer.validated_data['otp_record']
-        
-        if not customer.is_verified:
-            customer.is_verified = True
-            customer.save()
+        try:
+            serializer = CustomerVerifyOTPSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
             
-        otp_record.delete()
+            customer = serializer.validated_data['customer']
+            otp_record = serializer.validated_data['otp_record']
+            
+            if not customer.is_verified:
+                customer.is_verified = True
+                customer.save()
+                
+            otp_record.delete()
 
-        refresh = RefreshToken.for_user(customer)
-        refresh['user_type'] = 'customer'
+            refresh = RefreshToken.for_user(customer)
+            refresh['user_type'] = 'customer'
 
-        return Response({
-            'access': str(refresh.access_token),
-            'refresh': str(refresh)
-        }, status=status.HTTP_200_OK)    
+            return Response({
+                'access': str(refresh.access_token),
+                'refresh': str(refresh)
+            }, status=status.HTTP_200_OK)
+        except APIException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in CustomerVerifyOTPView: {e}", exc_info=True)
+            return Response(
+                {"detail": "An unexpected error occurred during OTP verification."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class CustomerResendOTPView(APIView):
@@ -192,21 +233,35 @@ class CustomerResendOTPView(APIView):
         ]
     )
     def post(self, request):
-        serializer = CustomerResendOTPSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        customer = serializer.validated_data['customer']
-        
-        email_sent = otp_manager.process_otp_for_customer(customer)
-        
-        if email_sent:
+        import traceback
+        try:
+            
+            serializer = CustomerResendOTPSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            customer = serializer.validated_data['customer']
+            
+            email_sent = otp_manager.process_otp_for_customer(customer)
+            
+            if email_sent:
+                return Response(
+                    {"detail": "A new OTP has been sent to your email."}, 
+                    status=status.HTTP_200_OK
+                )
+            
+            logger.warning(f"Failed to dispatch resend OTP email for customer: {customer.email}")
+            
             return Response(
-                {"detail": "A new OTP has been sent to your email."}, 
-                status=status.HTTP_200_OK
+                {"detail": "Failed to send the email. Please try again later."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        return Response(
-            {"detail": "Failed to send the email. Please try again later."}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        except APIException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in CustomerResendOTPView: {e}{traceback.format_exc()}")
+            return Response(
+                {"detail": "An unexpected error occurred while resending OTP."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 # ==========================================
@@ -229,7 +284,14 @@ class LogoutView(APIView):
 
     @extend_schema(responses={200: OpenApiExample("Success", value={"detail": "Logged out successfully."})})
     def post(self, request):
-        return Response({'detail': 'Logged out successfully.'}, status=status.HTTP_200_OK)
+        try:
+            return Response({'detail': 'Logged out successfully.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Unexpected error during logout: {e}", exc_info=True)
+            return Response(
+                {"detail": "An error occurred during logout."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 # =================================================
@@ -242,9 +304,18 @@ class SystemSMTPConfigView(APIView):
 
     @extend_schema(responses=SystemSMTPConfigSerializer)
     def get(self, request):
-        config = SystemSMTPConfig.load()
-        serializer = SystemSMTPConfigSerializer(config)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            config = SystemSMTPConfig.load()
+            serializer = SystemSMTPConfigSerializer(config)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except APIException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in SystemSMTPConfigView (GET): {e}", exc_info=True)
+            return Response(
+                {"detail": "Failed to retrieve SMTP configuration."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @extend_schema(
         request=SystemSMTPConfigSerializer,
@@ -260,11 +331,20 @@ class SystemSMTPConfigView(APIView):
         ]
     )
     def patch(self, request):
-        config = SystemSMTPConfig.load()
-        serializer = SystemSMTPConfigSerializer(config, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            config = SystemSMTPConfig.load()
+            serializer = SystemSMTPConfigSerializer(config, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except APIException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in SystemSMTPConfigView (PATCH): {e}", exc_info=True)
+            return Response(
+                {"detail": "Failed to update SMTP configuration."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class CompanySettingsView(APIView):
@@ -279,9 +359,18 @@ class CompanySettingsView(APIView):
 
     @extend_schema(responses=CompanySettingsSerializer)  
     def get(self, request):
-        settings_data = CompanySettings.load()
-        serializer = CompanySettingsSerializer(settings_data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            settings_data = CompanySettings.load()
+            serializer = CompanySettingsSerializer(settings_data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except APIException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in CompanySettingsView (GET): {e}", exc_info=True)
+            return Response(
+                {"detail": "Failed to retrieve company settings."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @extend_schema(
         request=CompanySettingsSerializer,
@@ -301,8 +390,17 @@ class CompanySettingsView(APIView):
         ]
     )    
     def patch(self, request):
-        settings_data = CompanySettings.load()
-        serializer = CompanySettingsSerializer(settings_data, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            settings_data = CompanySettings.load()
+            serializer = CompanySettingsSerializer(settings_data, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except APIException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in CompanySettingsView (PATCH): {e}", exc_info=True)
+            return Response(
+                {"detail": "Failed to update company settings."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

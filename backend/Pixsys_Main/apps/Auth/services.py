@@ -1,4 +1,3 @@
-import socket
 import random
 from abc import ABC, abstractmethod
 from django.core.mail import EmailMultiAlternatives
@@ -6,25 +5,10 @@ from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
 from apps.Auth.models import PixsysCustomerModel, CustomerOTPModel
+
 from django.core.mail.backends.smtp import EmailBackend
 from apps.Auth.models import SystemSMTPConfig
-import logging
-# =====================================================================
-# CRITICAL RENDER FIX FOR Errno 101 (Network is unreachable)
-# Forces Python's socket to only use IPv4. Render containers 
-# often fail to route IPv6 addresses for smtp.gmail.com.
-# =====================================================================
-orig_getaddrinfo = socket.getaddrinfo
 
-def getaddrinfo_ipv4_only(*args, **kwargs):
-    responses = orig_getaddrinfo(*args, **kwargs)
-    # Filter out IPv6, keep only IPv4 (AF_INET)
-    return [res for res in responses if res[0] == socket.AF_INET]
-
-socket.getaddrinfo = getaddrinfo_ipv4_only
-# =====================================================================
-
-logger = logging.getLogger(__name__)
 # --- Interfaces ---
 class IEmailSender(ABC):
     @abstractmethod
@@ -46,65 +30,55 @@ class IOTPGenerator(ABC):
 # --- Concrete Implementations ---
 
 class GoogleSMTPEmailSender(IEmailSender):
-    """Handles sending multi-part emails via dynamic database SMTP configs cleanly."""
+    """Handles sending multi-part emails via dynamic database SMTP configs."""
     def send(self, to_email: str, subject: str, text_body: str, html_body: str = None) -> bool:
-        backend = None
         try:
             # 1. Fetch live DB configuration
             smtp_config = SystemSMTPConfig.load()
             
-            # 2. Determine credentials
+            # 2. Determine which credentials to use
             if smtp_config.email_host_user and smtp_config.email_host_password:
-                username = smtp_config.email_host_user
-                password = smtp_config.email_host_password
+                # Use DB Credentials via a dynamic connection
+                backend = EmailBackend(
+                    host='smtp.gmail.com', # Hardcoded for Google, or store in DB too
+                    port=587,
+                    use_tls=True,
+                    username=smtp_config.email_host_user,
+                    password=smtp_config.email_host_password,
+                    fail_silently=False,
+                )
+                from_email = smtp_config.email_host_user
             else:
-                username = getattr(settings, 'EMAIL_HOST_USER', '')
-                password = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
+                # Fallback to settings.py
+                backend = EmailBackend(
+                    host=settings.EMAIL_HOST,
+                    port=settings.EMAIL_PORT,
+                    use_tls=settings.EMAIL_USE_TLS,
+                    username=settings.EMAIL_HOST_USER,
+                    password=settings.EMAIL_HOST_PASSWORD,
+                    fail_silently=False,
+                )
+                from_email = settings.EMAIL_HOST_USER
 
-            # Check if credentials exist before attempting socket connection
-            if not username or not password:
-                logger.error("❌ SMTP Error: Username or Password is missing in both DB and settings.py", flush=True)
-                return False
-
-            # 3. Create backend with a strict 10s timeout
-            backend = EmailBackend(
-                host='smtp.gmail.com',
-                port=465,
-                use_ssl=True,        # CRITICAL: Enabled Implicit SSL
-                use_tls=False,
-                username=username,
-                password=password,
-                fail_silently=False,
-                timeout=30,  # CRITICAL: Stops Render from hanging indefinitely
-            )
-
-            backend.open()
-
-            # 4. Build and send the message
+            # 3. Build and send the message using the chosen connection
             msg = EmailMultiAlternatives(
                 subject=subject,
                 body=text_body,
-                from_email=username,
+                from_email=from_email,
                 to=[to_email],
-                connection=backend
+                connection=backend # Crucial: pass the dynamic backend here
             )
             
             if html_body:
                 msg.attach_alternative(html_body, "text/html")
                 
             msg.send(fail_silently=False)
-            logger.info(f"✅ OTP Email successfully sent to {to_email}", flush=True)
             return True
             
         except Exception as e:
-            # UNMASK THE ERROR: This forces the actual exception into Render's Dashboard Logs
-            logger.error(f"❌ CRITICAL SMTP ERROR ON RENDER: {type(e).__name__} - {e}")
-            return False
-            
-        finally:
-            if backend:
-                backend.close()                                    
-
+            # In production, log this exception
+            return False   
+                
 class CustomerOTPEmailBuilder(IEmailBuilder):
     """Constructs an industry-standard responsive HTML template and text fallback."""
     
