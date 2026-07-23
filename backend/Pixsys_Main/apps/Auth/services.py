@@ -1,3 +1,4 @@
+import socket
 import random
 from abc import ABC, abstractmethod
 from django.core.mail import EmailMultiAlternatives
@@ -5,12 +6,25 @@ from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
 from apps.Auth.models import PixsysCustomerModel, CustomerOTPModel
-import logging
-logger = logging.getLogger(__name__)
-
 from django.core.mail.backends.smtp import EmailBackend
 from apps.Auth.models import SystemSMTPConfig
+import logging
+# =====================================================================
+# CRITICAL RENDER FIX FOR Errno 101 (Network is unreachable)
+# Forces Python's socket to only use IPv4. Render containers 
+# often fail to route IPv6 addresses for smtp.gmail.com.
+# =====================================================================
+orig_getaddrinfo = socket.getaddrinfo
 
+def getaddrinfo_ipv4_only(*args, **kwargs):
+    responses = orig_getaddrinfo(*args, **kwargs)
+    # Filter out IPv6, keep only IPv4 (AF_INET)
+    return [res for res in responses if res[0] == socket.AF_INET]
+
+socket.getaddrinfo = getaddrinfo_ipv4_only
+# =====================================================================
+
+logger = logging.getLogger(__name__)
 # --- Interfaces ---
 class IEmailSender(ABC):
     @abstractmethod
