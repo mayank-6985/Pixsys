@@ -33,7 +33,8 @@ from django.urls import path
 from .views import (
     CustomerSignupView, WebSiteAdminLoginView, 
     CustomerLoginInitiateView, CustomerVerifyOTPView, CustomerResendOTPView,
-    CustomTokenRefreshView, LogoutView
+    CustomTokenRefreshView, LogoutView,
+    SystemSMTPConfigView, CompanySettingsView
 )
 
 urlpatterns = [
@@ -49,4 +50,8 @@ urlpatterns = [
     
     path('refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    
+    # COMPANY SETTINGS  
+    path('admin/settings/smtp/', SystemSMTPConfigView.as_view(), name='admin_settings_smtp'),
+    path('settings/company/', CompanySettingsView.as_view(), name='settings_company'), 
 ]

@@ -116,3 +116,22 @@ class CustomerResendOTPSerializer(serializers.Serializer):
             
         attrs['customer'] = customer
         return attrs
+    
+
+from .models import SystemSMTPConfig, CompanySettings
+
+class SystemSMTPConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SystemSMTPConfig
+        fields = ['email_host_user', 'email_host_password']
+        # Note: If you want to hide the password on fetch, uncomment below:
+        # extra_kwargs = {'email_host_password': {'write_only': True}}
+
+class CompanySettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompanySettings
+        fields = [
+            'company_details', 'contact_email', 
+            'instagram_link', 'facebook_link', 
+            'linkedin_link', 'youtube_link'
+        ]

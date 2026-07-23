@@ -43,3 +43,4 @@ class PixsysCustomerModelAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at',)
     
     # Optional: Hide the password hash from the admin panel    
+    

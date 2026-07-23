@@ -1,100 +1,59 @@
-# from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-# from rest_framework.response import Response
-# from rest_framework import status, serializers
-# from django.conf import settings
-# from rest_framework.permissions import AllowAny, IsAuthenticated
-# from django.contrib.auth import get_user_model
-# from rest_framework_simplejwt.tokens import RefreshToken
-# from .serializers import CustomerSignupSerializer
-
-# User = get_user_model()
-# class EmailTokenObtainSerializer(serializers.Serializer):
-#     email = serializers.EmailField()
-#     password = serializers.CharField(write_only=True)
-
-#     def validate(self, attrs):
-#         email = attrs.get('email')
-#         password = attrs.get('password')        
-#         user = User.objects.filter(email=email).first()
-#         if user is None or not user.check_password(password):
-#         # if user is None:
-#             raise serializers.ValidationError('No active account found with the given credentials')
-#         attrs['user'] = user
-#         return attrs
-
-
-# class TokenObtainPairJSONView(TokenObtainPairView):
-#     """Return access and refresh tokens in JSON response body using email+password."""
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     class InputSerializer(EmailTokenObtainSerializer):
-#         pass
-
-#     def post(self, request, *args, **kwargs):
-#         serializer = self.InputSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         user = serializer.validated_data['user']
-
-#         refresh = RefreshToken.for_user(user)
-#         return Response({'access': str(refresh.access_token), 'refresh': str(refresh)}, status=status.HTTP_200_OK)
-
-
-# class TokenRefreshJSONView(TokenRefreshView):
-#     """Return refreshed access token in JSON response body."""
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-
-# from rest_framework.views import APIView
-
-
-# class LogoutView(APIView):
-#     """Logout endpoint — clients should discard tokens. Blacklist can be implemented if needed."""
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-#         return Response({'detail': 'Logged out'}, status=status.HTTP_200_OK)
-
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
-from drf_spectacular.utils import extend_schema, inline_serializer
+from drf_spectacular.utils import extend_schema, OpenApiExample
+
 from .serializers import (
     AdminLoginSerializer, 
     CustomerLoginSerializer,    
     CustomerSignupSerializer,
     CustomerVerifyOTPSerializer,
-    CustomerResendOTPSerializer
+    CustomerResendOTPSerializer,
+    SystemSMTPConfigSerializer,
+    CompanySettingsSerializer
 )
+
+from .permissions import IsWebSiteAdmin
+from .models import SystemSMTPConfig, CompanySettings
 
 from .services import (
     OTPManager,
     GoogleSMTPEmailSender,
     CustomerOTPEmailBuilder,
     NumericOTPGenerator
-    )
+)
 
+# Initialize OTP Manager
 otp_manager = OTPManager(
     sender=GoogleSMTPEmailSender(), 
     builder=CustomerOTPEmailBuilder(), 
     generator=NumericOTPGenerator()
 )
+
 # ==========================================
 # SIGNUP VIEWS
 # ==========================================
-
 
 class CustomerSignupView(APIView):
     """API endpoint to register new Customers."""
     permission_classes = [AllowAny]
     authentication_classes = []
+
     @extend_schema(
-        request=CustomerSignupSerializer    
+        request=CustomerSignupSerializer,
+        examples=[
+            OpenApiExample(
+                "Successful Signup",
+                value={
+                    "email": "customer@example.com",
+                    "password": "SecurePassword123!",
+                    "phone_number": "+1234567890"
+                }
+            )
+        ]
     )
     def post(self, request):
         serializer = CustomerSignupSerializer(data=request.data)
@@ -122,14 +81,24 @@ class WebSiteAdminLoginView(TokenObtainPairView):
     permission_classes = [AllowAny]
     serializer_class = AdminLoginSerializer
 
+    @extend_schema(
+        request=AdminLoginSerializer,
+        examples=[
+            OpenApiExample(
+                "Admin Login",
+                value={
+                    "email": "admin@pixsys.com",
+                    "password": "AdminPassword123!"
+                }
+            )
+        ]
+    )
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         admin_user = serializer.validated_data['user']
 
         refresh = RefreshToken.for_user(admin_user)
-        
-        # Inject the critical security stamp for permissions routing
         refresh['user_type'] = 'admin'
 
         return Response({
@@ -139,10 +108,20 @@ class WebSiteAdminLoginView(TokenObtainPairView):
 
 
 class CustomerLoginInitiateView(APIView):
-    """Replaces CustomerLoginView. Validates credentials and dispatches OTP."""
+    """Validates credentials and dispatches OTP for 2-step login."""
     permission_classes = [AllowAny]
+
     @extend_schema(
         request=CustomerLoginSerializer,
+        examples=[
+            OpenApiExample(
+                "Initiate Customer Login",
+                value={
+                    "email": "customer@example.com",
+                    "password": "SecurePassword123!"
+                }
+            )
+        ]
     )
     def post(self, request):
         serializer = CustomerLoginSerializer(data=request.data)
@@ -157,12 +136,22 @@ class CustomerLoginInitiateView(APIView):
             status=status.HTTP_200_OK
         )
 
+
 class CustomerVerifyOTPView(APIView):
     """Validates the OTP and returns the final JWT access tokens."""
     permission_classes = [AllowAny]
     
     @extend_schema(
-        request=CustomerVerifyOTPSerializer
+        request=CustomerVerifyOTPSerializer,
+        examples=[
+            OpenApiExample(
+                "Verify OTP Code",
+                value={
+                    "email": "customer@example.com",
+                    "otp_code": "123456"
+                }
+            )
+        ]
     )
     def post(self, request):
         serializer = CustomerVerifyOTPSerializer(data=request.data)
@@ -171,15 +160,12 @@ class CustomerVerifyOTPView(APIView):
         customer = serializer.validated_data['customer']
         otp_record = serializer.validated_data['otp_record']
         
-        # Mark as verified if it's their first time logging in
         if not customer.is_verified:
             customer.is_verified = True
             customer.save()
             
-        # Clean up the used OTP
         otp_record.delete()
 
-        # Generate JWT
         refresh = RefreshToken.for_user(customer)
         refresh['user_type'] = 'customer'
 
@@ -187,37 +173,7 @@ class CustomerVerifyOTPView(APIView):
             'access': str(refresh.access_token),
             'refresh': str(refresh)
         }, status=status.HTTP_200_OK)    
-        
-class CustomerLoginView(TokenObtainPairView):
-    """
-    Validates Customer credentials and returns JWTs 
-    stamped with the 'customer' user_type claim.
-    """
-    permission_classes = [AllowAny]
-    serializer_class = CustomerLoginSerializer
 
-    @extend_schema(
-        request=CustomerLoginSerializer
-    )
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        customer_user = serializer.validated_data['user']
-
-        refresh = RefreshToken.for_user(customer_user)
-        
-        # Inject the critical security stamp for permissions routing
-        refresh['user_type'] = 'customer'
-
-        return Response({
-            'access': str(refresh.access_token),
-            'refresh': str(refresh)
-        }, status=status.HTTP_200_OK)
-
-
-# ==========================================
-# TOKEN REFRESH & LOGOUT (SHARED VIEWS)
-# ==========================================
 
 class CustomerResendOTPView(APIView):
     """Generates a new OTP and resends it to the customer's email."""
@@ -225,14 +181,21 @@ class CustomerResendOTPView(APIView):
     authentication_classes = []
     
     @extend_schema(
-        request=CustomerResendOTPSerializer
+        request=CustomerResendOTPSerializer,
+        examples=[
+            OpenApiExample(
+                "Resend OTP Request",
+                value={
+                    "email": "customer@example.com"
+                }
+            )
+        ]
     )
     def post(self, request):
         serializer = CustomerResendOTPSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         customer = serializer.validated_data['customer']
         
-        # The OTPManager handles overwriting the old OTP and sending the new email
         email_sent = otp_manager.process_otp_for_customer(customer)
         
         if email_sent:
@@ -244,12 +207,15 @@ class CustomerResendOTPView(APIView):
             {"detail": "Failed to send the email. Please try again later."}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+# ==========================================
+# TOKEN REFRESH & LOGOUT (SHARED VIEWS)
+# ==========================================
         
 class CustomTokenRefreshView(TokenRefreshView):
     """
-    Standard SimpleJWT refresh view. 
-    It automatically preserves custom claims (like user_type) 
-    from the refresh token into the newly generated access token.
+    Standard SimpleJWT refresh view preserving custom claims (like user_type).
     """
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -261,5 +227,82 @@ class LogoutView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(responses={200: OpenApiExample("Success", value={"detail": "Logged out successfully."})})
     def post(self, request):
         return Response({'detail': 'Logged out successfully.'}, status=status.HTTP_200_OK)
+
+
+# =================================================
+# COMPANY SETTINGS 
+# =================================================
+
+class SystemSMTPConfigView(APIView):
+    """Admin-only view to fetch and update SMTP credentials."""
+    permission_classes = [IsWebSiteAdmin]
+
+    @extend_schema(responses=SystemSMTPConfigSerializer)
+    def get(self, request):
+        config = SystemSMTPConfig.load()
+        serializer = SystemSMTPConfigSerializer(config)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request=SystemSMTPConfigSerializer,
+        responses=SystemSMTPConfigSerializer,
+        examples=[
+            OpenApiExample(
+                "Update SMTP Config",
+                value={
+                    "email_host_user": "noreply@pixsys.com",
+                    "email_host_password": "yourapppasswordhere"
+                }
+            )
+        ]
+    )
+    def patch(self, request):
+        config = SystemSMTPConfig.load()
+        serializer = SystemSMTPConfigSerializer(config, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CompanySettingsView(APIView):
+    """
+    Public GET for frontend rendering. 
+    Admin-only PATCH for updating details.
+    """
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsWebSiteAdmin()]
+
+    @extend_schema(responses=CompanySettingsSerializer)  
+    def get(self, request):
+        settings_data = CompanySettings.load()
+        serializer = CompanySettingsSerializer(settings_data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request=CompanySettingsSerializer,
+        responses=CompanySettingsSerializer,
+        examples=[
+            OpenApiExample(
+                name="Update Company Settings",
+                value={
+                    "company_details": "Pixsys provides industry-leading software solutions.",
+                    "contact_email": "contact@pixsys.com",
+                    "instagram_link": "https://instagram.com/pixsys",
+                    "facebook_link": "https://facebook.com/pixsys",
+                    "linkedin_link": "https://linkedin.com/company/pixsys",
+                    "youtube_link": "https://youtube.com/pixsys"
+                }
+            )
+        ]
+    )    
+    def patch(self, request):
+        settings_data = CompanySettings.load()
+        serializer = CompanySettingsSerializer(settings_data, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)

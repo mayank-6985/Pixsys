@@ -6,8 +6,10 @@ from django.utils import timezone
 from datetime import timedelta
 from apps.Auth.models import PixsysCustomerModel, CustomerOTPModel
 
-# --- Interfaces ---
+from django.core.mail.backends.smtp import EmailBackend
+from apps.Auth.models import SystemSMTPConfig
 
+# --- Interfaces ---
 class IEmailSender(ABC):
     @abstractmethod
     def send(self, to_email: str, subject: str, text_body: str, html_body: str = None) -> bool:
@@ -28,26 +30,55 @@ class IOTPGenerator(ABC):
 # --- Concrete Implementations ---
 
 class GoogleSMTPEmailSender(IEmailSender):
-    """Handles sending multi-part emails via SMTP."""
+    """Handles sending multi-part emails via dynamic database SMTP configs."""
     def send(self, to_email: str, subject: str, text_body: str, html_body: str = None) -> bool:
         try:
+            # 1. Fetch live DB configuration
+            smtp_config = SystemSMTPConfig.load()
+            
+            # 2. Determine which credentials to use
+            if smtp_config.email_host_user and smtp_config.email_host_password:
+                # Use DB Credentials via a dynamic connection
+                backend = EmailBackend(
+                    host='smtp.gmail.com', # Hardcoded for Google, or store in DB too
+                    port=587,
+                    use_tls=True,
+                    username=smtp_config.email_host_user,
+                    password=smtp_config.email_host_password,
+                    fail_silently=False,
+                )
+                from_email = smtp_config.email_host_user
+            else:
+                # Fallback to settings.py
+                backend = EmailBackend(
+                    host=settings.EMAIL_HOST,
+                    port=settings.EMAIL_PORT,
+                    use_tls=settings.EMAIL_USE_TLS,
+                    username=settings.EMAIL_HOST_USER,
+                    password=settings.EMAIL_HOST_PASSWORD,
+                    fail_silently=False,
+                )
+                from_email = settings.EMAIL_HOST_USER
+
+            # 3. Build and send the message using the chosen connection
             msg = EmailMultiAlternatives(
                 subject=subject,
                 body=text_body,
-                from_email=settings.EMAIL_HOST_USER,
+                from_email=from_email,
                 to=[to_email],
+                connection=backend # Crucial: pass the dynamic backend here
             )
             
-            # Attach the HTML version if provided
             if html_body:
                 msg.attach_alternative(html_body, "text/html")
                 
             msg.send(fail_silently=False)
             return True
+            
         except Exception as e:
-            # In production, log this exception: logger.error(f"Email failed: {e}")
-            return False
-
+            # In production, log this exception
+            return False   
+                
 class CustomerOTPEmailBuilder(IEmailBuilder):
     """Constructs an industry-standard responsive HTML template and text fallback."""
     

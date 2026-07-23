@@ -132,3 +132,54 @@ class CustomerOTPModel(models.Model):
         
     def is_valid(self):
         return timezone.now() <= self.expires_at
+    
+
+
+# Add to your existing models.py
+
+class SystemSMTPConfig(models.Model):
+    email_host_user = models.EmailField(blank=True, null=True, help_text="The email address used to send emails.")
+    email_host_password = models.CharField(max_length=255, blank=True, null=True, help_text="The App Password for the email.")
+
+    class Meta:
+        db_table = "Pixsys_System_SMTP_Config"
+        verbose_name = "System SMTP Configuration"
+
+    def save(self, *args, **kwargs):
+        # Enforce Singleton pattern for MongoDB
+        if not self.pk and SystemSMTPConfig.objects.exists():
+            self.pk = SystemSMTPConfig.objects.first().pk
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj = cls.objects.first()
+        if not obj:
+            obj = cls.objects.create()
+        return obj
+
+
+class CompanySettings(models.Model):
+    company_details = models.TextField(blank=True, null=True)
+    contact_email = models.EmailField(blank=True, null=True)
+    instagram_link = models.URLField(blank=True, null=True)
+    facebook_link = models.URLField(blank=True, null=True)
+    linkedin_link = models.URLField(blank=True, null=True)
+    youtube_link = models.URLField(blank=True, null=True)
+
+    class Meta:
+        db_table = "Pixsys_Company_Settings"
+        verbose_name = "Company Settings"
+
+    def save(self, *args, **kwargs):
+        # Enforce Singleton pattern for MongoDB
+        if not self.pk and CompanySettings.objects.exists():
+            self.pk = CompanySettings.objects.first().pk
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj = cls.objects.first()
+        if not obj:
+            obj = cls.objects.create()
+        return obj
