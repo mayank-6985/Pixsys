@@ -5,6 +5,8 @@ from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
 from apps.Auth.models import PixsysCustomerModel, CustomerOTPModel
+import logging
+logger = logging.getLogger(__name__)
 
 from django.core.mail.backends.smtp import EmailBackend
 from apps.Auth.models import SystemSMTPConfig
@@ -47,7 +49,7 @@ class GoogleSMTPEmailSender(IEmailSender):
 
             # Check if credentials exist before attempting socket connection
             if not username or not password:
-                print("❌ SMTP Error: Username or Password is missing in both DB and settings.py", flush=True)
+                logger.error("❌ SMTP Error: Username or Password is missing in both DB and settings.py", flush=True)
                 return False
 
             # 3. Create backend with a strict 10s timeout
@@ -76,12 +78,12 @@ class GoogleSMTPEmailSender(IEmailSender):
                 msg.attach_alternative(html_body, "text/html")
                 
             msg.send(fail_silently=False)
-            print(f"✅ OTP Email successfully sent to {to_email}", flush=True)
+            logger.info(f"✅ OTP Email successfully sent to {to_email}", flush=True)
             return True
             
         except Exception as e:
             # UNMASK THE ERROR: This forces the actual exception into Render's Dashboard Logs
-            print(f"❌ CRITICAL SMTP ERROR ON RENDER: {type(e).__name__} - {e}", flush=True)
+            logger.error(f"❌ CRITICAL SMTP ERROR ON RENDER: {type(e).__name__} - {e}", flush=True)
             return False
             
         finally:
