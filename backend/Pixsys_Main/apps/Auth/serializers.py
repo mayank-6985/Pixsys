@@ -67,3 +67,52 @@ class CustomerLoginSerializer(BaseEmailTokenObtainSerializer):
             
         attrs['user'] = user
         return attrs
+    
+
+# Add to your existing serializers.py
+from django.utils import timezone
+from .models import CustomerOTPModel
+
+class CustomerVerifyOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp_code = serializers.CharField(max_length=6)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        otp_code = attrs.get('otp_code')
+        
+        customer = PixsysCustomerModel.objects.filter(email=email).first()
+        if not customer:
+            raise serializers.ValidationError("Customer not found.")
+            
+        try:
+            otp_record = customer.otp_data
+        except CustomerOTPModel.DoesNotExist:
+            raise serializers.ValidationError("No OTP requested or OTP expired.")
+
+        if not otp_record.is_valid():
+            otp_record.delete()
+            raise serializers.ValidationError("OTP has expired. Please request a new one.")
+            
+        if otp_record.otp_code != otp_code:
+            raise serializers.ValidationError("Invalid OTP.")
+
+        attrs['customer'] = customer
+        attrs['otp_record'] = otp_record
+        return attrs
+    
+# Add to serializers.py
+class CustomerResendOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        
+        customer = PixsysCustomerModel.objects.filter(email=email).first()
+        if not customer:
+            # We return a generic error or specific one based on your security posture.
+            # Returning "Customer not found" is fine for most non-banking apps.
+            raise serializers.ValidationError("No customer account found with this email.")
+            
+        attrs['customer'] = customer
+        return attrs

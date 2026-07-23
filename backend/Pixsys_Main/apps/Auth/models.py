@@ -93,7 +93,8 @@ class PixsysCustomerModel(models.Model):
     password = models.CharField(max_length=128)
     phone_number = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    is_verified = models.BooleanField(default=False)
+    
     def __str__(self):
         return self.email
     
@@ -119,3 +120,15 @@ class PixsysCustomerModel(models.Model):
     def is_authenticated(self):
         """Always return True. This is a way to tell DRF that if this user object exists, they are authenticated."""
         return True
+    
+class CustomerOTPModel(models.Model):
+    customer = models.OneToOneField(PixsysCustomerModel, on_delete=models.CASCADE, related_name='otp_data')
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        db_table = "Pixsys_Customer_OTP"
+        
+    def is_valid(self):
+        return timezone.now() <= self.expires_at

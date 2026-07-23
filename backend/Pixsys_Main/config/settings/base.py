@@ -241,3 +241,12 @@ if {'bearerAuth': []} not in SPECTACULAR_SETTINGS['SECURITY']:
 # GeoIP Configuration
 # Create a folder named 'geoip' in your project root and place GeoLite2-City.mmdb inside it
 GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')
+
+
+# google email setup
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'shivvilonsolutions@gmail.com'
+EMAIL_HOST_PASSWORD = 'tsudqzrvkthjqqgq' # Use an App Password, not your standard login

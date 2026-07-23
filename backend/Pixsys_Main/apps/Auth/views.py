@@ -67,9 +67,23 @@ from drf_spectacular.utils import extend_schema, inline_serializer
 from .serializers import (
     AdminLoginSerializer, 
     CustomerLoginSerializer,    
-    CustomerSignupSerializer
+    CustomerSignupSerializer,
+    CustomerVerifyOTPSerializer,
+    CustomerResendOTPSerializer
 )
 
+from .services import (
+    OTPManager,
+    GoogleSMTPEmailSender,
+    CustomerOTPEmailBuilder,
+    NumericOTPGenerator
+    )
+
+otp_manager = OTPManager(
+    sender=GoogleSMTPEmailSender(), 
+    builder=CustomerOTPEmailBuilder(), 
+    generator=NumericOTPGenerator()
+)
 # ==========================================
 # SIGNUP VIEWS
 # ==========================================
@@ -85,9 +99,13 @@ class CustomerSignupView(APIView):
     def post(self, request):
         serializer = CustomerSignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        customer = serializer.save()
+        
+        # Identity confirmed (unique email check passed), trigger OTP
+        otp_manager.process_otp_for_customer(customer)
+        
         return Response(
-            {"detail": "Customer account created successfully."}, 
+            {"detail": "Customer created successfully. OTP sent to email for verification."}, 
             status=status.HTTP_201_CREATED
         )
 
@@ -120,6 +138,56 @@ class WebSiteAdminLoginView(TokenObtainPairView):
         }, status=status.HTTP_200_OK)
 
 
+class CustomerLoginInitiateView(APIView):
+    """Replaces CustomerLoginView. Validates credentials and dispatches OTP."""
+    permission_classes = [AllowAny]
+    @extend_schema(
+        request=CustomerLoginSerializer,
+    )
+    def post(self, request):
+        serializer = CustomerLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        customer = serializer.validated_data['user']
+        
+        # Identity confirmed (password matched), trigger OTP
+        otp_manager.process_otp_for_customer(customer)
+
+        return Response(
+            {"detail": "Credentials verified. OTP has been sent to your email."}, 
+            status=status.HTTP_200_OK
+        )
+
+class CustomerVerifyOTPView(APIView):
+    """Validates the OTP and returns the final JWT access tokens."""
+    permission_classes = [AllowAny]
+    
+    @extend_schema(
+        request=CustomerVerifyOTPSerializer
+    )
+    def post(self, request):
+        serializer = CustomerVerifyOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        customer = serializer.validated_data['customer']
+        otp_record = serializer.validated_data['otp_record']
+        
+        # Mark as verified if it's their first time logging in
+        if not customer.is_verified:
+            customer.is_verified = True
+            customer.save()
+            
+        # Clean up the used OTP
+        otp_record.delete()
+
+        # Generate JWT
+        refresh = RefreshToken.for_user(customer)
+        refresh['user_type'] = 'customer'
+
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh)
+        }, status=status.HTTP_200_OK)    
+        
 class CustomerLoginView(TokenObtainPairView):
     """
     Validates Customer credentials and returns JWTs 
@@ -128,6 +196,9 @@ class CustomerLoginView(TokenObtainPairView):
     permission_classes = [AllowAny]
     serializer_class = CustomerLoginSerializer
 
+    @extend_schema(
+        request=CustomerLoginSerializer
+    )
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -148,6 +219,32 @@ class CustomerLoginView(TokenObtainPairView):
 # TOKEN REFRESH & LOGOUT (SHARED VIEWS)
 # ==========================================
 
+class CustomerResendOTPView(APIView):
+    """Generates a new OTP and resends it to the customer's email."""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    
+    @extend_schema(
+        request=CustomerResendOTPSerializer
+    )
+    def post(self, request):
+        serializer = CustomerResendOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        customer = serializer.validated_data['customer']
+        
+        # The OTPManager handles overwriting the old OTP and sending the new email
+        email_sent = otp_manager.process_otp_for_customer(customer)
+        
+        if email_sent:
+            return Response(
+                {"detail": "A new OTP has been sent to your email."}, 
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {"detail": "Failed to send the email. Please try again later."}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+        
 class CustomTokenRefreshView(TokenRefreshView):
     """
     Standard SimpleJWT refresh view. 
