@@ -67,6 +67,7 @@ class ResourceService:
         )
         
         self.repo.update_resources(resources=[resource])
+        return True
     
     def delete_resource(self ,resource_data:dict):
         resource = ResourceObject(
@@ -75,7 +76,7 @@ class ResourceService:
         )
         
         self.repo.update_resources(resources=[resource])
-        
+        return True
     
     def get_resources(self):
         return self.repo.get_resources()
