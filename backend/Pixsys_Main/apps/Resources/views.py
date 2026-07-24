@@ -130,7 +130,7 @@ class ResourceUpdateAPIView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
-            result = resource_service.update_resource(resource_id=int(resource_id), resource_data=serializer.validated_data)
+            result = resource_service.update_resource(resource_data=serializer.validated_data)
             return Response({"message": "Resource updated successfully"}, status=status.HTTP_200_OK)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
