@@ -180,7 +180,7 @@ class ResourceUpdateAPIView(APIView):
             return Response({"error": "Missing required field: 'resource_id'."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            success = resource_service.delete_resource(resource_id=int(resource_id))
+            success = resource_service.delete_resource(resource_data = {"resource_id":int(resource_id)})
             if success:
                 return Response({"message": "Resource deleted successfully"}, status=status.HTTP_200_OK)
             return Response({"error": "Deletion failed"}, status=status.HTTP_400_BAD_REQUEST)
