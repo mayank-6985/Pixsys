@@ -185,8 +185,7 @@ class ResourceSearchServices(ISearchService):
             {
                 # Step A: Filter by keyword (case-insensitive partial match on 'heading')
                 "$match": {
-                    "name": {"$regex": safe_keyword, "$options": "i"},
-                    "description": {"$regex": safe_keyword, "$options": "i"}
+                    "name": {"$regex": safe_keyword, "$options": "i"},                
                 }
             },
             {
