@@ -276,7 +276,7 @@ class DownloadSearchServices(ISearchService):
             if resource_type:
                 response_data[resource_type] = downloads
 
-        resources = ResourceSearchServices().search(keyword=safe_keyword)
+        resources = ResourceSearchServices().search(keyword=keyword)
         
         if resources :
             response_data['RESOURCES'] = resources['RESOURCES']
