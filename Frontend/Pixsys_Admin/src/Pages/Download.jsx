@@ -64,6 +64,7 @@ const Download = () => {
   const [view, setView] = useState("list");
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState(emptyDownload);
+  const [originalData, setOriginalData] = useState(null); // Used to restore fields if type is reverted
 
   const [selCat, setSelCat] = useState("");
   const [selSub, setSelSub] = useState("");
@@ -130,40 +131,77 @@ const Download = () => {
   const handleOpenCreate = () => {
     resetMutations();
     setEditingId(null);
-    setFormData({
+
+    const initialFormState = {
       ...emptyDownload,
       category_id: selCat || "",
       subcategory_id: selSub || "",
       tag_id: selTag || "",
       product_id: selProd || "",
-    });
+    };
+
+    setFormData(initialFormState);
+    setOriginalData(initialFormState);
     setView("form");
   };
 
   const handleOpenEdit = (d) => {
     resetMutations();
+
+    // Accurately deduce the type so the dropdown isn't stuck on "SOFTWARE"
+    const actualType = d.resource_id
+      ? "RESOURCE"
+      : d.resource_type || "SOFTWARE";
+
     setEditingId(d.download_id || d.resource_id);
     setSelCat(d.category_id ?? "");
     setSelSub(d.subcategory_id ?? "");
     setSelTag(d.tag_id ?? "");
     setSelProd(d.product_id ?? "");
-    setFormData({
+
+    const initialFormState = {
       product_id: d.product_id ?? "",
       tag_id: d.tag_id ?? "",
       subcategory_id: d.subcategory_id ?? "",
       category_id: d.category_id ?? "",
       name: d.name ?? "",
       resource_url: d.resource_url ?? "",
-      resource_type: d.resource_type ?? "SOFTWARE",
+      resource_type: String(actualType).toUpperCase(),
       description: d.description ?? "",
       thumbnail: d.thumbnail ?? "",
-    });
+    };
+
+    setFormData(initialFormState);
+    setOriginalData(initialFormState);
     setView("form");
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "resource_type") {
+      // If the user reverts to the original type, restore their original files
+      if (originalData && originalData.resource_type === value) {
+        setFormData((prev) => ({
+          ...prev,
+          resource_type: value,
+          resource_url: originalData.resource_url || "",
+          description: originalData.description || "",
+          thumbnail: originalData.thumbnail || "",
+        }));
+      } else {
+        // If they select a new type, completely clear the upload/resource fields
+        setFormData((prev) => ({
+          ...prev,
+          resource_type: value,
+          resource_url: "",
+          description: "",
+          thumbnail: "",
+        }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -572,12 +610,26 @@ const Download = () => {
               </button>
             )}
 
-            <button
-              onClick={handleOpenCreate}
-              className="flex items-center gap-2 px-4 py-2 bg-[#da0e19] hover:bg-red-700 text-white text-xs font-bold uppercase tracking-widest transition-colors"
+            <div
+              className="inline-block cursor-not-allowed"
+              title={
+                !selProd
+                  ? "First select the product and then you can add a new download."
+                  : ""
+              }
             >
-              <FiPlus size={16} /> Add Download
-            </button>
+              <button
+                onClick={handleOpenCreate}
+                disabled={!selProd}
+                className={`flex items-center gap-2 px-4 py-2 text-white text-xs font-bold uppercase tracking-widest transition-colors ${
+                  !selProd
+                    ? "bg-zinc-400 opacity-60 pointer-events-none"
+                    : "bg-[#da0e19] hover:bg-red-700"
+                }`}
+              >
+                <FiPlus size={16} /> Add Download
+              </button>
+            </div>
           </div>
         </div>
 
@@ -609,51 +661,58 @@ const Download = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredDownloads.map((d, index) => (
-                    <tr
-                      key={d.download_id || d.resource_id || index}
-                      className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors group"
-                    >
-                      <td className="py-4 px-6 text-zinc-400 font-mono text-xs">
-                        {index + 1}
-                      </td>
-                      <td className="py-4 px-6 text-zinc-900 font-bold">
-                        {d.name}
-                      </td>
-                      <td className="py-4 px-6 text-zinc-500 text-xs font-bold uppercase">
-                        {d.resource_type}
-                      </td>
-                      <td className="py-4 px-6 text-zinc-500 text-sm truncate max-w-xs">
-                        <a
-                          href={d.resource_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="hover:text-[#da0e19] hover:underline"
-                        >
-                          {d.resource_url}
-                        </a>
-                      </td>
-                      <td className="py-4 px-6 flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => handleOpenEdit(d)}
-                          className="p-2 text-zinc-400 hover:text-zinc-900 transition-colors"
-                        >
-                          <FiEdit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(d)}
-                          disabled={
-                            deleteMutation.isPending ||
-                            (typeof deleteResMutation !== "undefined" &&
-                              deleteResMutation.isPending)
-                          }
-                          className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <FiTrash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  filteredDownloads.map((d, index) => {
+                    // Deducing Type safely for the UI Table
+                    const rowType = d.resource_id
+                      ? "RESOURCE"
+                      : d.resource_type || "SOFTWARE";
+
+                    return (
+                      <tr
+                        key={d.download_id || d.resource_id || index}
+                        className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors group"
+                      >
+                        <td className="py-4 px-6 text-zinc-400 font-mono text-xs">
+                          {index + 1}
+                        </td>
+                        <td className="py-4 px-6 text-zinc-900 font-bold">
+                          {d.name}
+                        </td>
+                        <td className="py-4 px-6 text-zinc-500 text-xs font-bold uppercase">
+                          {rowType}
+                        </td>
+                        <td className="py-4 px-6 text-zinc-500 text-sm truncate max-w-xs">
+                          <a
+                            href={d.resource_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="hover:text-[#da0e19] hover:underline"
+                          >
+                            {d.resource_url}
+                          </a>
+                        </td>
+                        <td className="py-4 px-6 flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => handleOpenEdit(d)}
+                            className="p-2 text-zinc-400 hover:text-zinc-900 transition-colors"
+                          >
+                            <FiEdit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(d)}
+                            disabled={
+                              deleteMutation.isPending ||
+                              (typeof deleteResMutation !== "undefined" &&
+                                deleteResMutation.isPending)
+                            }
+                            className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <FiTrash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { FiPlus, FiEdit2, FiTrash2, FiSave, FiX } from "react-icons/fi";
 import { AiFillProduct } from "react-icons/ai";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   useAdminProductsData,
   useCategoryMutations,
@@ -11,13 +11,6 @@ import {
   useCategoryDetails,
   useProductDetail,
 } from "../hooks/useProducts";
-import {
-  useDeleteDownload,
-  useCreateResource,
-  useUpdateResource,
-  useDeleteResource,
-} from "../hooks/useDownloads";
-
 import S3Uploader from "../Components/S3Uploader";
 
 const emptyCategory = {
@@ -34,93 +27,6 @@ const emptySubcategory = {
 const emptyTag = {
   subcategory_id: "",
   name: "",
-};
-const emptyProduct = {
-  tag_id: "",
-  name: "",
-  tagline: "",
-  description: "",
-  product_img: "",
-  specifications: [""],
-  downloads: [
-    {
-      resource_type: "CATALOG",
-      name: "",
-      resource_url: "",
-      description: "",
-      thumbnail: "",
-    },
-  ],
-};
-
-const normalizeDownloadsForForm = (downloads, resources = []) => {
-  let flattened = [];
-
-  if (Array.isArray(downloads)) {
-    flattened = [...downloads];
-  } else if (downloads && typeof downloads === "object") {
-    Object.entries(downloads).forEach(([key, items]) => {
-      if (!Array.isArray(items)) return;
-      items.forEach((item) => {
-        flattened.push({
-          ...item,
-          resource_type: item.resource_type || key,
-        });
-      });
-    });
-  }
-
-  if (Array.isArray(resources)) {
-    resources.forEach((res) => {
-      flattened.push({
-        ...res,
-        resource_type: "RESOURCE",
-      });
-    });
-  }
-
-  flattened = flattened.map((item) => {
-    let type = item.resource_id ? "RESOURCE" : item.resource_type || "CATALOG";
-
-    return {
-      ...item,
-      name: item?.name || "",
-      resource_url:
-        item?.resource_url ||
-        item?.resourceUrl ||
-        item?.file_url ||
-        item?.file ||
-        item?.url ||
-        "",
-      description: item?.description || "",
-      thumbnail: item?.thumbnail || "",
-      resource_type: String(type).toUpperCase(),
-    };
-  });
-
-  return flattened.length > 0
-    ? flattened
-    : [
-        {
-          resource_type: "CATALOG",
-          name: "",
-          resource_url: "",
-          description: "",
-          thumbnail: "",
-        },
-      ];
-};
-const groupDownloadsForPayload = (downloads) => {
-  return (downloads || []).reduce((acc, dl) => {
-    if (!dl || !dl.resource_type || !dl.name || !dl.resource_url) return acc;
-    const item = {
-      name: dl.name,
-      resource_url: dl.resource_url,
-      ...(dl.download_id ? { download_id: dl.download_id } : {}),
-    };
-    acc[dl.resource_type] = [...(acc[dl.resource_type] || []), item];
-    return acc;
-  }, {});
 };
 
 const Products = () => {
@@ -154,11 +60,6 @@ const Products = () => {
   const { createTag, updateTag, deleteTag } = useTagMutations();
   const { createProd, updateProd, deleteProd } = useProductMutations();
 
-  const deleteDownloadMut = useDeleteDownload();
-  const createResMutation = useCreateResource();
-  const updateResMutation = useUpdateResource();
-  const deleteResMutation = useDeleteResource();
-
   const isSaving =
     createCat.isPending ||
     updateCat.isPending ||
@@ -167,17 +68,13 @@ const Products = () => {
     createTag.isPending ||
     updateTag.isPending ||
     createProd.isPending ||
-    updateProd.isPending ||
-    createResMutation.isPending ||
-    updateResMutation.isPending;
+    updateProd.isPending;
 
   const isDeleting =
     deleteCat.isPending ||
     deleteSubCat.isPending ||
     deleteTag.isPending ||
-    deleteProd.isPending ||
-    deleteResMutation.isPending ||
-    deleteDownloadMut.isPending;
+    deleteProd.isPending;
 
   const hasError =
     createCat.isError ||
@@ -187,9 +84,7 @@ const Products = () => {
     createTag.isError ||
     updateTag.isError ||
     createProd.isError ||
-    updateProd.isError ||
-    createResMutation.isError ||
-    updateResMutation.isError;
+    updateProd.isError;
 
   const resetAllMutations = () => {
     createCat.reset();
@@ -200,8 +95,6 @@ const Products = () => {
     updateTag.reset();
     createProd.reset();
     updateProd.reset();
-    createResMutation.reset();
-    updateResMutation.reset();
   };
 
   const categories = useMemo(() => {
@@ -255,13 +148,20 @@ const Products = () => {
     setActionError("");
 
     if (activeLevel === "categories") {
-      setFormData(emptyCategory);
+      setFormData({ ...emptyCategory });
     } else if (activeLevel === "subcategories") {
       setFormData({ ...emptySubcategory, category_id: selCat });
     } else if (activeLevel === "tags") {
       setFormData({ ...emptyTag, subcategory_id: selSub });
     } else if (activeLevel === "products") {
-      setFormData({ ...emptyProduct, tag_id: selTag });
+      setFormData({
+        tag_id: selTag,
+        name: "",
+        tagline: "",
+        description: "",
+        product_img: "",
+        specifications: [""],
+      });
     }
     setView("form");
   };
@@ -296,7 +196,6 @@ const Products = () => {
       setEditingId(item.product_id);
       setProductEditId(item.product_id);
 
-      // Safely extract specifications whether they are strings or objects
       const existingSpecs =
         Array.isArray(item.specifications) && item.specifications.length
           ? item.specifications.map((s) =>
@@ -311,7 +210,6 @@ const Products = () => {
         name: item.name || "",
         tagline: item.tagline || item.original?.tagline || "",
         description: item.description || item.original?.description || "",
-        // Added fallbacks for product image
         product_img:
           item.product_img ||
           item.product_image ||
@@ -319,10 +217,6 @@ const Products = () => {
           item.original?.product_img ||
           "",
         specifications: existingSpecs,
-        downloads: normalizeDownloadsForForm(
-          item.downloads || item.original?.downloads,
-          item.resources || item.original?.resources,
-        ),
       });
     }
     setView("form");
@@ -415,54 +309,6 @@ const Products = () => {
     setFormData((prev) => ({ ...prev, specifications: newSpecs }));
   };
 
-  const handleDownloadChange = (index, field, value) => {
-    const newDownloads = [...(formData.downloads || [])];
-    newDownloads[index][field] = value;
-    setFormData((prev) => ({ ...prev, downloads: newDownloads }));
-  };
-  const addDownload = () => {
-    setFormData((prev) => ({
-      ...prev,
-      downloads: [
-        ...(prev.downloads || []),
-        {
-          resource_type: "CATALOG",
-          name: "",
-          resource_url: "",
-          description: "",
-          thumbnail: "",
-        },
-      ],
-    }));
-  };
-
-  const removeDownload = async (index) => {
-    const item = formData.downloads[index];
-
-    if (item.resource_type === "RESOURCE" && item.resource_id) {
-      if (!window.confirm("Are you sure you want to delete this resource?"))
-        return;
-      try {
-        await deleteResMutation.mutateAsync(item.resource_id);
-      } catch (err) {
-        alert("Failed to delete resource from database.");
-        return;
-      }
-    } else if (item.download_id) {
-      if (!window.confirm("Are you sure you want to delete this download?"))
-        return;
-      try {
-        await deleteDownloadMut.mutateAsync(item.download_id);
-      } catch (err) {
-        alert("Failed to delete download from database.");
-        return;
-      }
-    }
-
-    const newDownloads = formData.downloads.filter((_, i) => i !== index);
-    setFormData((prev) => ({ ...prev, downloads: newDownloads }));
-  };
-
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     const parsedValue =
@@ -472,10 +318,9 @@ const Products = () => {
 
   useEffect(() => {
     if (formType === "products" && productEditId && productDetail) {
-      // Handle nested axios 'data' objects safely
       const detail = productDetail.data || productDetail;
 
-      if (detail && detail.product_id === productEditId) {
+      if (detail && String(detail.product_id) === String(productEditId)) {
         const existingSpecs =
           Array.isArray(detail.specifications) && detail.specifications.length
             ? detail.specifications.map((s) =>
@@ -484,11 +329,6 @@ const Products = () => {
                   : s?.image || s?.image_url || s?.url || s?.file || "",
               )
             : [""];
-
-        const existingDownloads = normalizeDownloadsForForm(
-          detail.downloads || detail.original?.downloads,
-          detail.resources || detail.original?.resources,
-        );
 
         setFormData((prev) => ({
           ...prev,
@@ -510,10 +350,6 @@ const Products = () => {
           specifications: existingSpecs[0]
             ? existingSpecs
             : prev.specifications,
-          downloads:
-            existingDownloads[0]?.name || existingDownloads[0]?.resource_url
-              ? existingDownloads
-              : prev.downloads,
         }));
       }
     }
@@ -521,6 +357,7 @@ const Products = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (formType === "categories") {
       editingId
         ? updateCat.mutate(
@@ -543,73 +380,37 @@ const Products = () => {
           )
         : createTag.mutate(formData, { onSuccess: () => setView("list") });
     } else if (formType === "products") {
-      const cleanedSpecs = (formData.specifications || []).filter(
-        (s) => s.trim() !== "",
-      );
-
-      const standardDownloads = (formData.downloads || []).filter(
-        (d) => d.resource_type !== "RESOURCE",
-      );
-      const resourceDownloads = (formData.downloads || []).filter(
-        (d) => d.resource_type === "RESOURCE",
+      const cleanedSpecs = (formData.specifications || []).filter((s) =>
+        typeof s === "string" ? s.trim() !== "" : true,
       );
 
       const payload = {
-        tag_id: formData.tag_id,
+        tag_id: formData.tag_id || selTag,
         name: formData.name,
         tagline: formData.tagline,
         description: formData.description,
         product_img: formData.product_img,
         specifications: cleanedSpecs,
-        downloads: standardDownloads,
-      };
-
-      const processResources = async (productId) => {
-        if (!productId) return;
-        for (const res of resourceDownloads) {
-          const resPayload = {
-            ...res,
-            product_id: productId,
-            tag_id: formData.tag_id || selTag,
-            subcategory_id: selSub,
-            category_id: selCat,
-          };
-          try {
-            if (res.resource_id) {
-              await updateResMutation.mutateAsync({
-                ...resPayload,
-                resource_id: res.resource_id,
-              });
-            } else if (res.name && res.resource_url) {
-              await createResMutation.mutateAsync(resPayload);
-            }
-          } catch (error) {
-            console.error("Resource save error:", error);
-          }
-        }
+        downloads: [],
       };
 
       if (editingId) {
         updateProd.mutate(
           { product_id: editingId, ...payload },
           {
-            onSuccess: async () => {
-              await processResources(editingId);
+            onSuccess: () => {
               setView("list");
               setProductEditId(null);
+              resetAllMutations();
             },
           },
         );
       } else {
         createProd.mutate(payload, {
-          onSuccess: async (response) => {
-            const newProdId =
-              response?.product_id ||
-              response?.data?.product_id ||
-              response?.id;
-            await processResources(newProdId);
+          onSuccess: () => {
             setView("list");
             setProductEditId(null);
+            resetAllMutations();
           },
         });
       }
@@ -865,7 +666,7 @@ const Products = () => {
                       >
                         <div className="flex-1">
                           <S3Uploader
-                            label={`Specification Image ${index + 1} *`}
+                            label={`Specification Image ${index + 1}`}
                             accept="image/jpeg, image/png, image/webp"
                             folder="products/specifications"
                             currentFileUrl={spec}
@@ -883,150 +684,6 @@ const Products = () => {
                         >
                           <FiTrash2 />
                         </button>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="pt-4 border-t border-zinc-200">
-                    <div className="flex justify-between items-center mb-4">
-                      <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest">
-                        Downloads & Resources
-                      </label>
-                      <button
-                        type="button"
-                        onClick={addDownload}
-                        disabled={isSaving}
-                        className="text-xs font-bold text-[#da0e19] uppercase tracking-widest flex items-center gap-1 hover:underline disabled:opacity-50 disabled:no-underline"
-                      >
-                        <FiPlus /> Add Download
-                      </button>
-                    </div>
-                    {formData.downloads?.map((dl, index) => (
-                      <div
-                        key={index}
-                        className="flex flex-col gap-3 p-4 mb-4 bg-zinc-50 border border-zinc-200 relative"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => removeDownload(index)}
-                          disabled={isSaving}
-                          className="absolute top-2 right-2 text-zinc-400 hover:text-red-600 transition-colors disabled:opacity-50"
-                        >
-                          <FiX size={18} />
-                        </button>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                          <div>
-                            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">
-                              Type *
-                            </label>
-                            <select
-                              required
-                              value={dl.resource_type}
-                              onChange={(e) =>
-                                handleDownloadChange(
-                                  index,
-                                  "resource_type",
-                                  e.target.value,
-                                )
-                              }
-                              disabled={isSaving}
-                              className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm disabled:opacity-60 font-bold uppercase tracking-widest text-zinc-700"
-                            >
-                              <option value="SOFTWARE">SOFTWARE</option>
-                              <option value="SOFTWARE_MANUAL">
-                                SOFTWARE_MANUAL
-                              </option>
-                              <option value="CATALOG">CATALOG</option>
-                              <option value="DIMENTION">DIMENTION</option>
-                              <option value="RESOURCE">RESOURCE</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">
-                              Name *
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={dl.name}
-                              onChange={(e) =>
-                                handleDownloadChange(
-                                  index,
-                                  "name",
-                                  e.target.value,
-                                )
-                              }
-                              disabled={isSaving}
-                              className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm disabled:opacity-60"
-                            />
-                          </div>
-
-                          {dl.resource_type === "RESOURCE" && (
-                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-zinc-200">
-                              <div>
-                                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">
-                                  Description
-                                </label>
-                                <textarea
-                                  rows="3"
-                                  value={dl.description || ""}
-                                  onChange={(e) =>
-                                    handleDownloadChange(
-                                      index,
-                                      "description",
-                                      e.target.value,
-                                    )
-                                  }
-                                  disabled={isSaving}
-                                  className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm disabled:opacity-60 resize-none"
-                                />
-                              </div>
-
-                              <div>
-                                <S3Uploader
-                                  label="Upload Thumbnail *"
-                                  accept="image/*"
-                                  folder="thumbnails"
-                                  currentFileUrl={dl.thumbnail}
-                                  onUploadSuccess={(url) =>
-                                    handleDownloadChange(
-                                      index,
-                                      "thumbnail",
-                                      url,
-                                    )
-                                  }
-                                />
-                                <input
-                                  type="hidden"
-                                  required
-                                  value={dl.thumbnail || ""}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="md:col-span-2">
-                            <S3Uploader
-                              label={`Upload ${dl.resource_type.replace("_", " ")} File *`}
-                              accept={
-                                dl.resource_type.includes("SOFTWARE")
-                                  ? ".exe,.zip,.rar,.msi"
-                                  : ".pdf,image/*"
-                              }
-                              folder={`products/${dl.resource_type.toLowerCase()}`}
-                              currentFileUrl={dl.resource_url}
-                              onUploadSuccess={(url) =>
-                                handleDownloadChange(index, "resource_url", url)
-                              }
-                            />
-                            <input
-                              type="hidden"
-                              required
-                              value={dl.resource_url || ""}
-                            />
-                          </div>
-                        </div>
                       </div>
                     ))}
                   </div>
@@ -1144,7 +801,6 @@ const Products = () => {
           </h3>
 
           <div className="flex gap-3">
-            {/* Added Clear Filters Button Here! */}
             {(selCat || selSub || selTag) && (
               <button
                 onClick={() => {
