@@ -11,6 +11,12 @@ import {
   useCategoryDetails,
   useProductDetail,
 } from "../hooks/useProducts";
+import {
+  useDeleteDownload,
+  useCreateResource,
+  useUpdateResource,
+  useDeleteResource,
+} from "../hooks/useDownloads";
 
 import S3Uploader from "../Components/S3Uploader";
 
@@ -36,29 +42,74 @@ const emptyProduct = {
   description: "",
   product_img: "",
   specifications: [""],
-  downloads: [{ resource_type: "CATALOG", name: "", resource_url: "" }],
+  downloads: [
+    {
+      resource_type: "CATALOG",
+      name: "",
+      resource_url: "",
+      description: "",
+      thumbnail: "",
+    },
+  ],
 };
 
-const normalizeDownloadsForForm = (downloads) => {
-  if (Array.isArray(downloads) && downloads.length) return downloads;
-  if (downloads && typeof downloads === "object") {
-    const flattened = [];
-    Object.entries(downloads).forEach(([resource_type, items]) => {
+const normalizeDownloadsForForm = (downloads, resources = []) => {
+  let flattened = [];
+
+  if (Array.isArray(downloads)) {
+    flattened = [...downloads];
+  } else if (downloads && typeof downloads === "object") {
+    Object.entries(downloads).forEach(([key, items]) => {
       if (!Array.isArray(items)) return;
       items.forEach((item) => {
         flattened.push({
-          resource_type,
-          name: item?.name || "",
-          resource_url: item?.resource_url || item?.resourceUrl || "",
-          ...(item?.download_id ? { download_id: item.download_id } : {}),
+          ...item,
+          resource_type: item.resource_type || key,
         });
       });
     });
-    if (flattened.length) return flattened;
   }
-  return [{ resource_type: "CATALOG", name: "", resource_url: "" }];
-};
 
+  if (Array.isArray(resources)) {
+    resources.forEach((res) => {
+      flattened.push({
+        ...res,
+        resource_type: "RESOURCE",
+      });
+    });
+  }
+
+  flattened = flattened.map((item) => {
+    let type = item.resource_id ? "RESOURCE" : item.resource_type || "CATALOG";
+
+    return {
+      ...item,
+      name: item?.name || "",
+      resource_url:
+        item?.resource_url ||
+        item?.resourceUrl ||
+        item?.file_url ||
+        item?.file ||
+        item?.url ||
+        "",
+      description: item?.description || "",
+      thumbnail: item?.thumbnail || "",
+      resource_type: String(type).toUpperCase(),
+    };
+  });
+
+  return flattened.length > 0
+    ? flattened
+    : [
+        {
+          resource_type: "CATALOG",
+          name: "",
+          resource_url: "",
+          description: "",
+          thumbnail: "",
+        },
+      ];
+};
 const groupDownloadsForPayload = (downloads) => {
   return (downloads || []).reduce((acc, dl) => {
     if (!dl || !dl.resource_type || !dl.name || !dl.resource_url) return acc;
@@ -103,6 +154,11 @@ const Products = () => {
   const { createTag, updateTag, deleteTag } = useTagMutations();
   const { createProd, updateProd, deleteProd } = useProductMutations();
 
+  const deleteDownloadMut = useDeleteDownload();
+  const createResMutation = useCreateResource();
+  const updateResMutation = useUpdateResource();
+  const deleteResMutation = useDeleteResource();
+
   const isSaving =
     createCat.isPending ||
     updateCat.isPending ||
@@ -111,13 +167,17 @@ const Products = () => {
     createTag.isPending ||
     updateTag.isPending ||
     createProd.isPending ||
-    updateProd.isPending;
+    updateProd.isPending ||
+    createResMutation.isPending ||
+    updateResMutation.isPending;
 
   const isDeleting =
     deleteCat.isPending ||
     deleteSubCat.isPending ||
     deleteTag.isPending ||
-    deleteProd.isPending;
+    deleteProd.isPending ||
+    deleteResMutation.isPending ||
+    deleteDownloadMut.isPending;
 
   const hasError =
     createCat.isError ||
@@ -127,7 +187,9 @@ const Products = () => {
     createTag.isError ||
     updateTag.isError ||
     createProd.isError ||
-    updateProd.isError;
+    updateProd.isError ||
+    createResMutation.isError ||
+    updateResMutation.isError;
 
   const resetAllMutations = () => {
     createCat.reset();
@@ -138,6 +200,8 @@ const Products = () => {
     updateTag.reset();
     createProd.reset();
     updateProd.reset();
+    createResMutation.reset();
+    updateResMutation.reset();
   };
 
   const categories = useMemo(() => {
@@ -231,7 +295,35 @@ const Products = () => {
     } else if (type === "products") {
       setEditingId(item.product_id);
       setProductEditId(item.product_id);
-      setFormData({ ...emptyProduct, tag_id: item.tag_id || selTag || "" });
+
+      // Safely extract specifications whether they are strings or objects
+      const existingSpecs =
+        Array.isArray(item.specifications) && item.specifications.length
+          ? item.specifications.map((s) =>
+              typeof s === "string"
+                ? s
+                : s?.image || s?.image_url || s?.url || s?.file || "",
+            )
+          : [""];
+
+      setFormData({
+        tag_id: item.tag_id || selTag || "",
+        name: item.name || "",
+        tagline: item.tagline || item.original?.tagline || "",
+        description: item.description || item.original?.description || "",
+        // Added fallbacks for product image
+        product_img:
+          item.product_img ||
+          item.product_image ||
+          item.image ||
+          item.original?.product_img ||
+          "",
+        specifications: existingSpecs,
+        downloads: normalizeDownloadsForForm(
+          item.downloads || item.original?.downloads,
+          item.resources || item.original?.resources,
+        ),
+      });
     }
     setView("form");
   };
@@ -333,11 +425,40 @@ const Products = () => {
       ...prev,
       downloads: [
         ...(prev.downloads || []),
-        { resource_type: "CATALOG", name: "", resource_url: "" },
+        {
+          resource_type: "CATALOG",
+          name: "",
+          resource_url: "",
+          description: "",
+          thumbnail: "",
+        },
       ],
     }));
   };
-  const removeDownload = (index) => {
+
+  const removeDownload = async (index) => {
+    const item = formData.downloads[index];
+
+    if (item.resource_type === "RESOURCE" && item.resource_id) {
+      if (!window.confirm("Are you sure you want to delete this resource?"))
+        return;
+      try {
+        await deleteResMutation.mutateAsync(item.resource_id);
+      } catch (err) {
+        alert("Failed to delete resource from database.");
+        return;
+      }
+    } else if (item.download_id) {
+      if (!window.confirm("Are you sure you want to delete this download?"))
+        return;
+      try {
+        await deleteDownloadMut.mutateAsync(item.download_id);
+      } catch (err) {
+        alert("Failed to delete download from database.");
+        return;
+      }
+    }
+
     const newDownloads = formData.downloads.filter((_, i) => i !== index);
     setFormData((prev) => ({ ...prev, downloads: newDownloads }));
   };
@@ -350,31 +471,51 @@ const Products = () => {
   };
 
   useEffect(() => {
-    if (
-      formType === "products" &&
-      productEditId &&
-      productDetail &&
-      productDetail.product_id === productEditId
-    ) {
-      const existingSpecs =
-        Array.isArray(productDetail.specifications) &&
-        productDetail.specifications.length
-          ? productDetail.specifications
-          : [""];
+    if (formType === "products" && productEditId && productDetail) {
+      // Handle nested axios 'data' objects safely
+      const detail = productDetail.data || productDetail;
 
-      const existingDownloads = normalizeDownloadsForForm(
-        productDetail.downloads || productDetail.original?.downloads,
-      );
+      if (detail && detail.product_id === productEditId) {
+        const existingSpecs =
+          Array.isArray(detail.specifications) && detail.specifications.length
+            ? detail.specifications.map((s) =>
+                typeof s === "string"
+                  ? s
+                  : s?.image || s?.image_url || s?.url || s?.file || "",
+              )
+            : [""];
 
-      setFormData({
-        tag_id: productDetail.tag_id || selTag || "",
-        name: productDetail.name || "",
-        tagline: productDetail.tagline || "",
-        description: productDetail.description || "",
-        product_img: productDetail.product_img || "",
-        specifications: existingSpecs,
-        downloads: existingDownloads,
-      });
+        const existingDownloads = normalizeDownloadsForForm(
+          detail.downloads || detail.original?.downloads,
+          detail.resources || detail.original?.resources,
+        );
+
+        setFormData((prev) => ({
+          ...prev,
+          tag_id: detail.tag_id || prev.tag_id || selTag || "",
+          name: detail.name || prev.name || "",
+          tagline:
+            detail.tagline || detail.original?.tagline || prev.tagline || "",
+          description:
+            detail.description ||
+            detail.original?.description ||
+            prev.description ||
+            "",
+          product_img:
+            detail.product_img ||
+            detail.product_image ||
+            detail.image ||
+            prev.product_img ||
+            "",
+          specifications: existingSpecs[0]
+            ? existingSpecs
+            : prev.specifications,
+          downloads:
+            existingDownloads[0]?.name || existingDownloads[0]?.resource_url
+              ? existingDownloads
+              : prev.downloads,
+        }));
+      }
     }
   }, [formType, productEditId, productDetail, selTag]);
 
@@ -406,6 +547,13 @@ const Products = () => {
         (s) => s.trim() !== "",
       );
 
+      const standardDownloads = (formData.downloads || []).filter(
+        (d) => d.resource_type !== "RESOURCE",
+      );
+      const resourceDownloads = (formData.downloads || []).filter(
+        (d) => d.resource_type === "RESOURCE",
+      );
+
       const payload = {
         tag_id: formData.tag_id,
         name: formData.name,
@@ -413,25 +561,58 @@ const Products = () => {
         description: formData.description,
         product_img: formData.product_img,
         specifications: cleanedSpecs,
-        downloads: formData.downloads || [],
+        downloads: standardDownloads,
       };
 
-      editingId
-        ? updateProd.mutate(
-            { product_id: editingId, ...payload },
-            {
-              onSuccess: () => {
-                setView("list");
-                setProductEditId(null);
-              },
-            },
-          )
-        : createProd.mutate(payload, {
-            onSuccess: () => {
+      const processResources = async (productId) => {
+        if (!productId) return;
+        for (const res of resourceDownloads) {
+          const resPayload = {
+            ...res,
+            product_id: productId,
+            tag_id: formData.tag_id || selTag,
+            subcategory_id: selSub,
+            category_id: selCat,
+          };
+          try {
+            if (res.resource_id) {
+              await updateResMutation.mutateAsync({
+                ...resPayload,
+                resource_id: res.resource_id,
+              });
+            } else if (res.name && res.resource_url) {
+              await createResMutation.mutateAsync(resPayload);
+            }
+          } catch (error) {
+            console.error("Resource save error:", error);
+          }
+        }
+      };
+
+      if (editingId) {
+        updateProd.mutate(
+          { product_id: editingId, ...payload },
+          {
+            onSuccess: async () => {
+              await processResources(editingId);
               setView("list");
               setProductEditId(null);
             },
-          });
+          },
+        );
+      } else {
+        createProd.mutate(payload, {
+          onSuccess: async (response) => {
+            const newProdId =
+              response?.product_id ||
+              response?.data?.product_id ||
+              response?.id;
+            await processResources(newProdId);
+            setView("list");
+            setProductEditId(null);
+          },
+        });
+      }
     }
   };
 
@@ -463,6 +644,7 @@ const Products = () => {
                 : `Create ${formType.slice(0, -1)}`}
             </h1>
             <button
+              type="button"
               onClick={() => setView("list")}
               className="text-zinc-400 hover:text-white transition-colors"
             >
@@ -708,7 +890,7 @@ const Products = () => {
                   <div className="pt-4 border-t border-zinc-200">
                     <div className="flex justify-between items-center mb-4">
                       <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest">
-                        Downloads
+                        Downloads & Resources
                       </label>
                       <button
                         type="button"
@@ -749,7 +931,7 @@ const Products = () => {
                                 )
                               }
                               disabled={isSaving}
-                              className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm disabled:opacity-60"
+                              className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm disabled:opacity-60 font-bold uppercase tracking-widest text-zinc-700"
                             >
                               <option value="SOFTWARE">SOFTWARE</option>
                               <option value="SOFTWARE_MANUAL">
@@ -757,6 +939,7 @@ const Products = () => {
                               </option>
                               <option value="CATALOG">CATALOG</option>
                               <option value="DIMENTION">DIMENTION</option>
+                              <option value="RESOURCE">RESOURCE</option>
                             </select>
                           </div>
                           <div>
@@ -778,6 +961,51 @@ const Products = () => {
                               className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm disabled:opacity-60"
                             />
                           </div>
+
+                          {dl.resource_type === "RESOURCE" && (
+                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-zinc-200">
+                              <div>
+                                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">
+                                  Description
+                                </label>
+                                <textarea
+                                  rows="3"
+                                  value={dl.description || ""}
+                                  onChange={(e) =>
+                                    handleDownloadChange(
+                                      index,
+                                      "description",
+                                      e.target.value,
+                                    )
+                                  }
+                                  disabled={isSaving}
+                                  className="w-full px-3 py-2 border border-zinc-300 outline-none text-sm disabled:opacity-60 resize-none"
+                                />
+                              </div>
+
+                              <div>
+                                <S3Uploader
+                                  label="Upload Thumbnail *"
+                                  accept="image/*"
+                                  folder="thumbnails"
+                                  currentFileUrl={dl.thumbnail}
+                                  onUploadSuccess={(url) =>
+                                    handleDownloadChange(
+                                      index,
+                                      "thumbnail",
+                                      url,
+                                    )
+                                  }
+                                />
+                                <input
+                                  type="hidden"
+                                  required
+                                  value={dl.thumbnail || ""}
+                                />
+                              </div>
+                            </div>
+                          )}
+
                           <div className="md:col-span-2">
                             <S3Uploader
                               label={`Upload ${dl.resource_type.replace("_", " ")} File *`}
@@ -914,15 +1142,31 @@ const Products = () => {
           <h3 className="text-sm font-bold text-white uppercase tracking-widest">
             {activeLevel} Records
           </h3>
-          <button
-            onClick={handleOpenCreate}
-            className="flex items-center gap-2 px-4 py-2 bg-[#da0e19] hover:bg-red-700 text-white text-xs font-bold uppercase tracking-widest transition-colors"
-          >
-            <FiPlus size={16} /> Add {activeLevel.slice(0, -1)}
-          </button>
+
+          <div className="flex gap-3">
+            {/* Added Clear Filters Button Here! */}
+            {(selCat || selSub || selTag) && (
+              <button
+                onClick={() => {
+                  setSelCat("");
+                  setSelSub("");
+                  setSelTag("");
+                }}
+                className="flex items-center gap-2 px-4 py-2 border border-zinc-600 text-zinc-300 hover:text-white hover:bg-zinc-800 text-xs font-bold uppercase tracking-widest transition-colors"
+              >
+                Clear Filters
+              </button>
+            )}
+
+            <button
+              onClick={handleOpenCreate}
+              className="flex items-center gap-2 px-4 py-2 bg-[#da0e19] hover:bg-red-700 text-white text-xs font-bold uppercase tracking-widest transition-colors"
+            >
+              <FiPlus size={16} /> Add {activeLevel.slice(0, -1)}
+            </button>
+          </div>
         </div>
 
-        {/* Custom Error Banner for Deletion Failures */}
         {actionError && (
           <div className="m-6 mb-0 p-4 bg-red-50 border-l-4 border-[#da0e19] flex justify-between items-start">
             <span className="text-[#da0e19] text-sm font-medium">

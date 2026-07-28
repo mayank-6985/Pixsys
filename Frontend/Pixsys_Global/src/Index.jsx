@@ -15,7 +15,8 @@ import News from "./pages/News";
 import Download from "./pages/Download";
 import NewsDetail from "./pages/NewsDetail";
 import Search from "./pages/Search";
-import Login from "./pages/Login"
+import Login from "./pages/Login";
+import { DownloadProvider } from "./Services/Context/DownloadContext";
 
 const RootErrorBoundary = () => {
   const error = useRouteError();
@@ -53,9 +54,13 @@ const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
     errorElement: <RootErrorBoundary />,
-  }
+  },
 ]);
 
 export default function AppRouter() {
-  return <RouterProvider router={router} />;
+  return (
+    <DownloadProvider>
+      <RouterProvider router={router} />
+    </DownloadProvider>
+  );
 }

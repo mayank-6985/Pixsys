@@ -4,6 +4,9 @@ import {
   updateDownload,
   deleteDownload,
   createDownload,
+  createResource,
+  updateResource,
+  deleteResource,
 } from "../Services/downloads";
 
 export const useAllDownloads = () => {
@@ -34,6 +37,30 @@ export const useCreateDownload = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: createDownload,
+    onSuccess: () => qc.invalidateQueries(["adminDownloads"]),
+  });
+};
+
+export const useCreateResource = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: createResource,
+    onSuccess: () => qc.invalidateQueries(["adminDownloads"]),
+  });
+};
+
+export const useUpdateResource = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: updateResource,
+    onSuccess: () => qc.invalidateQueries(["adminDownloads"]),
+  });
+};
+
+export const useDeleteResource = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: deleteResource,
     onSuccess: () => qc.invalidateQueries(["adminDownloads"]),
   });
 };

@@ -13,6 +13,9 @@ import {
   useUpdateDownload,
   useDeleteDownload,
   useCreateDownload,
+  useCreateResource,
+  useUpdateResource,
+  useDeleteResource,
 } from "../hooks/useDownloads";
 import { useAdminProductsData, useCategoryDetails } from "../hooks/useProducts";
 
@@ -26,6 +29,8 @@ const emptyDownload = {
   name: "",
   resource_url: "",
   resource_type: "SOFTWARE",
+  description: "",
+  thumbnail: "",
 };
 
 const Download = () => {
@@ -33,13 +38,27 @@ const Download = () => {
   const updateMutation = useUpdateDownload();
   const deleteMutation = useDeleteDownload();
   const createMutation = useCreateDownload();
+  const createResMutation = useCreateResource();
+  const updateResMutation = useUpdateResource();
+  const deleteResMutation = useDeleteResource();
 
-  const isSaving = createMutation.isPending || updateMutation.isPending;
-  const hasError = createMutation.isError || updateMutation.isError;
+  const isSaving =
+    createMutation.isPending ||
+    updateMutation.isPending ||
+    createResMutation.isPending ||
+    updateResMutation.isPending;
+
+  const hasError =
+    createMutation.isError ||
+    updateMutation.isError ||
+    createResMutation.isError ||
+    updateResMutation.isError;
 
   const resetMutations = () => {
     createMutation.reset();
     updateMutation.reset();
+    createResMutation.reset();
+    updateResMutation.reset();
   };
 
   const [view, setView] = useState("list");
@@ -123,7 +142,7 @@ const Download = () => {
 
   const handleOpenEdit = (d) => {
     resetMutations();
-    setEditingId(d.download_id);
+    setEditingId(d.download_id || d.resource_id);
     setSelCat(d.category_id ?? "");
     setSelSub(d.subcategory_id ?? "");
     setSelTag(d.tag_id ?? "");
@@ -136,6 +155,8 @@ const Download = () => {
       name: d.name ?? "",
       resource_url: d.resource_url ?? "",
       resource_type: d.resource_type ?? "SOFTWARE",
+      description: d.description ?? "",
+      thumbnail: d.thumbnail ?? "",
     });
     setView("form");
   };
@@ -148,26 +169,48 @@ const Download = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const isResource = formData.resource_type === "RESOURCE";
       if (editingId) {
-        await updateMutation.mutateAsync({
-          ...formData,
-          download_id: editingId,
-        });
+        if (isResource) {
+          await updateResMutation.mutateAsync({
+            ...formData,
+            resource_id: editingId,
+          });
+        } else {
+          await updateMutation.mutateAsync({
+            ...formData,
+            download_id: editingId,
+          });
+        }
       } else {
-        await createMutation.mutateAsync({ ...formData });
+        if (isResource) {
+          await createResMutation.mutateAsync({ ...formData });
+        } else {
+          await createMutation.mutateAsync({ ...formData });
+        }
       }
       setView("list");
     } catch (err) {}
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Delete this download?")) {
+  const handleDelete = async (item) => {
+    const isResource = item.resource_type === "RESOURCE" || item.resource_id;
+    const targetId = isResource ? item.resource_id : item.download_id;
+
+    if (!targetId) {
+      alert("Error: Could not find a valid ID to delete.");
+      return;
+    }
+
+    if (window.confirm("Delete this item?")) {
       try {
-        await deleteMutation.mutateAsync(id);
+        if (isResource) {
+          await deleteResMutation.mutateAsync(targetId);
+        } else {
+          await deleteMutation.mutateAsync(targetId);
+        }
       } catch (err) {
-        alert(
-          "Something went wrong while trying to delete this item. Please try again.",
-        );
+        alert("Something went wrong while trying to delete this item.");
       }
     }
   };
@@ -197,6 +240,7 @@ const Download = () => {
                 </div>
               )}
 
+              {/* FIRST ROW: Name and Resource Type */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
@@ -227,11 +271,50 @@ const Download = () => {
                     <option value="SOFTWARE_MANUAL">SOFTWARE_MANUAL</option>
                     <option value="CATALOG">CATALOG</option>
                     <option value="DIMENTION">DIMENTION</option>
+                    <option value="RESOURCE">RESOURCE</option>
                   </select>
                 </div>
               </div>
 
-              <div>
+              {/* SECOND ROW: Description and Thumbnail (Only if RESOURCE) */}
+              {formData.resource_type === "RESOURCE" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-zinc-200">
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2">
+                      Description
+                    </label>
+                    <textarea
+                      name="description"
+                      rows="4"
+                      value={formData.description || ""}
+                      onChange={handleChange}
+                      disabled={isSaving}
+                      className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm disabled:opacity-60"
+                    />
+                  </div>
+
+                  <div>
+                    <S3Uploader
+                      label="Upload Thumbnail *"
+                      accept="image/*"
+                      folder="thumbnails"
+                      currentFileUrl={formData.thumbnail}
+                      onUploadSuccess={(url) =>
+                        setFormData((prev) => ({ ...prev, thumbnail: url }))
+                      }
+                    />
+                    <input
+                      type="hidden"
+                      name="thumbnail"
+                      required={formData.resource_type === "RESOURCE"}
+                      value={formData.thumbnail || ""}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* THIRD ROW: Resource URL Upload */}
+              <div className="pt-6 border-t border-zinc-200">
                 <S3Uploader
                   label={`Upload ${formData.resource_type.replace("_", " ")} File *`}
                   accept={
@@ -253,7 +336,9 @@ const Download = () => {
                   value={formData.resource_url || ""}
                 />
               </div>
-              <div className="pt-4 border-t border-zinc-200">
+
+              {/* FOURTH ROW: Product Linkage */}
+              <div className="pt-6 border-t border-zinc-200">
                 <h3 className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-4">
                   Product Linkage *
                 </h3>
@@ -472,12 +557,28 @@ const Download = () => {
           <h3 className="text-sm font-bold text-white uppercase tracking-widest">
             Download Records
           </h3>
-          <button
-            onClick={handleOpenCreate}
-            className="flex items-center gap-2 px-4 py-2 bg-[#da0e19] hover:bg-red-700 text-white text-xs font-bold uppercase tracking-widest transition-colors"
-          >
-            <FiPlus size={16} /> Add Download
-          </button>
+          <div className="flex gap-3">
+            {(selCat || selSub || selTag || selProd) && (
+              <button
+                onClick={() => {
+                  setSelCat("");
+                  setSelSub("");
+                  setSelTag("");
+                  setSelProd("");
+                }}
+                className="flex items-center gap-2 px-4 py-2 border border-zinc-600 text-zinc-300 hover:text-white hover:bg-zinc-800 text-xs font-bold uppercase tracking-widest transition-colors"
+              >
+                Clear Filters
+              </button>
+            )}
+
+            <button
+              onClick={handleOpenCreate}
+              className="flex items-center gap-2 px-4 py-2 bg-[#da0e19] hover:bg-red-700 text-white text-xs font-bold uppercase tracking-widest transition-colors"
+            >
+              <FiPlus size={16} /> Add Download
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto w-full">
@@ -510,7 +611,7 @@ const Download = () => {
                 ) : (
                   filteredDownloads.map((d, index) => (
                     <tr
-                      key={d.download_id}
+                      key={d.download_id || d.resource_id || index}
                       className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors group"
                     >
                       <td className="py-4 px-6 text-zinc-400 font-mono text-xs">
@@ -540,8 +641,12 @@ const Download = () => {
                           <FiEdit2 size={16} />
                         </button>
                         <button
-                          onClick={() => handleDelete(d.download_id)}
-                          disabled={deleteMutation.isPending}
+                          onClick={() => handleDelete(d)}
+                          disabled={
+                            deleteMutation.isPending ||
+                            (typeof deleteResMutation !== "undefined" &&
+                              deleteResMutation.isPending)
+                          }
                           className="p-2 text-zinc-400 hover:text-[#da0e19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <FiTrash2 size={16} />

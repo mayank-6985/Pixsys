@@ -1,8 +1,29 @@
 import React, { useState } from "react";
 import { HiOutlineArrowLeft, HiOutlineDownload } from "react-icons/hi";
-
+import { useNavigate, useLocation } from "react-router-dom";
+import { authService } from "../../Services/authService";
+import { useDownloadManager } from "../../Services/Context/DownloadContext";
 const SingleProductView = ({ product, onBack }) => {
   const [activeTab, setActiveTab] = useState("overview");
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { downloadProgress, forceDownload } = useDownloadManager();
+
+  const handleSecureAction = (e, callback) => {
+    e.preventDefault();
+
+    if (!authService.getAccessToken()) {
+      const fullCurrentUrl = location.pathname + location.search;
+
+      navigate("/login", {
+        state: { returnTo: fullCurrentUrl },
+      });
+      return;
+    }
+
+    if (callback) callback();
+  };
 
   if (!product) return null;
 
@@ -17,32 +38,31 @@ const SingleProductView = ({ product, onBack }) => {
   const allTabs = ["overview"];
   if (hasSpecifications) allTabs.push("specifications");
   allTabs.push(...downloadTabs);
-  
-  const forceDownload = async (url, customFilename) => {
-    try {
-      const response = await fetch(url, { method: "GET" });
-      if (!response.ok) throw new Error("Failed to fetch file");
 
-      const blob = await response.blob();
+  // const forceDownload = async (url, customFilename) => {
+  //   try {
+  //     const response = await fetch(url, { method: "GET" });
+  //     if (!response.ok) throw new Error("Failed to fetch file");
 
-      const blobUrl = window.URL.createObjectURL(blob);
+  //     const blob = await response.blob();
+  //     const blobUrl = window.URL.createObjectURL(blob);
 
-      const link = document.createElement("a");
-      link.href = blobUrl;
+  //     const link = document.createElement("a");
+  //     link.href = blobUrl;
 
-      link.download =
-        customFilename || url.split("/").pop().split("?")[0] || "download";
+  //     link.download =
+  //       customFilename || url.split("/").pop().split("?")[0] || "download";
 
-      document.body.appendChild(link);
-      link.click();
+  //     document.body.appendChild(link);
+  //     link.click();
 
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
-    } catch (error) {
-      console.error("Forced download failed, falling back to new tab:", error);
-      window.open(url, "_blank");
-    }
-  };
+  //     document.body.removeChild(link);
+  //     window.URL.revokeObjectURL(blobUrl);
+  //   } catch (error) {
+  //     console.error("Forced download failed, falling back to new tab:", error);
+  //     window.open(url, "_blank");
+  //   }
+  // };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
@@ -92,7 +112,6 @@ const SingleProductView = ({ product, onBack }) => {
         </div>
 
         <div className="min-h-[300px]">
-          {/* 1. Overview Tab Content */}
           {activeTab === "overview" && (
             <div className="text-gray-600 text-lg leading-relaxed whitespace-pre-line">
               {product.description}
@@ -117,7 +136,7 @@ const SingleProductView = ({ product, onBack }) => {
           )}
 
           {downloadTabs.includes(activeTab) && product.downloads[activeTab] && (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-4 ">
               {product.downloads[activeTab].map((item) => (
                 <div
                   key={item.download_id}
@@ -128,11 +147,40 @@ const SingleProductView = ({ product, onBack }) => {
                       {item.name}
                     </h4>
                   </div>
-                  <button
-                    onClick={() => forceDownload(item.resource_url, item.name)}
+
+                  {/* <button
+                    onClick={(e) =>
+                      handleSecureAction(e, () =>
+                        forceDownload(item.resource_url, item.name),
+                      )
+                    }
                     className="flex items-center justify-center gap-2 bg-gray-50 group-hover:bg-[#da0e19] text-gray-600 group-hover:text-white px-6 py-2.5 rounded font-bold text-sm transition-all"
                   >
                     Download File <HiOutlineDownload className="text-lg" />
+                  </button> */}
+                  <button
+                    onClick={(e) =>
+                      handleSecureAction(e, () =>
+                        // Add item.download_id as the third argument
+                        forceDownload(
+                          item.resource_url,
+                          item.name,
+                          item.download_id,
+                        ),
+                      )
+                    }
+                    disabled={downloadProgress[item.download_id] !== undefined}
+                    className="flex items-center justify-center gap-2 bg-gray-50 group-hover:bg-[#da0e19] text-gray-600 group-hover:text-white px-6 py-2.5 rounded font-bold text-sm transition-all disabled:bg-gray-100 disabled:text-[#da0e19] disabled:cursor-wait"
+                  >
+                    {downloadProgress[item.download_id] !== undefined ? (
+                      <span className="animate-pulse">
+                        Downloading {downloadProgress[item.download_id]}%
+                      </span>
+                    ) : (
+                      <>
+                        Download File <HiOutlineDownload className="text-lg" />
+                      </>
+                    )}
                   </button>
                 </div>
               ))}

@@ -7,6 +7,9 @@ export const useLogin = () => {
   const [error, setError] = useState(null);
   const [signupSuccess, setSignupSuccess] = useState(false);
 
+  const [isOtpStep, setIsOtpStep] = useState(false);
+  const [emailForOtp, setEmailForOtp] = useState("");
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,13 +30,11 @@ export const useLogin = () => {
           password: password,
           phone_number: phoneNumber,
         });
-
         setSignupSuccess(true);
       } else {
-        await authService.login({ email, password });
-
-        const returnTo = location.state?.returnTo || "/";
-        navigate(returnTo, { replace: true });
+        await authService.loginInitiate({ email, password });
+        setEmailForOtp(email);
+        setIsOtpStep(true);
       }
     } catch (err) {
       console.error("Authentication failed:", err);
@@ -47,5 +48,49 @@ export const useLogin = () => {
     }
   };
 
-  return { executeAuth, isLoading, error, signupSuccess, setSignupSuccess };
+  const verifyOtp = async (otpCode) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await authService.loginVerify({
+        email: emailForOtp,
+        otp_code: otpCode,
+      });
+      const returnTo = location.state?.returnTo || "/";
+      navigate(returnTo, { replace: true });
+    } catch (err) {
+      console.error("OTP Verification failed:", err);
+      setError(
+        err.response?.data?.message || "Invalid OTP code. Please try again.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await authService.resendOtp(emailForOtp);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to resend OTP.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return {
+    executeAuth,
+    verifyOtp,
+    handleResendOtp,
+    isLoading,
+    error,
+    setError,
+    signupSuccess,
+    setSignupSuccess,
+    isOtpStep,
+    setIsOtpStep,
+  };
 };
