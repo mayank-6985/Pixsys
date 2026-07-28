@@ -5,22 +5,64 @@ DEBUG = True
 
 ALLOWED_HOSTS = config('PRODUCTION_ALLOWED_HOSTS' , cast=Csv())
 
+PRODUCTION_MONGODB_URI=config('PRODUCTION_MONGODB_URI')
 DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_backend',
-        'HOST': 'mongodb://localhost:27017/',
+        'HOST': PRODUCTION_MONGODB_URI,
         'NAME': 'PIXSYS',
     },
 }
 
 # cors configuration
+
+# cors configuration
 CORS_ALLOW_CREDENTIALS=True
 
 CORS_ALLOWED_ORIGINS = [
-    'pixsysglobal.com',    
+    "https://unsettled-manual-dynasty.ngrok-free.dev",
+    "https://tragicomical-epileptically-davin.ngrok-free.dev",
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://localhost:5173",
+    "https://pixsysglobal.com",
+    "https://pixsys.onrender.com",  
+    "https://admin.pixsysglobal.com",
 ]
 
+# csrf setup
 CSRF_ALLOWED_ORIGINS = [
-    'pixsysglobal.com',
+    "https://unsettled-manual-dynasty.ngrok-free.dev",
+    "https://tragicomical-epileptically-davin.ngrok-free.dev",
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://localhost:5173",
+    "https://pixsys.onrender.com",
+    "https://pixsysglobal.com",
+    "https://admin.pixsysglobal.com",
 ]
-0
+
+
+from corsheaders.defaults import default_headers
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    'ngrok-skip-browser-warning',
+) 
+
+
+# AWS SETUP
+
+# AWS S3 Settings
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
+
+# Optional: Set signature version explicitly for presigned URLs
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',  # Cache for a day
+    'StorageClass': 'STANDARD'  # Pick your storage flavor
+}
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

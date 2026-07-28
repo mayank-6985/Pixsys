@@ -90,8 +90,9 @@ class ProductCreateSerializer(serializers.Serializer):
     description = serializers.CharField(required=True)
     product_img = serializers.URLField(required=True)
     specifications = serializers.ListField(
-        child=serializers.URLField(),
-        required=True  
+        child=serializers.URLField(required=False),
+        allow_null=True,
+        required=False
     )
     downloads = downloadCreateSerializer(many=True)
     # new resource field
@@ -105,8 +106,9 @@ class ProductUpdateSerializer(serializers.Serializer):
     description = serializers.CharField(required=True)
     product_img = serializers.URLField(required=True)
     specifications = serializers.ListField(
-        child=serializers.URLField(),
-        required=True  
+        child=serializers.URLField(required=False),
+        allow_null=True,
+        required=False
     )
     downloads = downloadUpdateSerializer(many=True)
     resources = ResourceUpdateSerializer(many=True, required=False)

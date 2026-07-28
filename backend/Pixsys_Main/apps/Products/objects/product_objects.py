@@ -191,13 +191,13 @@ class Product:
                 raise ValueError("Product id cant be empty!")
     
     def validate_specifications(self):
-        try:
-            if not self.specifications:
-                raise ValueError
+        # try:
+        #     if not self.specifications:
+        #         raise ValueError
             for url in self.specifications:
                 UtilsService.is_valid_url_string(url)
-        except ValueError:
-            raise ValueError("Specification should have valid urls")    
+        # except ValueError:
+        #     raise ValueError("Specification should have valid urls")    
     
     def handle_list_of_download(self ,product_id , tag_id , category_id , subcategory_id):        
             for download in self.list_of_downloads:                
