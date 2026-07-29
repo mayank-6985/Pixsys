@@ -21,14 +21,33 @@ const S3Uploader = ({
   const [localPreview, setLocalPreview] = useState(currentFileUrl);
 
   const handleFileChange = async (e) => {
-    const file = e.target.files[0];
+    let file = e.target.files[0];
     if (!file) return;
+
+    if (!file.type) {
+      const ext = file.name.split(".").pop().toLowerCase();
+      const fallbackMimeTypes = {
+        stp: "application/step",
+        dxf: "image/vnd.dxf",
+        dwg: "image/vnd.dwg",
+        rar: "application/vnd.rar",
+        zip: "application/zip",
+        xml: "application/xml",
+        eds: "application/octet-stream",
+      };
+
+      const determinedType =
+        fallbackMimeTypes[ext] || "application/octet-stream";
+
+      file = new File([file], file.name, { type: determinedType });
+    }
 
     try {
       const finalUrl = await uploadFile(file);
       setLocalPreview(finalUrl);
       if (onUploadSuccess) onUploadSuccess(finalUrl);
     } catch (err) {
+      console.error(err);
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
     }

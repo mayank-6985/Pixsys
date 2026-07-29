@@ -64,7 +64,7 @@ const Download = () => {
   const [view, setView] = useState("list");
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState(emptyDownload);
-  const [originalData, setOriginalData] = useState(null); // Used to restore fields if type is reverted
+  const [originalData, setOriginalData] = useState(null);
 
   const [selCat, setSelCat] = useState("");
   const [selSub, setSelSub] = useState("");
@@ -357,8 +357,8 @@ const Download = () => {
                   label={`Upload ${formData.resource_type.replace("_", " ")} File *`}
                   accept={
                     formData.resource_type.includes("SOFTWARE")
-                      ? ".exe,.zip,.rar,.msi"
-                      : ".pdf,image/*"
+                      ? ".exe,.zip,.rar,.msi,.eds"
+                      : ".pdf,image/*,.stp,.dxf,.dwg,.eds,.zip,.rar"
                   }
                   folder={formData.resource_type.toLowerCase()}
                   currentFileUrl={formData.resource_url}
