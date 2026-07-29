@@ -153,6 +153,9 @@ const Footer = () => {
             </div>
           </div>
         </div>
+        <div className="mt-12 text-xs text-gray-400 flex flex-col gap-3">
+          <p>COPYRIGHT &copy; PIXsys Technology Co. Ltd. Rights Reserved</p>
+        </div>
       </div>
     </footer>
   );

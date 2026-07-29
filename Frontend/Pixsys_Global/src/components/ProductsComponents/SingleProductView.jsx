@@ -137,53 +137,45 @@ const SingleProductView = ({ product, onBack }) => {
 
           {downloadTabs.includes(activeTab) && product.downloads[activeTab] && (
             <div className="grid grid-cols-1 gap-4 ">
-              {product.downloads[activeTab].map((item) => (
-                <div
-                  key={item.download_id}
-                  className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-5 border border-gray-100 rounded-lg hover:border-[#da0e19] hover:shadow-md transition-all group"
-                >
-                  <div className="mb-4 sm:mb-0">
-                    <h4 className="text-base font-bold text-gray-900 group-hover:text-[#da0e19] transition-colors uppercase">
-                      {item.name}
-                    </h4>
-                  </div>
+              {product.downloads[activeTab].map((item, index) => {
+                // Industry Standard: Provide a guaranteed unique ID fallback to prevent state collisions
+                const uniqueId =
+                  item.download_id || item.id || `download_${index}`;
 
-                  {/* <button
-                    onClick={(e) =>
-                      handleSecureAction(e, () =>
-                        forceDownload(item.resource_url, item.name),
-                      )
-                    }
-                    className="flex items-center justify-center gap-2 bg-gray-50 group-hover:bg-[#da0e19] text-gray-600 group-hover:text-white px-6 py-2.5 rounded font-bold text-sm transition-all"
+                return (
+                  <div
+                    key={uniqueId}
+                    className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-5 border border-gray-100 rounded-lg hover:border-[#da0e19] hover:shadow-md transition-all group"
                   >
-                    Download File <HiOutlineDownload className="text-lg" />
-                  </button> */}
-                  <button
-                    onClick={(e) =>
-                      handleSecureAction(e, () =>
-                        // Add item.download_id as the third argument
-                        forceDownload(
-                          item.resource_url,
-                          item.name,
-                          item.download_id,
-                        ),
-                      )
-                    }
-                    disabled={downloadProgress[item.download_id] !== undefined}
-                    className="flex items-center justify-center gap-2 bg-gray-50 group-hover:bg-[#da0e19] text-gray-600 group-hover:text-white px-6 py-2.5 rounded font-bold text-sm transition-all disabled:bg-gray-100 disabled:text-[#da0e19] disabled:cursor-wait"
-                  >
-                    {downloadProgress[item.download_id] !== undefined ? (
-                      <span className="animate-pulse">
-                        Downloading {downloadProgress[item.download_id]}%
-                      </span>
-                    ) : (
-                      <>
-                        Download File <HiOutlineDownload className="text-lg" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              ))}
+                    <div className="mb-4 sm:mb-0">
+                      <h4 className="text-base font-bold text-gray-900 group-hover:text-[#da0e19] transition-colors uppercase">
+                        {item.name}
+                      </h4>
+                    </div>
+
+                    <button
+                      onClick={(e) =>
+                        handleSecureAction(e, () =>
+                          forceDownload(item.resource_url, item.name, uniqueId),
+                        )
+                      }
+                      disabled={downloadProgress[uniqueId] !== undefined}
+                      className="flex items-center justify-center gap-2 bg-gray-50 group-hover:bg-[#da0e19] text-gray-600 group-hover:text-white px-6 py-2.5 rounded font-bold text-sm transition-all disabled:bg-gray-100 disabled:text-[#da0e19] disabled:cursor-wait"
+                    >
+                      {downloadProgress[uniqueId] !== undefined ? (
+                        <span className="animate-pulse">
+                          Downloading {downloadProgress[uniqueId]}%
+                        </span>
+                      ) : (
+                        <>
+                          Download File{" "}
+                          <HiOutlineDownload className="text-lg" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
