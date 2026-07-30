@@ -154,10 +154,11 @@ const SingleProductView = ({ product, onBack }) => {
                     </div>
 
                     <button
-                      onClick={(e) =>
-                        handleSecureAction(e, () =>
-                          forceDownload(item.resource_url, item.name, uniqueId),
-                        )
+                      onClick={
+                        () =>
+                          // handleSecureAction(e, () =>
+                          forceDownload(item.resource_url, item.name, uniqueId)
+                        // )
                       }
                       disabled={downloadProgress[uniqueId] !== undefined}
                       className="flex items-center justify-center gap-2 bg-gray-50 group-hover:bg-[#da0e19] text-gray-600 group-hover:text-white px-6 py-2.5 rounded font-bold text-sm transition-all disabled:bg-gray-100 disabled:text-[#da0e19] disabled:cursor-wait"
