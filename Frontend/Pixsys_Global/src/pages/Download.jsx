@@ -52,16 +52,16 @@ const Downloads = () => {
   //   if (callback) callback();
   // };
 
-  // const handleSecureAction = (e, callback) => {
-  //   if (!authService.getAccessToken()) {
-  //     e.preventDefault();
-  //     const fullCurrentUrl = location.pathname + location.search;
+  const handleSecureAction = (e, callback) => {
+    if (!authService.getAccessToken()) {
+      e.preventDefault();
+      const fullCurrentUrl = location.pathname + location.search;
 
-  //     navigate("/login", { state: { returnTo: fullCurrentUrl } });
-  //     return;
-  //   }
-  //   if (callback) callback();
-  // };
+      navigate("/login", { state: { returnTo: fullCurrentUrl } });
+      return;
+    }
+    if (callback) callback();
+  };
 
   const catOptions = mainCategories || [];
   const subOptions = useMemo(
@@ -493,28 +493,26 @@ const Downloads = () => {
                             <td className="w-full md:w-auto block md:table-cell md:px-6 md:py-4 pt-4 md:pt-0 align-middle">
                               <div className="flex items-center md:justify-end gap-3 w-full">
                                 <button
-                                  // onClick={(e) =>
-                                  //   handleSecureAction(e, () =>
-                                  //     forceView(doc.resource_url),
-                                  //   )
-                                  // }
-
-                                  onClick={() => forceView(doc.resource_url)}
+                                  onClick={(e) =>
+                                    handleSecureAction(e, () =>
+                                      forceView(doc.resource_url),
+                                    )
+                                  }
+                                  // onClick={() => forceView(doc.resource_url)}
                                   className="flex-1 md:flex-none inline-flex justify-center items-center gap-2 px-4 py-2.5 md:py-2 rounded border border-gray-300 text-gray-700 hover:border-[#da0e19] hover:text-[#da0e19] transition-all text-xs font-bold uppercase tracking-widest bg-gray-50 hover:bg-white"
                                 >
                                   <FiEye size={14} />
                                   <span>View</span>
                                 </button>
                                 <button
-                                  // onClick={
-                                  // handleSecureAction(e, () =>
-                                  // forceDownload(doc.resource_url, doc.name),
-                                  // )
-                                  // }
-
-                                  onClick={() =>
-                                    forceDownload(doc.resource_url, doc.name)
+                                  onClick={(e) =>
+                                    handleSecureAction(e, () =>
+                                      forceDownload(doc.resource_url, doc.name),
+                                    )
                                   }
+                                  // onClick={() =>
+                                  //   forceDownload(doc.resource_url, doc.name)
+                                  // }
                                   disabled={
                                     downloadProgress[doc.resource_url] !==
                                     undefined
