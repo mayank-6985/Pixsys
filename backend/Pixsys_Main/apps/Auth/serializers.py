@@ -46,9 +46,10 @@ class AdminLoginSerializer(BaseEmailTokenObtainSerializer):
         user = PixsysAdminModel.objects.filter(email=email).first()
         
         # Use the check_password helper method we added to the model
-        if user is None or not user.check_password(password):
+        if user is None :
             raise serializers.ValidationError('No active admin account found with the given credentials.')
-            
+        if not user.check_password(password):
+            raise serializers.ValidationError('Password is incorrrect! Please try again')
         attrs['user'] = user
         return attrs
 
@@ -62,9 +63,10 @@ class CustomerLoginSerializer(BaseEmailTokenObtainSerializer):
         user = PixsysCustomerModel.objects.filter(email=email).first()
         
         # Use the check_password helper method we added to the model
-        if user is None or not user.check_password(password):
+        if user is None:
             raise serializers.ValidationError('No active customer account found with the given credentials.')
-            
+        if not user.check_password(password):
+            raise serializers.ValidationError('password is incorrect ! please try again.')            
         attrs['user'] = user
         return attrs
     
