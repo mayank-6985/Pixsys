@@ -40,7 +40,7 @@ class GoogleSMTPEmailSender(IEmailSender):
             if smtp_config.email_host_user and smtp_config.email_host_password:
                 # Use DB Credentials via a dynamic connection
                 backend = EmailBackend(
-                    host='smtp.gmail.com', # Hardcoded for Google, or store in DB too
+                    host=settings.EMAIL_HOST, 
                     port=587,
                     use_tls=True,
                     username=smtp_config.email_host_user,

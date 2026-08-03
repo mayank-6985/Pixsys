@@ -245,8 +245,9 @@ GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')
 
 # google email setup
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.hostinger.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'shivvilonsolutions@gmail.com'
-EMAIL_HOST_PASSWORD = 'tsudqzrvkthjqqgq' # Use an App Password, not your standard login
+EMAIL_HOST_USER = 'info@pixsysglobal.com'
+EMAIL_HOST_PASSWORD = '~ZVJQDn;5eE' # Use an App Password, not your standard login
+DEFAULT_FROM_EMAIL = 'info@pixsysglobal.com'
