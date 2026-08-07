@@ -111,6 +111,139 @@ const Download = () => {
 
   const prodOptions = useMemo(() => currentTag?.products || [], [currentTag]);
 
+  const productHierarchyMap = useMemo(() => {
+    const map = new Map();
+    const processCategory = (cat) => {
+      if (!cat) return;
+      const catId = cat.category_id || cat.id || "";
+      const catProds = cat.products || [];
+      catProds.forEach((p) => {
+        const pId = p?.product_id || p?.id;
+        if (pId) {
+          map.set(String(pId), {
+            category_id: catId,
+            subcategory_id: p.subcategory_id || "",
+            tag_id: p.tag_id || "",
+          });
+        }
+      });
+      const subs = cat.subcategories || cat.sub_categories || [];
+      subs.forEach((sub) => {
+        const subId = sub.subcategory_id || sub.id || "";
+        const subProds = sub.products || [];
+        subProds.forEach((p) => {
+          const pId = p?.product_id || p?.id;
+          if (pId) {
+            map.set(String(pId), {
+              category_id: catId,
+              subcategory_id: subId,
+              tag_id: p.tag_id || "",
+            });
+          }
+        });
+        const tags = sub.tags || [];
+        tags.forEach((tag) => {
+          const tagId = tag.tag_id || tag.id || "";
+          const tagProds = tag.products || [];
+          tagProds.forEach((p) => {
+            const pId = p?.product_id || p?.id;
+            if (pId) {
+              map.set(String(pId), {
+                category_id: catId,
+                subcategory_id: subId,
+                tag_id: tagId,
+              });
+            }
+          });
+        });
+      });
+    };
+
+    categories.forEach(processCategory);
+    if (detailedCategoryData) {
+      if (Array.isArray(detailedCategoryData)) {
+        detailedCategoryData.forEach(processCategory);
+      } else {
+        processCategory(detailedCategoryData.data || detailedCategoryData);
+      }
+    }
+    return map;
+  }, [categories, detailedCategoryData]);
+
+  const getChildProductsForSelection = (
+    subcategories,
+    categoryData,
+    catId,
+    subId,
+    tagId,
+    prodId
+  ) => {
+    const results = [];
+    const seen = new Set();
+    if (!catId) return results;
+
+    const addProduct = (prod, subcatId, tId) => {
+      if (!prod || !prod.product_id) return;
+      if (prodId && String(prod.product_id) !== String(prodId)) return;
+      if (!seen.has(String(prod.product_id))) {
+        seen.add(String(prod.product_id));
+        results.push({
+          category_id: catId || prod.category_id || "",
+          subcategory_id: subcatId || prod.subcategory_id || "",
+          tag_id: tId || prod.tag_id || "",
+          product_id: prod.product_id,
+          name: prod.name || "",
+        });
+      }
+    };
+
+    // 1. Direct products on category
+    const catProducts =
+      categoryData?.products || categoryData?.data?.products || [];
+    for (const prod of catProducts) {
+      addProduct(prod, prod.subcategory_id || "", prod.tag_id || "");
+    }
+
+    // 2. Subcategories -> tags/products
+    if (Array.isArray(subcategories)) {
+      for (const sub of subcategories) {
+        if (subId && String(sub.subcategory_id) !== String(subId)) continue;
+
+        // Direct products on subcategory
+        const subProducts = sub.products || [];
+        for (const prod of subProducts) {
+          addProduct(prod, sub.subcategory_id, prod.tag_id || "");
+        }
+
+        // Products in tags
+        const tags = sub.tags || [];
+        for (const tag of tags) {
+          if (tagId && String(tag.tag_id) !== String(tagId)) continue;
+          const products = tag.products || [];
+          for (const prod of products) {
+            addProduct(prod, sub.subcategory_id, tag.tag_id);
+          }
+        }
+      }
+    }
+
+    return results;
+  };
+
+  const targetProducts = useMemo(() => {
+    if (!selCat) return [];
+    return getChildProductsForSelection(
+      subOptions,
+      detailedCategoryData,
+      selCat,
+      selSub,
+      selTag,
+      selProd
+    );
+  }, [subOptions, detailedCategoryData, selCat, selSub, selTag, selProd]);
+
+  const canAddDownload = Boolean(selCat || selProd);
+
   const _raw = data?.data ?? data?.results ?? data ?? [];
   const allDownloads = Array.isArray(_raw)
     ? _raw
@@ -118,15 +251,54 @@ const Download = () => {
       ? Object.values(_raw).flat().filter(Boolean)
       : [];
 
+  // const allDownloads = useMemo(() => {
+  //   const raw = data;
+  //   if (Array.isArray(raw)) return raw;
+  //   if (raw?.data && Array.isArray(raw.data)) return raw.data;
+  //   if (raw?.results && Array.isArray(raw.results)) return raw.results;
+  //   return [];
+  // }, [data]);
+
+
   const filteredDownloads = useMemo(() => {
     return allDownloads.filter((d) => {
-      if (selProd) return String(d.product_id) === String(selProd);
-      if (selTag) return String(d.tag_id) === String(selTag);
-      if (selSub) return String(d.subcategory_id) === String(selSub);
-      if (selCat) return String(d.category_id) === String(selCat);
+      const prodId =
+        d.product_id ??
+        d.product?.product_id ??
+        d.product?.id ??
+        d.product ??
+        "";
+      const hierarchy = prodId ? productHierarchyMap.get(String(prodId)) : null;
+
+      const dCat =
+        d.category_id ??
+        d.category?.category_id ??
+        d.category?.id ??
+        d.category ??
+        hierarchy?.category_id ??
+        "";
+      const dSub =
+        d.subcategory_id ??
+        d.subcategory?.subcategory_id ??
+        d.subcategory?.id ??
+        d.subcategory ??
+        hierarchy?.subcategory_id ??
+        "";
+      const dTag =
+        d.tag_id ??
+        d.tag?.tag_id ??
+        d.tag?.id ??
+        d.tag ??
+        hierarchy?.tag_id ??
+        "";
+
+      if (selProd && String(prodId) !== String(selProd)) return false;
+      if (selTag && String(dTag) !== String(selTag)) return false;
+      if (selSub && String(dSub) !== String(selSub)) return false;
+      if (selCat && String(dCat) !== String(selCat)) return false;
       return true;
     });
-  }, [allDownloads, selCat, selSub, selTag, selProd]);
+  }, [allDownloads, selCat, selSub, selTag, selProd, productHierarchyMap]);
 
   const handleOpenCreate = () => {
     resetMutations();
@@ -206,6 +378,16 @@ const Download = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!editingId && !formData.product_id) {
+      if (formData.resource_type !== "SOFTWARE") {
+        alert(
+          `Please select a specific Product for ${formData.resource_type}. Bulk upload to all child products is only available for SOFTWARE.`
+        );
+        return;
+      }
+    }
+
     try {
       const isResource = formData.resource_type === "RESOURCE";
       if (editingId) {
@@ -223,17 +405,54 @@ const Download = () => {
       } else {
         if (isResource) {
           await createResMutation.mutateAsync({ ...formData });
+        } else if (
+          formData.resource_type === "SOFTWARE" &&
+          !formData.product_id
+        ) {
+          if (targetProducts.length === 0) {
+            alert(
+              "No child products found under the selected category/subcategory to apply this software."
+            );
+            return;
+          }
+          const results = await Promise.allSettled(
+            targetProducts.map((prod) =>
+              createMutation.mutateAsync({
+                ...formData,
+                category_id: prod.category_id || selCat || "",
+                subcategory_id: prod.subcategory_id || selSub || "",
+                tag_id: prod.tag_id || selTag || "",
+                product_id: prod.product_id,
+              })
+            )
+          );
+
+          const failed = results.filter((r) => r.status === "rejected");
+          if (failed.length === results.length) {
+            alert(
+              "Failed to upload software to child products. Please try again."
+            );
+            return;
+          } else if (failed.length > 0) {
+            alert(
+              `Software uploaded to ${results.length - failed.length} product(s), but failed for ${failed.length} product(s).`
+            );
+          }
         } else {
           await createMutation.mutateAsync({ ...formData });
         }
       }
       setView("list");
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const handleDelete = async (item) => {
-    const isResource = item.resource_type === "RESOURCE" || item.resource_id;
-    const targetId = isResource ? item.resource_id : item.download_id;
+    const isResource =
+      item.resource_type === "RESOURCE" ||
+      (!item.download_id && Boolean(item.resource_id));
+    const targetId = isResource
+      ? item.resource_id || item.id
+      : item.download_id || item.id || item.resource_id;
 
     if (!targetId) {
       alert("Error: Could not find a valid ID to delete.");
@@ -422,7 +641,11 @@ const Download = () => {
                     disabled={!selCat}
                     className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700 disabled:opacity-50 disabled:bg-zinc-100"
                   >
-                    <option value="">Select Subcategory</option>
+                    <option value="">
+                      {formData.resource_type === "SOFTWARE" && !editingId
+                        ? "All Subcategories (Apply to all)"
+                        : "Select Subcategory"}
+                    </option>
                     {subOptions.map((s) => (
                       <option key={s.subcategory_id} value={s.subcategory_id}>
                         {s.name}
@@ -444,7 +667,11 @@ const Download = () => {
                     disabled={!selSub}
                     className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700 disabled:opacity-50 disabled:bg-zinc-100"
                   >
-                    <option value="">Select Tag</option>
+                    <option value="">
+                      {formData.resource_type === "SOFTWARE" && !editingId
+                        ? "All Tags (Apply to all)"
+                        : "Select Tag"}
+                    </option>
                     {tagOptions.map((t) => (
                       <option key={t.tag_id} value={t.tag_id}>
                         {t.name}
@@ -454,7 +681,9 @@ const Download = () => {
 
                   <select
                     value={selProd}
-                    required
+                    required={
+                      formData.resource_type !== "SOFTWARE" || !!editingId
+                    }
                     onChange={(e) => {
                       setSelProd(e.target.value);
                       setFormData((s) => ({
@@ -465,7 +694,11 @@ const Download = () => {
                     disabled={!selTag}
                     className="w-full px-4 py-3 bg-zinc-50 border border-zinc-300 focus:border-[#da0e19] focus:ring-1 focus:ring-[#da0e19] outline-none transition-all text-sm font-bold uppercase tracking-widest text-zinc-700 disabled:opacity-50 disabled:bg-zinc-100"
                   >
-                    <option value="">Select Product</option>
+                    <option value="">
+                      {formData.resource_type === "SOFTWARE" && !editingId
+                        ? "All Child Products (Apply to all)"
+                        : "Select Product"}
+                    </option>
                     {prodOptions.map((p) => (
                       <option key={p.product_id} value={p.product_id}>
                         {p.name}
@@ -473,6 +706,44 @@ const Download = () => {
                     ))}
                   </select>
                 </div>
+
+                {formData.resource_type === "SOFTWARE" &&
+                  !editingId &&
+                  !selProd &&
+                  selCat && (
+                    <div
+                      className={`mt-4 p-3 border text-xs font-medium rounded flex items-center gap-2 ${isDetailsLoading
+                        ? "bg-zinc-100 border-zinc-300 text-zinc-700"
+                        : targetProducts.length > 0
+                          ? "bg-blue-50 border-blue-200 text-blue-800"
+                          : "bg-amber-50 border-amber-200 text-amber-800"
+                        }`}
+                    >
+                      <span className="text-sm">
+                        {isDetailsLoading
+                          ? "⏳"
+                          : targetProducts.length > 0
+                            ? "ℹ️"
+                            : "⚠️"}
+                      </span>
+                      <span>
+                        {isDetailsLoading ? (
+                          "Loading child products for the selected category..."
+                        ) : targetProducts.length > 0 ? (
+                          <>
+                            Bulk Software Upload: This software will be
+                            automatically added to{" "}
+                            <strong className="font-bold">
+                              all {targetProducts.length} child product(s)
+                            </strong>{" "}
+                            under the selected category/subcategory.
+                          </>
+                        ) : (
+                          "No child products found under the selected category/subcategory."
+                        )}
+                      </span>
+                    </div>
+                  )}
               </div>
 
               <div className="flex justify-end pt-6 border-t border-zinc-200 gap-4">
@@ -486,7 +757,13 @@ const Download = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSaving}
+                  disabled={
+                    isSaving ||
+                    (!editingId &&
+                      formData.resource_type === "SOFTWARE" &&
+                      !formData.product_id &&
+                      (isDetailsLoading || targetProducts.length === 0))
+                  }
                   className="flex items-center justify-center min-w-[160px] gap-2 px-8 py-3 bg-[#da0e19] hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
                 >
                   {isSaving ? (
@@ -613,19 +890,18 @@ const Download = () => {
             <div
               className="inline-block cursor-not-allowed"
               title={
-                !selProd
-                  ? "First select the product and then you can add a new download."
+                !canAddDownload
+                  ? "First select a category or product to add a new download."
                   : ""
               }
             >
               <button
                 onClick={handleOpenCreate}
-                disabled={!selProd}
-                className={`flex items-center gap-2 px-4 py-2 text-white text-xs font-bold uppercase tracking-widest transition-colors ${
-                  !selProd
-                    ? "bg-zinc-400 opacity-60 pointer-events-none"
-                    : "bg-[#da0e19] hover:bg-red-700"
-                }`}
+                disabled={!canAddDownload}
+                className={`flex items-center gap-2 px-4 py-2 text-white text-xs font-bold uppercase tracking-widest transition-colors ${!canAddDownload
+                  ? "bg-zinc-400 opacity-60 pointer-events-none"
+                  : "bg-[#da0e19] hover:bg-red-700"
+                  }`}
               >
                 <FiPlus size={16} /> Add Download
               </button>

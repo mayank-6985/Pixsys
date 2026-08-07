@@ -9,6 +9,16 @@ import {
   deleteResource,
 } from "../Services/downloads";
 
+const useInvalidateAll = () => {
+  const qc = useQueryClient();
+  return () => {
+    qc.invalidateQueries({ queryKey: ["adminDownloads"] });
+    qc.invalidateQueries({ queryKey: ["adminProducts"] });
+    qc.invalidateQueries({ queryKey: ["categoryDetails"] });
+    qc.invalidateQueries({ queryKey: ["productDetail"] });
+  };
+};
+
 export const useAllDownloads = () => {
   return useQuery({
     queryKey: ["adminDownloads"],
@@ -18,49 +28,49 @@ export const useAllDownloads = () => {
 };
 
 export const useUpdateDownload = () => {
-  const qc = useQueryClient();
+  const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: updateDownload,
-    onSuccess: () => qc.invalidateQueries(["adminDownloads"]),
+    onSuccess: invalidate,
   });
 };
 
 export const useDeleteDownload = () => {
-  const qc = useQueryClient();
+  const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: deleteDownload,
-    onSuccess: () => qc.invalidateQueries(["adminDownloads"]),
+    onSuccess: invalidate,
   });
 };
 
 export const useCreateDownload = () => {
-  const qc = useQueryClient();
+  const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: createDownload,
-    onSuccess: () => qc.invalidateQueries(["adminDownloads"]),
+    onSuccess: invalidate,
   });
 };
 
 export const useCreateResource = () => {
-  const qc = useQueryClient();
+  const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: createResource,
-    onSuccess: () => qc.invalidateQueries(["adminDownloads"]),
+    onSuccess: invalidate,
   });
 };
 
 export const useUpdateResource = () => {
-  const qc = useQueryClient();
+  const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: updateResource,
-    onSuccess: () => qc.invalidateQueries(["adminDownloads"]),
+    onSuccess: invalidate,
   });
 };
 
 export const useDeleteResource = () => {
-  const qc = useQueryClient();
+  const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: deleteResource,
-    onSuccess: () => qc.invalidateQueries(["adminDownloads"]),
+    onSuccess: invalidate,
   });
 };
