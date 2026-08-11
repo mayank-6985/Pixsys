@@ -11,7 +11,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_backend',
         'HOST': LOCAL_MONGODB_URI,
-        'NAME': 'PIXSYS_TEST',
+        'NAME': 'PIXSYS',
     },
 }
 
