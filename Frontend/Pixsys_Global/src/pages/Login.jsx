@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useLogin } from "../hooks/useLogin";
 import { authService } from "../Services/authService";
 
@@ -21,6 +22,9 @@ const Login = () => {
     isOtpStep,
     setIsOtpStep,
   } = useLogin();
+
+  const location = useLocation();
+  const resetSuccess = location.state?.resetSuccess;
 
   useEffect(() => {
     authService.clearTokens();
@@ -73,6 +77,12 @@ const Login = () => {
             {signupSuccess && !isSignup && (
               <div className="p-4 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm font-medium text-center">
                 Account created successfully! Please sign in below.
+              </div>
+            )}
+            
+            {resetSuccess && !isSignup && !signupSuccess && (
+              <div className="p-4 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm font-medium text-center">
+                Password updated successfully! Please sign in with your new password.
               </div>
             )}
 
@@ -165,12 +175,22 @@ const Login = () => {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="password"
-                    className="block text-xs font-bold text-zinc-900 uppercase tracking-widest mb-2"
-                  >
-                    Password
-                  </label>
+                  <div className="flex justify-between items-center mb-2">
+                    <label
+                      htmlFor="password"
+                      className="block text-xs font-bold text-zinc-900 uppercase tracking-widest"
+                    >
+                      Password
+                    </label>
+                    {!isSignup && (
+                      <Link
+                        to="/forgot-password"
+                        className="text-xs font-medium text-[#da0e19] hover:text-red-800 transition-colors"
+                      >
+                        Forgot password?
+                      </Link>
+                    )}
+                  </div>
                   <div className="mt-1">
                     <input
                       id="password"

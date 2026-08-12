@@ -16,6 +16,7 @@ import Download from "./pages/Download";
 import NewsDetail from "./pages/NewsDetail";
 import Search from "./pages/Search";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import { DownloadProvider } from "./Services/Context/DownloadContext";
 
 const RootErrorBoundary = () => {
@@ -53,6 +54,11 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+    errorElement: <RootErrorBoundary />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
     errorElement: <RootErrorBoundary />,
   },
 ]);

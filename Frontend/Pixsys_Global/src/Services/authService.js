@@ -69,6 +69,21 @@ export const authService = {
     return newAccessToken;
   },
 
+  passwordResetRequest: async (email) => {
+    const response = await api.post(`auth/customer/password/reset/request/`, { email });
+    return response.data;
+  },
+
+  passwordResetVerify: async (data) => {
+    const response = await api.post(`auth/customer/password/reset/verify/`, data);
+    return response.data;
+  },
+
+  passwordResetConfirm: async (data) => {
+    const response = await api.post(`auth/customer/password/reset/confirm/`, data);
+    return response.data;
+  },
+
   logout: () => {
     authService.clearTokens();
   },
