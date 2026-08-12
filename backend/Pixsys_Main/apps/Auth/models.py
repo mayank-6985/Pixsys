@@ -126,6 +126,7 @@ class CustomerOTPModel(models.Model):
     otp_code = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
+    verified = models.BooleanField(default=False)
 
     class Meta:
         db_table = "Pixsys_Customer_OTP"

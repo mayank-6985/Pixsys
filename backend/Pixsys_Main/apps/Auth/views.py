@@ -14,6 +14,9 @@ from .serializers import (
     CustomerSignupSerializer,
     CustomerVerifyOTPSerializer,
     CustomerResendOTPSerializer,
+    CustomerPasswordResetRequestSerializer,
+    CustomerPasswordResetVerifySerializer,
+    CustomerPasswordResetConfirmSerializer,
     SystemSMTPConfigSerializer,
     CompanySettingsSerializer
 )
@@ -260,6 +263,134 @@ class CustomerResendOTPView(APIView):
             logger.error(f"Unexpected error in CustomerResendOTPView: {e}{traceback.format_exc()}")
             return Response(
                 {"detail": "An unexpected error occurred while resending OTP."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class CustomerPasswordResetRequestView(APIView):
+    """Sends a password reset OTP to the customer's registered email."""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    @extend_schema(
+        request=CustomerPasswordResetRequestSerializer,
+        examples=[
+            OpenApiExample(
+                "Password Reset Request",
+                value={
+                    "email": "customer@example.com"
+                }
+            )
+        ]
+    )
+    def post(self, request):
+        try:
+            serializer = CustomerPasswordResetRequestSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            customer = serializer.validated_data['customer']
+
+            otp_sent = otp_manager.process_otp_for_customer(customer)
+            if otp_sent:
+                return Response(
+                    {"detail": "Password reset OTP sent to registered email."},
+                    status=status.HTTP_200_OK
+                )
+
+            logger.warning(f"Failed to send password reset OTP to customer: {customer.email}")
+            return Response(
+                {"detail": "Failed to send password reset OTP. Please try again later."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        except APIException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in CustomerPasswordResetRequestView: {e}", exc_info=True)
+            return Response(
+                {"detail": "An unexpected error occurred while requesting password reset OTP."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class CustomerPasswordResetVerifyView(APIView):
+    """Verifies the password reset OTP and marks it as ready for password update."""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    @extend_schema(
+        request=CustomerPasswordResetVerifySerializer,
+        examples=[
+            OpenApiExample(
+                "Password Reset OTP Verification",
+                value={
+                    "email": "customer@example.com",
+                    "otp_code": "123456"
+                }
+            )
+        ]
+    )
+    def post(self, request):
+        try:
+            serializer = CustomerPasswordResetVerifySerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            otp_record = serializer.validated_data['otp_record']
+            otp_record.verified = True
+            otp_record.save()
+
+            return Response(
+                {"detail": "OTP verified successfully. You may now submit your new password."},
+                status=status.HTTP_200_OK
+            )
+        except APIException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in CustomerPasswordResetVerifyView: {e}", exc_info=True)
+            return Response(
+                {"detail": "An unexpected error occurred during OTP verification."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class CustomerPasswordResetConfirmView(APIView):
+    """Accepts a new password and finalizes the password reset after OTP verification."""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    @extend_schema(
+        request=CustomerPasswordResetConfirmSerializer,
+        examples=[
+            OpenApiExample(
+                "Password Reset Confirmation",
+                value={
+                    "email": "customer@example.com",
+                    "new_password": "NewSecurePassword123!"
+                }
+            )
+        ]
+    )
+    def post(self, request):
+        try:
+            serializer = CustomerPasswordResetConfirmSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            customer = serializer.validated_data['customer']
+            otp_record = serializer.validated_data['otp_record']
+            new_password = serializer.validated_data['new_password']
+
+            customer.password = new_password
+            customer.save()
+            otp_record.delete()
+
+            return Response(
+                {"detail": "Password reset successfully.", "email": customer.email},
+                status=status.HTTP_200_OK
+            )
+        except APIException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in CustomerPasswordResetConfirmView: {e}", exc_info=True)
+            return Response(
+                {"detail": "An unexpected error occurred while resetting password."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

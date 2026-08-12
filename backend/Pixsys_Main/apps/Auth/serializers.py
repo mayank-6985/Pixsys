@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
-from .models import PixsysAdminModel, PixsysCustomerModel
+from .models import PixsysAdminModel, PixsysCustomerModel, CustomerOTPModel
 
 # ==========================================
 # SIGNUP SERIALIZERS
@@ -71,10 +71,6 @@ class CustomerLoginSerializer(BaseEmailTokenObtainSerializer):
         return attrs
     
 
-# Add to your existing serializers.py
-from django.utils import timezone
-from .models import CustomerOTPModel
-
 class CustomerVerifyOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp_code = serializers.CharField(max_length=6)
@@ -119,6 +115,81 @@ class CustomerResendOTPSerializer(serializers.Serializer):
         attrs['customer'] = customer
         return attrs
     
+
+class CustomerPasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        customer = PixsysCustomerModel.objects.filter(email=email).first()
+        if not customer:
+            raise serializers.ValidationError("No customer account found with this email.")
+
+        attrs['customer'] = customer
+        return attrs
+
+
+class CustomerPasswordResetVerifySerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp_code = serializers.CharField(max_length=6)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        otp_code = attrs.get('otp_code')
+
+        customer = PixsysCustomerModel.objects.filter(email=email).first()
+        if not customer:
+            raise serializers.ValidationError("No customer account found with this email.")
+
+        try:
+            otp_record = customer.otp_data
+        except CustomerOTPModel.DoesNotExist:
+            raise serializers.ValidationError("No OTP requested or OTP expired.")
+
+        if not otp_record.is_valid():
+            otp_record.delete()
+            raise serializers.ValidationError("OTP has expired. Please request a new one.")
+
+        if otp_record.otp_code != otp_code:
+            raise serializers.ValidationError("Invalid OTP.")
+
+        attrs['customer'] = customer
+        attrs['otp_record'] = otp_record
+        return attrs
+
+
+class CustomerPasswordResetConfirmSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    new_password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        new_password = attrs.get('new_password')
+
+        customer = PixsysCustomerModel.objects.filter(email=email).first()
+        if not customer:
+            raise serializers.ValidationError("No customer account found with this email.")
+
+        if not new_password:
+            raise serializers.ValidationError("A new password must be provided.")
+
+        try:
+            otp_record = customer.otp_data
+        except CustomerOTPModel.DoesNotExist:
+            raise serializers.ValidationError("No OTP requested or OTP expired.")
+
+        if not otp_record.is_valid():
+            otp_record.delete()
+            raise serializers.ValidationError("OTP has expired. Please request a new one.")
+
+        if not otp_record.verified:
+            raise serializers.ValidationError("OTP must be verified before resetting the password.")
+
+        attrs['customer'] = customer
+        attrs['otp_record'] = otp_record
+        attrs['new_password'] = new_password
+        return attrs
+
 
 from .models import SystemSMTPConfig, CompanySettings
 

@@ -33,6 +33,7 @@ from django.urls import path
 from .views import (
     CustomerSignupView, WebSiteAdminLoginView, 
     CustomerLoginInitiateView, CustomerVerifyOTPView, CustomerResendOTPView,
+    CustomerPasswordResetRequestView, CustomerPasswordResetVerifyView, CustomerPasswordResetConfirmView,
     CustomTokenRefreshView, LogoutView,
     SystemSMTPConfigView, CompanySettingsView
 )
@@ -44,6 +45,11 @@ urlpatterns = [
     path('customer/login/initiate/', CustomerLoginInitiateView.as_view(), name='customer_login_initiate'),
     path('customer/login/verify/', CustomerVerifyOTPView.as_view(), name='customer_login_verify'),
     path('customer/otp/resend/', CustomerResendOTPView.as_view(), name='customer_otp_resend'), # <--- New Endpoint
+
+    # Password Reset
+    path('customer/password/reset/request/', CustomerPasswordResetRequestView.as_view(), name='customer_password_reset_request'),
+    path('customer/password/reset/verify/', CustomerPasswordResetVerifyView.as_view(), name='customer_password_reset_verify'),
+    path('customer/password/reset/confirm/', CustomerPasswordResetConfirmView.as_view(), name='customer_password_reset_confirm'),
     
     # Admin
     path('admin/login/', WebSiteAdminLoginView.as_view(), name='admin_login'),
